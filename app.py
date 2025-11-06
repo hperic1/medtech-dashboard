@@ -408,25 +408,47 @@ def create_jp_morgan_chart_by_category(category, color):
 def main():
     st.title("🥼 MedTech M&A & Venture Dashboard")
     
+    # Horizontal navigation with emojis
+    page = st.radio(
+        "Navigation",
+        ["📊 Deal Activity", "📈 JP Morgan Summary", "🏢 IPO Activity", "📤 Upload New Dataset"],
+        horizontal=True,
+        label_visibility="collapsed"
+    )
+    
+    st.markdown("---")
+    
     # Load data
     ma_df, inv_df, ipo_df = load_data()
     
-    # Sidebar navigation
-    st.sidebar.title("Navigation")
-    page = st.sidebar.radio("Go to", ["Deal Activity", "JP Morgan Summary", "IPO Activity", "Data Management"])
-    
-    if page == "Deal Activity":
+    if page == "📊 Deal Activity":
         show_deal_activity(ma_df, inv_df)
-    elif page == "JP Morgan Summary":
+    elif page == "📈 JP Morgan Summary":
         show_jp_morgan_summary(ma_df, inv_df)
-    elif page == "IPO Activity":
+    elif page == "🏢 IPO Activity":
         show_ipo_activity(ipo_df)
-    elif page == "Data Management":
-        show_data_management(ma_df, inv_df, ipo_df)
+    elif page == "📤 Upload New Dataset":
+        show_upload_dataset(ma_df, inv_df, ipo_df)
 
 def show_deal_activity(ma_df, inv_df):
     """Display deal activity dashboard"""
     st.header("Deal Activity Dashboard")
+    
+    # Overview Charts at the top
+    st.markdown("### YTD Overview")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        fig_ma_overview = create_quarterly_chart(ma_df, 'Deal Value', 'M&A Activity Overview', 'ma')
+        if fig_ma_overview:
+            st.plotly_chart(fig_ma_overview, use_container_width=True)
+    
+    with col2:
+        fig_inv_overview = create_quarterly_chart(inv_df, 'Amount Raised', 'Venture Investment Overview', 'venture')
+        if fig_inv_overview:
+            st.plotly_chart(fig_inv_overview, use_container_width=True)
+    
+    st.markdown("---")
     
     # M&A Activity Section
     st.subheader("M&A Activity")
@@ -478,8 +500,8 @@ def show_deal_activity(ma_df, inv_df):
         ma_display['_Deal_Value_Numeric'] = ma_display['Deal Value'].apply(parse_to_numeric)
         ma_display = ma_display.sort_values('_Deal_Value_Numeric', ascending=False)
         
-        # Display without the numeric column
-        display_cols = [col for col in ma_display.columns if not col.startswith('_')]
+        # Display without the numeric column and unnamed columns
+        display_cols = [col for col in ma_display.columns if not col.startswith('_') and col.strip() != '']
         
         st.dataframe(
             ma_display[display_cols], 
@@ -487,7 +509,8 @@ def show_deal_activity(ma_df, inv_df):
             height=500,
             column_config={
                 "Deal Value": st.column_config.TextColumn("Deal Value", help="Deal value in USD"),
-            }
+            },
+            hide_index=True
         )
     
     with tab2:
@@ -502,7 +525,18 @@ def show_deal_activity(ma_df, inv_df):
             verb = "merged with" if deal_type == "Merger" else "acquired"
             
             st.markdown(f"**{row['Acquirer']} {verb} {row['Company']}**")
-            st.markdown(f"<h1 style='margin-top: -10px; margin-bottom: -10px; color: {COLORS['ma_primary']};'>{formatted_value}</h1>", unsafe_allow_html=True)
+            st.markdown(f"<h1 style='margin-top: -10px; margin-bottom: 5px; color: {COLORS['ma_primary']};'>{formatted_value}</h1>", unsafe_allow_html=True)
+            
+            # Add technology description in small font
+            tech_desc = str(row['Technology/Description']) if row['Technology/Description'] != 'Undisclosed' else 'No description available'
+            st.markdown(f"<p style='font-size: 12px; color: #666; margin-top: 5px;'><b>Technology:</b> {tech_desc}</p>", unsafe_allow_html=True)
+            
+            # Add deal details
+            sector = str(row['Sector']) if row['Sector'] != 'Undisclosed' else 'N/A'
+            quarter = str(row['Quarter']) if row['Quarter'] != 'Undisclosed' else 'N/A'
+            month = str(row['Month']) if row['Month'] != 'Undisclosed' else 'N/A'
+            st.markdown(f"<p style='font-size: 11px; color: #888;'><b>Sector:</b> {sector} | <b>Quarter:</b> {quarter} | <b>Month:</b> {month}</p>", unsafe_allow_html=True)
+            
             st.markdown("---")
     
     with tab3:
@@ -567,8 +601,8 @@ def show_deal_activity(ma_df, inv_df):
             lambda x: f"${x:,.0f}" if pd.notna(x) and x != 'Undisclosed' and str(x).replace('.','').replace('-','').isdigit() else x
         )
         
-        # Display without the numeric column
-        display_cols = [col for col in inv_display.columns if not col.startswith('_')]
+        # Display without the numeric column and unnamed columns
+        display_cols = [col for col in inv_display.columns if not col.startswith('_') and col.strip() != '']
         
         st.dataframe(
             inv_display[display_cols],
@@ -576,7 +610,8 @@ def show_deal_activity(ma_df, inv_df):
             height=500,
             column_config={
                 "Amount Raised": st.column_config.TextColumn("Amount Raised", help="Investment amount in USD"),
-            }
+            },
+            hide_index=True
         )
     
     with tab2:
@@ -605,7 +640,20 @@ def show_deal_activity(ma_df, inv_df):
                 formatted_value = "Undisclosed"
             
             st.markdown(f"**{row['Company']}**")
-            st.markdown(f"<h1 style='margin-top: -10px; margin-bottom: -10px; color: {COLORS['venture_primary']};'>{formatted_value}</h1>", unsafe_allow_html=True)
+            st.markdown(f"<h1 style='margin-top: -10px; margin-bottom: 5px; color: {COLORS['venture_primary']};'>{formatted_value}</h1>", unsafe_allow_html=True)
+            
+            # Add technology description in small font
+            tech_desc = str(row['Technology/Description']) if row['Technology/Description'] != 'Undisclosed' else 'No description available'
+            st.markdown(f"<p style='font-size: 12px; color: #666; margin-top: 5px;'><b>Technology:</b> {tech_desc}</p>", unsafe_allow_html=True)
+            
+            # Add deal details
+            funding_type = str(row['Funding type (VC / PE)']) if row['Funding type (VC / PE)'] != 'Undisclosed' else 'N/A'
+            sector = str(row['Sector']) if row['Sector'] != 'Undisclosed' else 'N/A'
+            lead_investors = str(row['Lead Investors']) if row['Lead Investors'] != 'Undisclosed' else 'N/A'
+            quarter = str(row['Quarter']) if row['Quarter'] != 'Undisclosed' else 'N/A'
+            st.markdown(f"<p style='font-size: 11px; color: #888;'><b>Type:</b> {funding_type} | <b>Sector:</b> {sector} | <b>Quarter:</b> {quarter}</p>", unsafe_allow_html=True)
+            st.markdown(f"<p style='font-size: 11px; color: #888;'><b>Lead Investors:</b> {lead_investors}</p>", unsafe_allow_html=True)
+            
             st.markdown("---")
     
     with tab3:
@@ -815,22 +863,134 @@ def show_ipo_activity(ipo_df):
     st.markdown(create_metric_card("Total IPOs YTD", total_ipos, 'ma'), unsafe_allow_html=True)
     
     # Display table
-    st.dataframe(filtered_ipo, use_container_width=True, height=500)
+    st.dataframe(filtered_ipo, use_container_width=True, height=500, hide_index=True)
 
-def show_data_management(ma_df, inv_df, ipo_df):
-    """Data management page"""
-    st.header("Data Management")
+def show_upload_dataset(ma_df, inv_df, ipo_df):
+    """Password-protected data upload page"""
+    st.header("📤 Upload New Dataset")
     
-    st.info("📝 **Note**: This is a simplified version. Full data management features would include manual entry forms and web scraping capabilities.")
+    # Password protection
+    if 'upload_authenticated' not in st.session_state:
+        st.session_state.upload_authenticated = False
     
-    # Show data summary
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("M&A Deals", len(ma_df))
-    with col2:
-        st.metric("Venture Deals", len(inv_df))
-    with col3:
-        st.metric("IPOs", len(ipo_df) if not ipo_df.empty else 0)
+    if not st.session_state.upload_authenticated:
+        st.info("🔒 This page is password-protected. Please enter the password to continue.")
+        
+        password = st.text_input("Password", type="password", key="upload_password")
+        
+        if st.button("Submit", type="primary"):
+            if password == "BeaconOne":
+                st.session_state.upload_authenticated = True
+                st.success("✅ Access granted!")
+                st.rerun()
+            else:
+                st.error("❌ Incorrect password. Please try again.")
+        
+        return
+    
+    # Show upload interface after authentication
+    st.success("🔓 Authenticated")
+    
+    if st.button("🔒 Lock Page", type="secondary"):
+        st.session_state.upload_authenticated = False
+        st.rerun()
+    
+    st.markdown("---")
+    
+    st.markdown("""
+    ### Instructions
+    1. Upload your Excel file with the following sheets:
+       - **YTD M&A Activity**
+       - **YTD Investment Activity** 
+       - **YTD IPO** (optional)
+    2. Choose whether to **append** new deals or **replace** all existing data
+    3. Click **Upload** to process the file
+    4. **Refresh the page** to see updated data
+    """)
+    
+    # File uploader
+    uploaded_file = st.file_uploader(
+        "Choose Excel file",
+        type=['xlsx', 'xls'],
+        help="Upload MedTech deals data file"
+    )
+    
+    if uploaded_file is not None:
+        st.success(f"✅ File uploaded: {uploaded_file.name}")
+        
+        # Preview uploaded data
+        try:
+            preview_ma = pd.read_excel(uploaded_file, sheet_name='YTD M&A Activity', nrows=5)
+            preview_inv = pd.read_excel(uploaded_file, sheet_name='YTD Investment Activity', nrows=5)
+            
+            st.markdown("### Preview")
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**M&A Activity (first 5 rows)**")
+                st.dataframe(preview_ma, use_container_width=True)
+            
+            with col2:
+                st.markdown("**Investment Activity (first 5 rows)**")
+                st.dataframe(preview_inv, use_container_width=True)
+            
+            # Upload options
+            st.markdown("---")
+            st.markdown("### Upload Options")
+            
+            upload_mode = st.radio(
+                "How would you like to update the data?",
+                ["Append new deals to existing data", "Replace all existing data"],
+                help="Append will add new deals to current data. Replace will overwrite everything."
+            )
+            
+            if st.button("📤 Upload and Process Data", type="primary", use_container_width=True):
+                with st.spinner("Processing upload..."):
+                    try:
+                        # Read full datasets
+                        new_ma = pd.read_excel(uploaded_file, sheet_name='YTD M&A Activity')
+                        new_inv = pd.read_excel(uploaded_file, sheet_name='YTD Investment Activity')
+                        
+                        try:
+                            new_ipo = pd.read_excel(uploaded_file, sheet_name='YTD IPO')
+                        except:
+                            new_ipo = ipo_df  # Keep existing if not in upload
+                        
+                        # Clean data
+                        new_ma = new_ma.fillna('Undisclosed')
+                        new_inv = new_inv.fillna('Undisclosed')
+                        
+                        if upload_mode == "Append new deals to existing data":
+                            # Append mode - combine old and new
+                            final_ma = pd.concat([ma_df, new_ma], ignore_index=True)
+                            final_inv = pd.concat([inv_df, new_inv], ignore_index=True)
+                            
+                            # Remove duplicates based on key columns
+                            final_ma = final_ma.drop_duplicates(subset=['Company', 'Acquirer', 'Deal Value'], keep='last')
+                            final_inv = final_inv.drop_duplicates(subset=['Company', 'Amount Raised'], keep='last')
+                            
+                            st.info(f"📊 Added {len(final_ma) - len(ma_df)} new M&A deals and {len(final_inv) - len(inv_df)} new investment deals")
+                        else:
+                            # Replace mode - use only new data
+                            final_ma = new_ma
+                            final_inv = new_inv
+                            st.info(f"📊 Replaced data: {len(final_ma)} M&A deals, {len(final_inv)} investment deals")
+                        
+                        # Save to file
+                        if save_data(final_ma, final_inv, new_ipo):
+                            st.success("✅ Data uploaded successfully!")
+                            st.balloons()
+                            st.markdown("---")
+                            st.markdown("### ⚠️ Important: Please refresh the page to see updated data")
+                            st.markdown("Press **R** or click the refresh button in your browser")
+                        
+                    except Exception as e:
+                        st.error(f"❌ Error processing upload: {str(e)}")
+                        st.info("Make sure your Excel file has the correct sheet names and column structure")
+        
+        except Exception as e:
+            st.error(f"❌ Error reading file: {str(e)}")
+            st.info("Please ensure the file has 'YTD M&A Activity' and 'YTD Investment Activity' sheets")
 
 if __name__ == "__main__":
     main()
