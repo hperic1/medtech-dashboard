@@ -112,6 +112,25 @@ def load_data():
         ma_df = ma_df.fillna('Undisclosed')
         inv_df = inv_df.fillna('Undisclosed')
         
+        # Remove unnamed columns
+        ma_df = ma_df.loc[:, ~ma_df.columns.str.contains('^Unnamed')]
+        inv_df = inv_df.loc[:, ~inv_df.columns.str.contains('^Unnamed')]
+        if not ipo_df.empty:
+            ipo_df = ipo_df.loc[:, ~ipo_df.columns.str.contains('^Unnamed')]
+        
+        # Strip year from Quarter column (e.g., "Q1 2025" -> "Q1")
+        if 'Quarter' in ma_df.columns:
+            ma_df['Quarter'] = ma_df['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
+            ma_df['Quarter'] = ma_df['Quarter'].fillna('Undisclosed')
+        
+        if 'Quarter' in inv_df.columns:
+            inv_df['Quarter'] = inv_df['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
+            inv_df['Quarter'] = inv_df['Quarter'].fillna('Undisclosed')
+        
+        if not ipo_df.empty and 'Quarter' in ipo_df.columns:
+            ipo_df['Quarter'] = ipo_df['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
+            ipo_df['Quarter'] = ipo_df['Quarter'].fillna('Undisclosed')
+        
         return ma_df, inv_df, ipo_df
     except Exception as e:
         st.error(f"Error loading data: {str(e)}")
@@ -237,8 +256,15 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma'):
         bar_color = COLORS['ma_primary'] if chart_type == 'ma' else COLORS['venture_primary']
         line_color = COLORS['count_line']
         
+        # Filter out 'Undisclosed' quarters for cleaner data
+        df_filtered = df[df['Quarter'] != 'Undisclosed'].copy()
+        
+        if len(df_filtered) == 0:
+            st.warning(f"No data available for {title}")
+            return None
+        
         # Prepare data
-        quarterly_data = df.groupby('Quarter').agg({
+        quarterly_data = df_filtered.groupby('Quarter').agg({
             value_col: lambda x: sum([float(str(v).replace('$', '').replace('B', '').replace('M', '').replace(',', '')) 
                                      if v != 'Undisclosed' else 0 for v in x]),
             'Company': 'count'
@@ -250,12 +276,19 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma'):
         quarterly_data['Quarter'] = pd.Categorical(quarterly_data['Quarter'], categories=quarter_order, ordered=True)
         quarterly_data = quarterly_data.sort_values('Quarter')
         
+        # Remove any NaN quarters
+        quarterly_data = quarterly_data[quarterly_data['Quarter'].notna()]
+        
+        if len(quarterly_data) == 0:
+            st.warning(f"No valid quarterly data for {title}")
+            return None
+        
         # Create figure
         fig = go.Figure()
         
         # Add bar chart for deal values
         fig.add_trace(go.Bar(
-            x=quarterly_data['Quarter'],
+            x=quarterly_data['Quarter'].astype(str),
             y=quarterly_data['Total_Value'],
             name='Deal Value',
             marker_color=bar_color,
@@ -267,7 +300,7 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma'):
         
         # Add line chart for deal count
         fig.add_trace(go.Scatter(
-            x=quarterly_data['Quarter'],
+            x=quarterly_data['Quarter'].astype(str),
             y=quarterly_data['Deal_Count'],
             name='Deal Count',
             mode='lines+markers+text',
@@ -315,6 +348,8 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma'):
         return fig
     except Exception as e:
         st.error(f"Error creating chart: {str(e)}")
+        import traceback
+        st.error(f"Details: {traceback.format_exc()}")
         return None
 
 def create_jp_morgan_chart_by_category(category, color):
@@ -501,7 +536,11 @@ def show_deal_activity(ma_df, inv_df):
         ma_display = ma_display.sort_values('_Deal_Value_Numeric', ascending=False)
         
         # Display without the numeric column and unnamed columns
-        display_cols = [col for col in ma_display.columns if not col.startswith('_') and col.strip() != '']
+        # Filter out: columns starting with '_', 'Unnamed', or empty strings
+        display_cols = [col for col in ma_display.columns 
+                       if not col.startswith('_') 
+                       and not col.startswith('Unnamed')
+                       and col.strip() != '']
         
         st.dataframe(
             ma_display[display_cols], 
@@ -602,7 +641,11 @@ def show_deal_activity(ma_df, inv_df):
         )
         
         # Display without the numeric column and unnamed columns
-        display_cols = [col for col in inv_display.columns if not col.startswith('_') and col.strip() != '']
+        # Filter out: columns starting with '_', 'Unnamed', or empty strings
+        display_cols = [col for col in inv_display.columns 
+                       if not col.startswith('_') 
+                       and not col.startswith('Unnamed')
+                       and col.strip() != '']
         
         st.dataframe(
             inv_display[display_cols],
@@ -959,6 +1002,25 @@ def show_upload_dataset(ma_df, inv_df, ipo_df):
                         # Clean data
                         new_ma = new_ma.fillna('Undisclosed')
                         new_inv = new_inv.fillna('Undisclosed')
+                        
+                        # Remove unnamed columns
+                        new_ma = new_ma.loc[:, ~new_ma.columns.str.contains('^Unnamed')]
+                        new_inv = new_inv.loc[:, ~new_inv.columns.str.contains('^Unnamed')]
+                        if not new_ipo.empty:
+                            new_ipo = new_ipo.loc[:, ~new_ipo.columns.str.contains('^Unnamed')]
+                        
+                        # Strip year from Quarter column
+                        if 'Quarter' in new_ma.columns:
+                            new_ma['Quarter'] = new_ma['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
+                            new_ma['Quarter'] = new_ma['Quarter'].fillna('Undisclosed')
+                        
+                        if 'Quarter' in new_inv.columns:
+                            new_inv['Quarter'] = new_inv['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
+                            new_inv['Quarter'] = new_inv['Quarter'].fillna('Undisclosed')
+                        
+                        if not new_ipo.empty and 'Quarter' in new_ipo.columns:
+                            new_ipo['Quarter'] = new_ipo['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
+                            new_ipo['Quarter'] = new_ipo['Quarter'].fillna('Undisclosed')
                         
                         if upload_mode == "Append new deals to existing data":
                             # Append mode - combine old and new
