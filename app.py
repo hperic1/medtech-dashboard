@@ -233,8 +233,8 @@ def create_filter_section(df, section_key, show_conference=True):
     
     return filtered_df
 
-def format_currency(value):
-    """Format currency values"""
+def format_currency_abbreviated(value):
+    """Format currency values for charts and cards (e.g., $2.1B or $350.0M)"""
     if pd.isna(value) or value == 'Undisclosed':
         return 'Undisclosed'
     try:
@@ -242,11 +242,28 @@ def format_currency(value):
         if value >= 1000:
             return f"${value/1000:.1f}B"
         elif value > 0:
-            return f"${value:.0f}M"
+            return f"${value:.1f}M"
         else:
             return 'Undisclosed'
     except:
         return str(value)
+
+def format_currency_full(value):
+    """Format currency values for tables (e.g., $350,000,000)"""
+    if pd.isna(value) or value == 'Undisclosed':
+        return 'Undisclosed'
+    try:
+        value = float(str(value).replace('$', '').replace('B', '').replace('M', '').replace(',', ''))
+        if value > 0:
+            return f"${value:,.0f}"
+        else:
+            return 'Undisclosed'
+    except:
+        return str(value)
+
+def format_currency(value):
+    """Deprecated: Use format_currency_abbreviated() or format_currency_full() instead"""
+    return format_currency_abbreviated(value)
 
 def create_metric_card(label, value, color_scheme='ma'):
     """Create a styled metric card"""
@@ -389,7 +406,7 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
             y=quarterly_data['Total_Value'],
             name='Deal Value',
             marker_color=bar_color,
-            text=[f"<b>${v:,.0f}</b>" for v in quarterly_data['Total_Value']],  # Bold numbers
+            text=[f"<b>{format_currency_abbreviated(v)}</b>" for v in quarterly_data['Total_Value']],  # Bold abbreviated format
             textposition='outside',
             textfont=dict(size=14),  # Larger text
             yaxis='y',
@@ -742,12 +759,7 @@ def show_deal_activity(ma_df, inv_df):
         
         total_ma_deals = len(ma_df)
         total_ma_value = sum(ma_df['Deal Value'].apply(parse_to_numeric))
-        if total_ma_value >= 1000000000:
-            ma_value_display = f"${total_ma_value/1000000000:.2f}B"
-        elif total_ma_value >= 1000000:
-            ma_value_display = f"${total_ma_value/1000000:.0f}M"
-        else:
-            ma_value_display = f"${total_ma_value:,.0f}"
+        ma_value_display = format_currency_abbreviated(total_ma_value)
         
         # Display metric cards
         st.markdown(create_metric_card("Total M&A Deal Value", ma_value_display, 'ma'), unsafe_allow_html=True)
@@ -779,12 +791,7 @@ def show_deal_activity(ma_df, inv_df):
         total_inv_value = sum(inv_df['Amount Raised'].apply(
             lambda x: float(x) if pd.notna(x) and x != 'Undisclosed' and str(x).replace('.','').replace('-','').isdigit() else 0
         ))
-        if total_inv_value >= 1000000000:
-            inv_value_display = f"${total_inv_value/1000000000:.2f}B"
-        elif total_inv_value >= 1000000:
-            inv_value_display = f"${total_inv_value/1000000:.0f}M"
-        else:
-            inv_value_display = f"${total_inv_value:,.0f}"
+        inv_value_display = format_currency_abbreviated(total_inv_value)
         
         # Display metric cards
         st.markdown(create_metric_card("Total Investment Value", inv_value_display, 'venture'), unsafe_allow_html=True)
@@ -870,12 +877,12 @@ def show_deal_activity(ma_df, inv_df):
         top_deals = top_deals.nlargest(3, 'Deal_Value_Numeric')
         
         for idx, row in top_deals.iterrows():
-            # Format value with $ and commas
+            # Format value - use abbreviated format for display (e.g., $2.1B)
             deal_value = row['Deal Value']
             if deal_value != 'Undisclosed' and parse_to_numeric(deal_value) > 0:
                 try:
                     numeric_val = parse_to_numeric(deal_value)
-                    formatted_value = f"${numeric_val:,.0f}"
+                    formatted_value = format_currency_abbreviated(numeric_val)
                 except:
                     formatted_value = str(deal_value)
             else:
@@ -975,11 +982,11 @@ def show_deal_activity(ma_df, inv_df):
         top_deals = top_deals.nlargest(3, 'Amount_Numeric')
         
         for idx, row in top_deals.iterrows():
-            # Format amount with $ and commas
+            # Format amount - use abbreviated format for display (e.g., $2.1B)
             amount_val = row['Amount Raised']
             if pd.notna(amount_val) and amount_val != 'Undisclosed':
                 try:
-                    formatted_value = f"${float(amount_val):,.0f}"
+                    formatted_value = format_currency_abbreviated(float(amount_val))
                 except:
                     formatted_value = str(amount_val)
             else:
@@ -1492,7 +1499,7 @@ def create_ipo_chart(df):
             y=quarterly_data['Total_Amount'],
             name='IPO Value',
             marker_color='#9B59B6',  # Purple for IPO
-            text=[f"<b>${v:,.0f}</b>" for v in quarterly_data['Total_Amount']],
+            text=[f"<b>{format_currency_abbreviated(v)}</b>" for v in quarterly_data['Total_Amount']],
             textposition='outside',
             textfont=dict(size=14),
             yaxis='y',
