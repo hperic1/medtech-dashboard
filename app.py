@@ -189,11 +189,70 @@ def save_data(ma_df, inv_df, ipo_df=None):
                 ipo_df.to_excel(writer, sheet_name='YTD IPO', index=False)
         
         st.session_state.changes_made = True
+        st.session_state.upload_successful = True
         return True
-    except Exception as e:
-        st.error(f"Error saving data: {str(e)}")
-        st.warning("⚠️ Note: Streamlit Cloud has a read-only file system. Changes won't persist after app restarts.")
+    except PermissionError:
+        st.error("❌ Permission denied: Cannot write to file system")
+        st.warning("""
+        ⚠️ **Streamlit Cloud Limitation Detected**
+        
+        Streamlit Cloud uses a read-only file system. To update data on Streamlit Cloud:
+        1. Update the Excel file in your GitHub repository
+        2. Push changes to GitHub
+        3. Streamlit Cloud will automatically redeploy with the new data
+        
+        For full data upload functionality, run this app locally.
+        """)
         return False
+    except Exception as e:
+        st.error(f"❌ Error saving data: {str(e)}")
+        st.info("💡 If you see 'Read-only file system', you're on Streamlit Cloud. Update the data file in GitHub instead.")
+        return False
+
+def undo_last_upload():
+    """Restore data from backup file (undo last upload)"""
+    try:
+        possible_paths = [
+            'data/MedTech_YTD_Standardized.xlsx',
+            './data/MedTech_YTD_Standardized.xlsx',
+            'MedTech_YTD_Standardized.xlsx',
+            'MedTech_Deals.xlsx',
+            './MedTech_Deals.xlsx',
+        ]
+        
+        excel_path = None
+        for path in possible_paths:
+            if os.path.exists(path):
+                excel_path = path
+                break
+        
+        if excel_path is None:
+            return False, "No data file found"
+        
+        backup_path = excel_path.replace('.xlsx', '_backup.xlsx')
+        
+        if not os.path.exists(backup_path):
+            return False, "No backup available to restore"
+        
+        # Restore from backup
+        import shutil
+        shutil.copy2(backup_path, excel_path)
+        
+        # Clear flags
+        if 'changes_made' in st.session_state:
+            del st.session_state.changes_made
+        if 'last_backup_time' in st.session_state:
+            del st.session_state.last_backup_time
+        if 'upload_successful' in st.session_state:
+            del st.session_state.upload_successful
+        
+        # Clear cache to reload data
+        st.cache_data.clear()
+        
+        return True, "Successfully restored previous version"
+        
+    except Exception as e:
+        return False, f"Error restoring backup: {str(e)}"
 
 def create_filter_section(df, section_key, show_conference=True):
     """Create unified filter section that returns filtered dataframe"""
@@ -1347,9 +1406,29 @@ def show_upload_dataset(ma_df, inv_df, ipo_df):
     # Show upload interface after authentication
     st.success("🔓 Authenticated")
     
-    if st.button("🔒 Lock Page", type="secondary"):
-        st.session_state.upload_authenticated = False
-        st.rerun()
+    col1, col2, col3 = st.columns([2, 2, 2])
+    
+    with col1:
+        if st.button("🔒 Lock Page", type="secondary"):
+            st.session_state.upload_authenticated = False
+            st.rerun()
+    
+    with col2:
+        # Show undo button if upload was successful
+        if 'upload_successful' in st.session_state and st.session_state.upload_successful:
+            if st.button("↩️ Undo Last Upload", type="secondary"):
+                success, message = undo_last_upload()
+                if success:
+                    st.success(f"✅ {message}")
+                    st.info("🔄 Refreshing page to load restored data...")
+                    st.rerun()
+                else:
+                    st.error(f"❌ {message}")
+    
+    with col3:
+        # Show last backup time if available
+        if 'last_backup_time' in st.session_state:
+            st.caption(f"Last upload: {st.session_state.last_backup_time.strftime('%Y-%m-%d %I:%M %p')}")
     
     st.markdown("---")
     
@@ -1361,7 +1440,11 @@ def show_upload_dataset(ma_df, inv_df, ipo_df):
        - **YTD IPO** (optional)
     2. Choose whether to **append** new deals or **replace** all existing data
     3. Click **Upload** to process the file
-    4. **Refresh the page** to see updated data
+    4. Data will be **saved automatically** and persist after refresh
+    5. Use the **"Undo Last Upload"** button above to revert if needed
+    
+    ⚠️ **Note:** If running on Streamlit Cloud (not locally), the file system is read-only. 
+    In that case, you'll need to update the data file in your GitHub repository instead.
     """)
     
     # File uploader
@@ -1453,11 +1536,25 @@ def show_upload_dataset(ma_df, inv_df, ipo_df):
                         
                         # Save to file
                         if save_data(final_ma, final_inv, new_ipo):
-                            st.success("✅ Data uploaded successfully!")
+                            st.success("✅ Data uploaded and saved successfully!")
                             st.balloons()
+                            
+                            # Clear cache immediately to reload new data
+                            st.cache_data.clear()
+                            
                             st.markdown("---")
-                            st.markdown("### ⚠️ Important: Please refresh the page to see updated data")
-                            st.markdown("Press **R** or click the refresh button in your browser")
+                            st.markdown("### ✅ Upload Complete!")
+                            st.info("""
+                            **What happens next:**
+                            - ✅ Your data has been saved to the file system
+                            - ✅ Data will persist even after app restarts
+                            - ✅ Click the "Undo Last Upload" button above if you need to revert
+                            - 🔄 Refresh the page (press **R**) to see your updated data in all tabs
+                            """)
+                            
+                            # Offer immediate page refresh
+                            if st.button("🔄 Refresh Page Now", type="primary", key="refresh_after_upload"):
+                                st.rerun()
                         
                     except Exception as e:
                         st.error(f"❌ Error processing upload: {str(e)}")
