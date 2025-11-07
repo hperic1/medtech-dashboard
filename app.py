@@ -249,7 +249,7 @@ def create_metric_card(label, value, color_scheme='ma'):
     </div>
     """
 
-def create_quarterly_chart(df, value_col, title, chart_type='ma'):
+def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
     """Create quarterly stacked bar chart with deal count overlay"""
     try:
         # Set colors based on chart type
@@ -339,7 +339,7 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma'):
                 xanchor="right",
                 x=1
             ),
-            height=500,
+            height=height,
             margin=dict(t=100, b=50, l=50, r=50),
             plot_bgcolor='white',
             paper_bgcolor='white'
@@ -439,6 +439,98 @@ def create_jp_morgan_chart_by_category(category, color):
         st.error(f"Error creating {category} chart: {str(e)}")
         return None
 
+def create_sunburst_chart(df, value_col, deal_type, sector_col='Sector'):
+    """Create sunburst chart showing deal values by sector"""
+    try:
+        # Filter out 'Undisclosed' sectors
+        df_filtered = df[df[sector_col] != 'Undisclosed'].copy()
+        
+        if len(df_filtered) == 0:
+            st.info(f"No sector data available for {deal_type}")
+            return None
+        
+        # Parse values to numeric
+        def parse_value(val):
+            if val == 'Undisclosed' or pd.isna(val):
+                return 0
+            val_str = str(val).replace('$', '').replace('B', '').replace('M', '').replace(',', '').strip()
+            try:
+                return float(val_str)
+            except:
+                return 0
+        
+        # Group by sector and sum values
+        sector_data = df_filtered.groupby(sector_col).agg({
+            value_col: lambda x: sum([parse_value(v) for v in x])
+        }).reset_index()
+        sector_data.columns = ['Sector', 'Total_Value']
+        
+        # Remove sectors with zero value
+        sector_data = sector_data[sector_data['Total_Value'] > 0]
+        
+        if len(sector_data) == 0:
+            st.info(f"No deal value data available for {deal_type} sectors")
+            return None
+        
+        # Sort by value descending
+        sector_data = sector_data.sort_values('Total_Value', ascending=False)
+        
+        # Create complementary muted color palette
+        if deal_type == 'M&A':
+            # Muted blues and related colors
+            color_palette = [
+                '#7FA8C9', '#A8C9D1', '#6B8BA3', '#94B4C9', '#5A7A94',
+                '#8AA9BE', '#B5D0DC', '#6F98B3', '#84A8BD', '#9BBDD1'
+            ]
+        else:  # Venture
+            # Muted oranges, tans, and warm colors
+            color_palette = [
+                '#C9A77F', '#D9C9A8', '#B89968', '#CCBB99', '#A88E6C',
+                '#D4BC94', '#E0D4BC', '#BEA77A', '#C8B490', '#D6C5A3'
+            ]
+        
+        # Assign colors (cycle if more sectors than colors)
+        colors = [color_palette[i % len(color_palette)] for i in range(len(sector_data))]
+        
+        # Format values for display
+        def format_value_display(val):
+            if val >= 1000000000:
+                return f"${val/1000000000:.2f}B"
+            elif val >= 1000000:
+                return f"${val/1000000:.1f}M"
+            else:
+                return f"${val:,.0f}"
+        
+        sector_data['Value_Display'] = sector_data['Total_Value'].apply(format_value_display)
+        
+        # Create sunburst chart
+        fig = go.Figure(go.Sunburst(
+            labels=sector_data['Sector'],
+            parents=[''] * len(sector_data),  # All sectors are at root level
+            values=sector_data['Total_Value'],
+            text=sector_data['Value_Display'],
+            textinfo='label+text',
+            marker=dict(colors=colors, line=dict(color='white', width=2)),
+            hovertemplate='<b>%{label}</b><br>Total Value: %{text}<br>Percentage: %{percentRoot:.1%}<extra></extra>',
+            branchvalues='total'
+        ))
+        
+        # Update layout
+        fig.update_layout(
+            height=400,
+            margin=dict(t=10, b=10, l=10, r=10),
+            paper_bgcolor='white',
+            showlegend=False  # Sunburst is self-labeled
+        )
+        
+        return fig
+        
+    except Exception as e:
+        st.error(f"Error creating sunburst chart: {str(e)}")
+        import traceback
+        st.error(f"Details: {traceback.format_exc()}")
+        return None
+
 # Main app
 def main():
     st.title("🥼 MedTech M&A & Venture Dashboard")
@@ -469,19 +561,92 @@ def show_deal_activity(ma_df, inv_df):
     """Display deal activity dashboard"""
     st.header("Deal Activity Dashboard")
     
-    # Overview Charts at the top
+    # Overview section with smaller charts and cards below
     st.markdown("### YTD Overview")
+    
+    # Two columns for overview
     col1, col2 = st.columns(2)
     
     with col1:
-        fig_ma_overview = create_quarterly_chart(ma_df, 'Deal Value', 'M&A Activity Overview', 'ma')
+        # M&A Overview Chart (smaller)
+        fig_ma_overview = create_quarterly_chart(ma_df, 'Deal Value', 'M&A Activity Overview', 'ma', height=350)
         if fig_ma_overview:
             st.plotly_chart(fig_ma_overview, use_container_width=True)
+        
+        # Calculate M&A metrics
+        def parse_to_numeric(val):
+            if val == 'Undisclosed' or pd.isna(val):
+                return 0
+            val_str = str(val).replace('$', '').replace(',', '').strip()
+            try:
+                return float(val_str)
+            except:
+                return 0
+        
+        total_ma_deals = len(ma_df)
+        total_ma_value = sum(ma_df['Deal Value'].apply(parse_to_numeric))
+        if total_ma_value >= 1000000000:
+            ma_value_display = f"${total_ma_value/1000000000:.2f}B"
+        elif total_ma_value >= 1000000:
+            ma_value_display = f"${total_ma_value/1000000:.0f}M"
+        else:
+            ma_value_display = f"${total_ma_value:,.0f}"
+        
+        # Display metric cards
+        st.markdown(create_metric_card("Total M&A Deal Value", ma_value_display, 'ma'), unsafe_allow_html=True)
+        st.markdown(create_metric_card("Total M&A Deal Count", total_ma_deals, 'ma'), unsafe_allow_html=True)
+        
+        # M&A Sunburst Chart
+        st.markdown("#### M&A Deals by Sector")
+        
+        # Independent quarter filter for M&A sunburst
+        quarters_ma_sun = ['All'] + sorted([q for q in ma_df['Quarter'].unique() if q != 'Undisclosed'])
+        selected_quarter_ma_sun = st.selectbox("Filter by Quarter", quarters_ma_sun, key='ma_sunburst_quarter')
+        
+        filtered_ma_sun = ma_df.copy()
+        if selected_quarter_ma_sun != 'All':
+            filtered_ma_sun = filtered_ma_sun[filtered_ma_sun['Quarter'] == selected_quarter_ma_sun]
+        
+        fig_ma_sunburst = create_sunburst_chart(filtered_ma_sun, 'Deal Value', 'M&A', 'Sector')
+        if fig_ma_sunburst:
+            st.plotly_chart(fig_ma_sunburst, use_container_width=True)
     
     with col2:
-        fig_inv_overview = create_quarterly_chart(inv_df, 'Amount Raised', 'Venture Investment Overview', 'venture')
+        # Venture Overview Chart (smaller)
+        fig_inv_overview = create_quarterly_chart(inv_df, 'Amount Raised', 'Venture Investment Overview', 'venture', height=350)
         if fig_inv_overview:
             st.plotly_chart(fig_inv_overview, use_container_width=True)
+        
+        # Calculate Venture metrics
+        total_inv_deals = len(inv_df)
+        total_inv_value = sum(inv_df['Amount Raised'].apply(
+            lambda x: float(x) if pd.notna(x) and x != 'Undisclosed' and str(x).replace('.','').replace('-','').isdigit() else 0
+        ))
+        if total_inv_value >= 1000000000:
+            inv_value_display = f"${total_inv_value/1000000000:.2f}B"
+        elif total_inv_value >= 1000000:
+            inv_value_display = f"${total_inv_value/1000000:.0f}M"
+        else:
+            inv_value_display = f"${total_inv_value:,.0f}"
+        
+        # Display metric cards
+        st.markdown(create_metric_card("Total Investment Value", inv_value_display, 'venture'), unsafe_allow_html=True)
+        st.markdown(create_metric_card("Total Investment Count", total_inv_deals, 'venture'), unsafe_allow_html=True)
+        
+        # Venture Sunburst Chart
+        st.markdown("#### Venture Deals by Sector")
+        
+        # Independent quarter filter for Venture sunburst
+        quarters_inv_sun = ['All'] + sorted([q for q in inv_df['Quarter'].unique() if q != 'Undisclosed'])
+        selected_quarter_inv_sun = st.selectbox("Filter by Quarter", quarters_inv_sun, key='inv_sunburst_quarter')
+        
+        filtered_inv_sun = inv_df.copy()
+        if selected_quarter_inv_sun != 'All':
+            filtered_inv_sun = filtered_inv_sun[filtered_inv_sun['Quarter'] == selected_quarter_inv_sun]
+        
+        fig_inv_sunburst = create_sunburst_chart(filtered_inv_sun, 'Amount Raised', 'Venture', 'Sector')
+        if fig_inv_sunburst:
+            st.plotly_chart(fig_inv_sunburst, use_container_width=True)
     
     st.markdown("---")
     
@@ -500,38 +665,22 @@ def show_deal_activity(ma_df, inv_df):
         mask = filtered_ma.apply(lambda row: row.astype(str).str.contains(search_ma, case=False).any(), axis=1)
         filtered_ma = filtered_ma[mask]
     
-    # Calculate metrics for cards
-    def parse_to_numeric(val):
-        if val == 'Undisclosed' or pd.isna(val):
-            return 0
-        val_str = str(val).replace('$', '').replace(',', '').strip()
-        try:
-            return float(val_str)
-        except:
-            return 0
-    
-    total_deals = len(filtered_ma)
-    total_value = sum(filtered_ma['Deal Value'].apply(parse_to_numeric))
-    if total_value >= 1000000000:
-        value_display = f"${total_value/1000000000:.2f}B"
-    elif total_value >= 1000000:
-        value_display = f"${total_value/1000000:.0f}M"
-    else:
-        value_display = f"${total_value:,.0f}"
-    
-    # Display metric cards
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown(create_metric_card("Total M&A Deals", total_deals, 'ma'), unsafe_allow_html=True)
-    with col2:
-        st.markdown(create_metric_card("Total Deal Value", value_display, 'ma'), unsafe_allow_html=True)
-    
     # Tabs for table, top deals, and charts
     tab1, tab2, tab3 = st.tabs(["📊 Table", "🏆 Top Deals", "📈 Charts"])
     
     with tab1:
         # Create display dataframe with sortable numeric values
         ma_display = filtered_ma.copy()
+        
+        def parse_to_numeric(val):
+            if val == 'Undisclosed' or pd.isna(val):
+                return -1
+            val_str = str(val).replace('$', '').replace(',', '').strip()
+            try:
+                return float(val_str)
+            except:
+                return -1
+        
         ma_display['_Deal_Value_Numeric'] = ma_display['Deal Value'].apply(parse_to_numeric)
         ma_display = ma_display.sort_values('_Deal_Value_Numeric', ascending=False)
         
@@ -553,13 +702,23 @@ def show_deal_activity(ma_df, inv_df):
         )
     
     with tab2:
-        # Top 3 deals
+        # Top 3 deals with formatted values
         top_deals = filtered_ma.copy()
         top_deals['Deal_Value_Numeric'] = top_deals['Deal Value'].apply(parse_to_numeric)
         top_deals = top_deals.nlargest(3, 'Deal_Value_Numeric')
         
         for idx, row in top_deals.iterrows():
-            formatted_value = str(row['Deal Value']) if row['Deal Value'] != 'Undisclosed' else 'Undisclosed'
+            # Format value with $ and commas
+            deal_value = row['Deal Value']
+            if deal_value != 'Undisclosed' and parse_to_numeric(deal_value) > 0:
+                try:
+                    numeric_val = parse_to_numeric(deal_value)
+                    formatted_value = f"${numeric_val:,.0f}"
+                except:
+                    formatted_value = str(deal_value)
+            else:
+                formatted_value = 'Undisclosed'
+            
             deal_type = row['Deal Type (Merger / Acquisition)']
             verb = "merged with" if deal_type == "Merger" else "acquired"
             
@@ -605,25 +764,6 @@ def show_deal_activity(ma_df, inv_df):
         mask = filtered_inv.apply(lambda row: row.astype(str).str.contains(search_inv, case=False).any(), axis=1)
         filtered_inv = filtered_inv[mask]
     
-    # Calculate metrics for cards
-    total_inv_deals = len(filtered_inv)
-    total_inv_value = sum(filtered_inv['Amount Raised'].apply(
-        lambda x: float(x) if pd.notna(x) and x != 'Undisclosed' and str(x).replace('.','').replace('-','').isdigit() else 0
-    ))
-    if total_inv_value >= 1000000000:
-        inv_value_display = f"${total_inv_value/1000000000:.2f}B"
-    elif total_inv_value >= 1000000:
-        inv_value_display = f"${total_inv_value/1000000:.0f}M"
-    else:
-        inv_value_display = f"${total_inv_value:,.0f}"
-    
-    # Display metric cards
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown(create_metric_card("Total Investment Deals", total_inv_deals, 'venture'), unsafe_allow_html=True)
-    with col2:
-        st.markdown(create_metric_card("Total Investment Value", inv_value_display, 'venture'), unsafe_allow_html=True)
-    
     # Tabs for table, top deals, and charts
     tab1, tab2, tab3 = st.tabs(["📊 Table", "🏆 Top Deals", "📈 Charts"])
     
@@ -658,7 +798,7 @@ def show_deal_activity(ma_df, inv_df):
         )
     
     with tab2:
-        # Top 3 deals
+        # Top 3 deals with formatted values
         top_deals = filtered_inv.copy()
         def parse_amount_value(val):
             if val == 'Undisclosed' or pd.isna(val):
@@ -673,6 +813,7 @@ def show_deal_activity(ma_df, inv_df):
         top_deals = top_deals.nlargest(3, 'Amount_Numeric')
         
         for idx, row in top_deals.iterrows():
+            # Format amount with $ and commas
             amount_val = row['Amount Raised']
             if pd.notna(amount_val) and amount_val != 'Undisclosed':
                 try:
