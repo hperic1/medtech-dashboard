@@ -452,12 +452,26 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
         }).reset_index()
         quarterly_data.columns = ['Quarter', 'Total_Value', 'Deal_Count']
         
-        # Sort quarters
-        quarter_order = ['Q1', 'Q2', 'Q3', 'Q4']
-        quarterly_data['Quarter'] = pd.Categorical(quarterly_data['Quarter'], categories=quarter_order, ordered=True)
-        quarterly_data = quarterly_data.sort_values('Quarter')
+        # Sort quarters properly with years (e.g., Q1 2024, Q2 2024, ..., Q1 2025, Q2 2025, etc.)
+        # Extract quarter and year for proper sorting
+        def sort_key(q):
+            """Create a sort key for quarters like 'Q1 2025' -> (2025, 1)"""
+            try:
+                parts = str(q).split()
+                if len(parts) == 2:
+                    quarter_num = int(parts[0].replace('Q', ''))
+                    year = int(parts[1])
+                    return (year, quarter_num)
+                else:
+                    return (9999, 99)  # Put malformed quarters at the end
+            except:
+                return (9999, 99)
         
-        # Remove any NaN quarters
+        quarterly_data['_sort_key'] = quarterly_data['Quarter'].apply(sort_key)
+        quarterly_data = quarterly_data.sort_values('_sort_key')
+        quarterly_data = quarterly_data.drop('_sort_key', axis=1)
+        
+        # Remove any invalid quarters
         quarterly_data = quarterly_data[quarterly_data['Quarter'].notna()]
         
         if len(quarterly_data) == 0:
@@ -546,7 +560,7 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
 def create_jp_morgan_chart_by_category(category, color):
     """Create JP Morgan chart for a specific category with deal count overlay"""
     try:
-        quarters = ['Q1', 'Q2', 'Q3']
+        quarters = ['Q1 2025', 'Q2 2025', 'Q3 2025']
         
         # Actual data from JP Morgan 2025 reports
         data_map = {
@@ -1573,10 +1587,23 @@ def create_ipo_chart(df):
         }).reset_index()
         quarterly_data.columns = ['Quarter', 'Total_Amount', 'IPO_Count']
         
-        # Sort quarters
-        quarter_order = ['Q1', 'Q2', 'Q3', 'Q4']
-        quarterly_data['Quarter'] = pd.Categorical(quarterly_data['Quarter'], categories=quarter_order, ordered=True)
-        quarterly_data = quarterly_data.sort_values('Quarter')
+        # Sort quarters properly with years (e.g., Q1 2024, Q2 2024, ..., Q1 2025, Q2 2025, etc.)
+        def sort_key(q):
+            """Create a sort key for quarters like 'Q1 2025' -> (2025, 1)"""
+            try:
+                parts = str(q).split()
+                if len(parts) == 2:
+                    quarter_num = int(parts[0].replace('Q', ''))
+                    year = int(parts[1])
+                    return (year, quarter_num)
+                else:
+                    return (9999, 99)  # Put malformed quarters at the end
+            except:
+                return (9999, 99)
+        
+        quarterly_data['_sort_key'] = quarterly_data['Quarter'].apply(sort_key)
+        quarterly_data = quarterly_data.sort_values('_sort_key')
+        quarterly_data = quarterly_data.drop('_sort_key', axis=1)
         quarterly_data = quarterly_data[quarterly_data['Quarter'].notna()]
         
         if len(quarterly_data) == 0:
