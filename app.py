@@ -280,7 +280,7 @@ def create_comparison_mini_chart(metric_name, jp_value, beacon_value, bar_color,
         # Create figure
         fig = go.Figure()
         
-        # Add bars with proper color format - narrower bars
+        # Add bars with proper color format - THINNER bars
         fig.add_trace(go.Bar(
             x=['JPMorgan', 'BeaconOne'],
             y=[jp_numeric, beacon_numeric],
@@ -288,7 +288,7 @@ def create_comparison_mini_chart(metric_name, jp_value, beacon_value, bar_color,
                 color=[bar_color, hex_to_rgba(bar_color, 0.7)],  # Colored bars
                 line=dict(color='white', width=2)  # White outline on bars
             ),
-            width=0.5,  # Make bars narrower (default is 0.8)
+            width=0.25,  # Make bars much thinner (was 0.5, now about half size)
             text=[str(jp_value), str(beacon_value)],
             textposition='outside',
             textfont=dict(size=12, color='#333', family='Arial, sans-serif', weight='bold'),
@@ -1105,12 +1105,16 @@ def show_jp_morgan_summary(ma_df, inv_df):
         'Q3': '#9B8BA8'    # Muted purple
     }
     
-    # Create three columns for Q1, Q2, Q3
-    q1_col, q2_col, q3_col = st.columns(3)
+    # Create columns with separators: Q1 | separator | Q2 | separator | Q3
+    q1_col, sep1, q2_col, sep2, q3_col = st.columns([10, 0.5, 10, 0.5, 10])
     
-    for col, quarter, border_color in [(q1_col, 'Q1', QUARTER_COLORS['Q1']), 
-                                        (q2_col, 'Q2', QUARTER_COLORS['Q2']), 
-                                        (q3_col, 'Q3', QUARTER_COLORS['Q3'])]:
+    quarters_data = [
+        (q1_col, 'Q1', QUARTER_COLORS['Q1']),
+        (q2_col, 'Q2', QUARTER_COLORS['Q2']),
+        (q3_col, 'Q3', QUARTER_COLORS['Q3'])
+    ]
+    
+    for col, quarter, border_color in quarters_data:
         with col:
             # Use a container to group all elements
             with st.container():
@@ -1172,6 +1176,17 @@ def show_jp_morgan_summary(ma_df, inv_df):
                 
                 # Closing border div
                 st.markdown("</div>", unsafe_allow_html=True)
+    
+    # Add vertical divider lines in the separator columns
+    with sep1:
+        st.markdown("""
+        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 600px; margin: 0 auto;"></div>
+        """, unsafe_allow_html=True)
+    
+    with sep2:
+        st.markdown("""
+        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 600px; margin: 0 auto;"></div>
+        """, unsafe_allow_html=True)
 
 
 def show_ipo_activity(ipo_df):
