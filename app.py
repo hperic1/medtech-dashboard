@@ -1016,28 +1016,47 @@ def show_jp_morgan_summary(ma_df, inv_df):
     
     # Calculate BeaconOne quarterly stats
     def calc_quarterly_stats(df, quarter, value_col):
-        q_data = df[df['Quarter'] == quarter]
-        
-        def parse_value(val):
-            if val == 'Undisclosed' or pd.isna(val):
-                return 0
-            val_str = str(val).replace('$', '').replace(',', '').strip()
-            try:
-                return float(val_str)
-            except:
-                return 0
-        
-        total_value = sum(q_data[value_col].apply(parse_value))
-        count = len(q_data)
-        
-        if total_value >= 1000000000:
-            formatted_value = f"${total_value/1000000000:.1f}B"
-        elif total_value >= 1000000:
-            formatted_value = f"${total_value/1000000:.0f}M"
-        else:
-            formatted_value = "$0"
+        try:
+            # Check if dataframe is empty or column doesn't exist
+            if df.empty or value_col not in df.columns:
+                return 0, "$0"
+                
+            q_data = df[df['Quarter'] == quarter]
             
-        return count, formatted_value
+            # Check if quarter data is empty
+            if q_data.empty:
+                return 0, "$0"
+            
+            def parse_value(val):
+                if pd.isna(val) or val == 'Undisclosed' or val == '' or val is None:
+                    return 0
+                val_str = str(val).replace('$', '').replace(',', '').strip()
+                try:
+                    return float(val_str)
+                except (ValueError, TypeError, AttributeError):
+                    return 0
+            
+            # Safely calculate total value
+            try:
+                total_value = sum(q_data[value_col].apply(parse_value))
+            except Exception:
+                total_value = 0
+                
+            count = len(q_data)
+            
+            if total_value >= 1000000000:
+                formatted_value = f"${total_value/1000000000:.1f}B"
+            elif total_value >= 1000000:
+                formatted_value = f"${total_value/1000000:.0f}M"
+            else:
+                formatted_value = "$0"
+                
+            return count, formatted_value
+            
+        except Exception as e:
+            # If anything fails, return safe defaults
+            print(f"Error in calc_quarterly_stats: {e}")
+            return 0, "$0"
     
     # Calculate stats for each quarter
     beacon_stats = {}
