@@ -280,7 +280,7 @@ def create_comparison_mini_chart(metric_name, jp_value, beacon_value, bar_color,
         # Create figure
         fig = go.Figure()
         
-        # Add bars with proper color format - bars are colored, background is light
+        # Add bars with proper color format - narrower bars
         fig.add_trace(go.Bar(
             x=['JPMorgan', 'BeaconOne'],
             y=[jp_numeric, beacon_numeric],
@@ -288,14 +288,15 @@ def create_comparison_mini_chart(metric_name, jp_value, beacon_value, bar_color,
                 color=[bar_color, hex_to_rgba(bar_color, 0.7)],  # Colored bars
                 line=dict(color='white', width=2)  # White outline on bars
             ),
+            width=0.5,  # Make bars narrower (default is 0.8)
             text=[str(jp_value), str(beacon_value)],
             textposition='outside',
-            textfont=dict(size=13, color='#333', family='Arial, sans-serif', weight='bold'),
+            textfont=dict(size=12, color='#333', family='Arial, sans-serif', weight='bold'),
             hovertemplate='<b>%{x}</b><br>%{text}<br><extra></extra>',
             showlegend=False
         ))
         
-        # Update layout - light background, dark text
+        # Update layout - light background, dark text, NO GRIDLINES
         fig.update_layout(
             title=dict(
                 text=metric_name,
@@ -305,27 +306,28 @@ def create_comparison_mini_chart(metric_name, jp_value, beacon_value, bar_color,
                 y=0.95,
                 yanchor='top'
             ),
-            plot_bgcolor='#f8f9fa',  # Light gray background
+            plot_bgcolor='white',  # Clean white background
             paper_bgcolor='white',
             xaxis=dict(
-                showgrid=False,
+                showgrid=False,  # No gridlines
                 showticklabels=True,
-                tickfont=dict(size=11, color='#666'),
+                tickfont=dict(size=10, color='#666'),
                 title=None,
-                showline=True,
-                linecolor='#ddd',
-                linewidth=1
+                showline=False,  # No axis line
+                zeroline=False
             ),
             yaxis=dict(
-                showgrid=True,
+                showgrid=False,  # No gridlines
                 gridcolor='#e0e0e0',
                 gridwidth=1,
                 showticklabels=False,
                 title=None,
-                range=[0, max(jp_numeric, beacon_numeric) * 1.3] if max(jp_numeric, beacon_numeric) > 0 else [0, 100]
+                range=[0, max(jp_numeric, beacon_numeric) * 1.35] if max(jp_numeric, beacon_numeric) > 0 else [0, 100],
+                showline=False,  # No axis line
+                zeroline=False
             ),
             height=height,
-            margin=dict(t=50, b=40, l=15, r=15),
+            margin=dict(t=50, b=30, l=20, r=20),
             hovermode='x'
         )
         
@@ -1104,11 +1106,10 @@ def show_jp_morgan_summary(ma_df, inv_df):
     
     for col, quarter in [(q1_col, 'Q1'), (q2_col, 'Q2'), (q3_col, 'Q3')]:
         with col:
-            # Quarter header with border container
+            # Open single border container that wraps EVERYTHING (header + all charts)
             st.markdown(f"""
-            <div style='border: 3px solid {QUARTER_BORDER_COLOR}; border-radius: 12px; padding: 15px; background-color: #fafbfc; margin-bottom: 20px;'>
-                <h4 style='text-align: center; color: #333; margin: 0 0 15px 0; font-family: Arial, sans-serif;'>{quarter} 2025</h4>
-            </div>
+            <div style='border: 3px solid {QUARTER_BORDER_COLOR}; border-radius: 12px; padding: 20px 12px; background-color: #fafbfc; margin-bottom: 20px;'>
+                <h4 style='text-align: center; color: #333; margin: 0 0 20px 0; padding-bottom: 15px; border-bottom: 2px solid {QUARTER_BORDER_COLOR}; font-family: Arial, sans-serif;'>{quarter} 2025</h4>
             """, unsafe_allow_html=True)
             
             # JP Morgan data
@@ -1123,7 +1124,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
                 jp_ma_count,
                 beacon_stats[quarter]['ma_count'],
                 METRIC_COLORS['ma_count'],
-                height=140
+                height=130
             )
             if fig_ma_count:
                 st.plotly_chart(fig_ma_count, use_container_width=True, key=f'{quarter}_ma_count')
@@ -1134,7 +1135,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
                 jp_ma_value,
                 beacon_stats[quarter]['ma_value'],
                 METRIC_COLORS['ma_value'],
-                height=140
+                height=130
             )
             if fig_ma_value:
                 st.plotly_chart(fig_ma_value, use_container_width=True, key=f'{quarter}_ma_value')
@@ -1145,7 +1146,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
                 jp_inv_count,
                 beacon_stats[quarter]['inv_count'],
                 METRIC_COLORS['inv_count'],
-                height=140
+                height=130
             )
             if fig_inv_count:
                 st.plotly_chart(fig_inv_count, use_container_width=True, key=f'{quarter}_inv_count')
@@ -1156,10 +1157,13 @@ def show_jp_morgan_summary(ma_df, inv_df):
                 jp_inv_value,
                 beacon_stats[quarter]['inv_value'],
                 METRIC_COLORS['inv_value'],
-                height=140
+                height=130
             )
             if fig_inv_value:
                 st.plotly_chart(fig_inv_value, use_container_width=True, key=f'{quarter}_inv_value')
+            
+            # Close the border container
+            st.markdown("</div>", unsafe_allow_html=True)
 
 
 def show_ipo_activity(ipo_df):
