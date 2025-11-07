@@ -8,22 +8,12 @@ import os
 # Page configuration
 st.set_page_config(
     page_title="MedTech M&A & Venture Dashboard",
-    page_icon="🤝",
+    page_icon="ðŸ¥¼",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Define color palette
-COLORS = {
-    'ma_primary': '#7FA8C9',      # Muted blue for M&A
-    'ma_secondary': '#A8C9D1',    # Lighter muted blue
-    'venture_primary': '#C9A77F',  # Muted orange/tan for Venture
-    'venture_secondary': '#D9C9A8', # Lighter muted tan
-    'count_line': '#90A9B0',       # Muted teal for count lines
-    'accent': '#B8A690'            # Neutral accent
-}
-
-# Custom CSS for full-width tables and card styling
+# Custom CSS for full-width tables
 st.markdown("""
 <style>
     .dataframe {
@@ -39,40 +29,6 @@ st.markdown("""
     .element-container {
         width: 100%;
     }
-    
-    /* Metric card styling */
-    .metric-card {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        padding: 20px;
-        border-radius: 10px;
-        border-left: 4px solid #7FA8C9;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        margin: 10px 0;
-    }
-    
-    .metric-card-venture {
-        background: linear-gradient(135deg, #fdfbf7 0%, #ebdec2 100%);
-        border-left: 4px solid #C9A77F;
-    }
-    
-    /* Filter container styling */
-    .filter-container {
-        background-color: #f8f9fa;
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 15px;
-        border: 1px solid #e0e0e0;
-    }
-    
-    /* Ensure all text in markdown sections is black */
-    .stMarkdown p, .stMarkdown li, .stMarkdown span {
-        color: #000000 !important;
-    }
-    
-    /* Ensure consistent font family */
-    .stMarkdown * {
-        font-family: "Source Sans Pro", sans-serif !important;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -81,80 +37,14 @@ st.markdown("""
 def load_data():
     """Load data from Excel file"""
     try:
-        # Try multiple possible file paths
+        # Try multiple possible file paths - INCLUDING data folder
         possible_paths = [
-            'data/MedTech_YTD_Standardized.xlsx',
-            './data/MedTech_YTD_Standardized.xlsx',
-            'MedTech_YTD_Standardized.xlsx',
-            'MedTech_Deals.xlsx',
-            './MedTech_Deals.xlsx',
-            'data/MedTech_Deals.xlsx',
-            '/mnt/project/MedTech_YTD_Standardized.xlsx',
-            os.path.join(os.path.dirname(__file__), 'data', 'MedTech_YTD_Standardized.xlsx'),
-            os.path.join(os.path.dirname(__file__), 'MedTech_YTD_Standardized.xlsx'),
-            os.path.join(os.path.dirname(__file__), 'MedTech_Deals.xlsx')
-        ]
-        
-        excel_path = None
-        for path in possible_paths:
-            if os.path.exists(path):
-                excel_path = path
-                break
-        
-        if excel_path is None:
-            st.error("❌ Cannot find MedTech data file. Please ensure the file is in the correct directory")
-            st.info("🔍 Looking in these locations:\n" + "\n".join(f"- {p}" for p in possible_paths))
-            return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
-        
-        # Load M&A data
-        ma_df = pd.read_excel(excel_path, sheet_name='YTD M&A Activity')
-        
-        # Load Investment data
-        inv_df = pd.read_excel(excel_path, sheet_name='YTD Investment Activity')
-        
-        # Load IPO data
-        try:
-            ipo_df = pd.read_excel(excel_path, sheet_name='YTD IPO')
-        except:
-            ipo_df = pd.DataFrame()
-        
-        # Clean and standardize data
-        ma_df = ma_df.fillna('Undisclosed')
-        inv_df = inv_df.fillna('Undisclosed')
-        
-        # Remove unnamed columns
-        ma_df = ma_df.loc[:, ~ma_df.columns.str.contains('^Unnamed')]
-        inv_df = inv_df.loc[:, ~inv_df.columns.str.contains('^Unnamed')]
-        if not ipo_df.empty:
-            ipo_df = ipo_df.loc[:, ~ipo_df.columns.str.contains('^Unnamed')]
-        
-        # Strip year from Quarter column (e.g., "Q1 2025" -> "Q1")
-        if 'Quarter' in ma_df.columns:
-            ma_df['Quarter'] = ma_df['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
-            ma_df['Quarter'] = ma_df['Quarter'].fillna('Undisclosed')
-        
-        if 'Quarter' in inv_df.columns:
-            inv_df['Quarter'] = inv_df['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
-            inv_df['Quarter'] = inv_df['Quarter'].fillna('Undisclosed')
-        
-        if not ipo_df.empty and 'Quarter' in ipo_df.columns:
-            ipo_df['Quarter'] = ipo_df['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
-            ipo_df['Quarter'] = ipo_df['Quarter'].fillna('Undisclosed')
-        
-        return ma_df, inv_df, ipo_df
-    except Exception as e:
-        st.error(f"Error loading data: {str(e)}")
-        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
-
-def save_data(ma_df, inv_df, ipo_df=None):
-    """Save data back to Excel file with backup for undo"""
-    try:
-        possible_paths = [
-            'data/MedTech_YTD_Standardized.xlsx',
-            './data/MedTech_YTD_Standardized.xlsx',
-            'MedTech_YTD_Standardized.xlsx',
-            'MedTech_Deals.xlsx',
-            './MedTech_Deals.xlsx',
+            'data/MedTech_YTD_Standardized.xlsx',  # In data folder
+            './data/MedTech_YTD_Standardized.xlsx',  # In data folder (explicit)
+            'MedTech_YTD_Standardized.xlsx',  # Same directory as app.py
+            'MedTech_MA_Masterlist.xlsx',  # Old filename
+            './MedTech_MA_Masterlist.xlsx',
+            '/mnt/project/MedTech_MA_Masterlist.xlsx',
             os.path.join(os.path.dirname(__file__), 'data', 'MedTech_YTD_Standardized.xlsx'),
             os.path.join(os.path.dirname(__file__), 'MedTech_YTD_Standardized.xlsx')
         ]
@@ -166,72 +56,111 @@ def save_data(ma_df, inv_df, ipo_df=None):
                 break
         
         if excel_path is None:
+            st.error("âŒ Cannot find MedTech_YTD_Standardized.xlsx. Please ensure the file is in the 'data' folder or same directory as app.py")
+            st.info("ðŸ“ Looking in these locations:\n" + "\n".join(f"- {p}" for p in possible_paths))
+            return pd.DataFrame(), pd.DataFrame()
+        
+        # Load M&A data - NOTE: Sheet name has SPACES not underscores
+        ma_df = pd.read_excel(excel_path, sheet_name='YTD M&A Activity')
+        
+        # Load Investment data - NOTE: Sheet name has SPACES not underscores
+        inv_df = pd.read_excel(excel_path, sheet_name='YTD Investment Activity')
+        
+        # Clean and standardize data
+        ma_df = ma_df.fillna('Undisclosed')
+        inv_df = inv_df.fillna('Undisclosed')
+        
+        return ma_df, inv_df
+    except Exception as e:
+        st.error(f"Error loading data: {str(e)}")
+        st.info("ðŸ’¡ Make sure your Excel file has sheets named 'YTD M&A Activity' and 'YTD Investment Activity' (with spaces)")
+        return pd.DataFrame(), pd.DataFrame()
+
+def save_data(ma_df, inv_df):
+    """Save data back to Excel file with backup for undo"""
+    try:
+        # Try multiple possible file paths - INCLUDING data folder
+        possible_paths = [
+            'data/MedTech_YTD_Standardized.xlsx',
+            './data/MedTech_YTD_Standardized.xlsx',
+            'MedTech_YTD_Standardized.xlsx',
+            'MedTech_MA_Masterlist.xlsx',
+            './MedTech_MA_Masterlist.xlsx',
+            '/mnt/project/MedTech_MA_Masterlist.xlsx',
+            os.path.join(os.path.dirname(__file__), 'data', 'MedTech_YTD_Standardized.xlsx'),
+            os.path.join(os.path.dirname(__file__), 'MedTech_YTD_Standardized.xlsx')
+        ]
+        
+        excel_path = None
+        for path in possible_paths:
+            if os.path.exists(path):
+                excel_path = path
+                break
+        
+        if excel_path is None:
+            # If file doesn't exist, create it in the data folder
             os.makedirs('data', exist_ok=True)
             excel_path = 'data/MedTech_YTD_Standardized.xlsx'
         
-        # Create backup before saving
+        # Create backup before saving (for undo functionality)
         backup_path = excel_path.replace('.xlsx', '_backup.xlsx')
         if os.path.exists(excel_path):
             import shutil
             shutil.copy2(excel_path, backup_path)
             st.session_state.last_backup_time = pd.Timestamp.now()
         
-        # Save with correct sheet names
+        # Save with correct sheet names (with spaces)
         with pd.ExcelWriter(excel_path, engine='openpyxl', mode='w') as writer:
             ma_df.to_excel(writer, sheet_name='YTD M&A Activity', index=False)
             inv_df.to_excel(writer, sheet_name='YTD Investment Activity', index=False)
-            if ipo_df is not None and not ipo_df.empty:
-                ipo_df.to_excel(writer, sheet_name='YTD IPO', index=False)
         
         st.session_state.changes_made = True
         return True
     except Exception as e:
         st.error(f"Error saving data: {str(e)}")
-        st.warning("⚠️ Note: Streamlit Cloud has a read-only file system. Changes won't persist after app restarts.")
+        st.warning("âš ï¸ Note: Streamlit Cloud has a read-only file system. Changes won't persist after app restarts.")
         return False
 
-def create_filter_section(df, section_key, show_conference=True):
-    """Create a unified filter section that returns filtered dataframe"""
-    with st.container():
-        st.markdown('<div class="filter-container">', unsafe_allow_html=True)
+def undo_last_action():
+    """Restore data from backup file"""
+    try:
+        possible_paths = [
+            'data/MedTech_YTD_Standardized.xlsx',
+            './data/MedTech_YTD_Standardized.xlsx',
+            'MedTech_YTD_Standardized.xlsx',
+        ]
         
-        # Create columns for filters
-        if show_conference:
-            col1, col2, col3, col4 = st.columns(4)
-        else:
-            col1, col2, col3 = st.columns(3)
+        excel_path = None
+        for path in possible_paths:
+            if os.path.exists(path):
+                excel_path = path
+                break
         
-        with col1:
-            quarters = ['All'] + sorted([q for q in df['Quarter'].unique() if q != 'Undisclosed'])
-            selected_quarter = st.selectbox("Quarter", quarters, key=f'quarter_{section_key}')
+        if excel_path is None:
+            return False, "No data file found"
         
-        with col2:
-            months = ['All'] + sorted([m for m in df['Month'].unique() if m != 'Undisclosed'])
-            selected_month = st.selectbox("Month", months, key=f'month_{section_key}')
+        backup_path = excel_path.replace('.xlsx', '_backup.xlsx')
         
-        with col3:
-            sectors = ['All'] + sorted([s for s in df['Sector'].unique() if s != 'Undisclosed'])
-            selected_sector = st.selectbox("Sector", sectors, key=f'sector_{section_key}')
+        if not os.path.exists(backup_path):
+            return False, "No backup available to restore"
         
-        if show_conference:
-            with col4:
-                conferences = ['All'] + sorted([c for c in df['Conference'].unique() if c != 'Undisclosed'])
-                selected_conference = st.selectbox("Conference", conferences, key=f'conference_{section_key}')
+        # Restore from backup
+        import shutil
+        shutil.copy2(backup_path, excel_path)
         
-        st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Apply filters
-    filtered_df = df.copy()
-    if selected_quarter != 'All':
-        filtered_df = filtered_df[filtered_df['Quarter'] == selected_quarter]
-    if selected_month != 'All':
-        filtered_df = filtered_df[filtered_df['Month'] == selected_month]
-    if selected_sector != 'All':
-        filtered_df = filtered_df[filtered_df['Sector'] == selected_sector]
-    if show_conference and selected_conference != 'All':
-        filtered_df = filtered_df[filtered_df['Conference'] == selected_conference]
-    
-    return filtered_df
+        # Clear flags
+        if 'changes_made' in st.session_state:
+            del st.session_state.changes_made
+        if 'last_backup_time' in st.session_state:
+            del st.session_state.last_backup_time
+        
+        # Clear cache to reload data
+        st.cache_data.clear()
+        
+        return True, "Successfully restored previous version"
+        
+    except Exception as e:
+        return False, f"Error restoring backup: {str(e)}"
 
 def format_currency(value):
     """Format currency values"""
@@ -248,120 +177,12 @@ def format_currency(value):
     except:
         return str(value)
 
-def create_metric_card(label, value, color_scheme='ma'):
-    """Create a styled metric card"""
-    card_class = 'metric-card' if color_scheme == 'ma' else 'metric-card metric-card-venture'
-    
-    return f"""
-    <div class="{card_class}">
-        <p style='margin: 0; font-size: 14px; color: #666; font-weight: 500;'>{label}</p>
-        <p style='margin: 5px 0 0 0; font-size: 32px; font-weight: bold; color: #333;'>{value}</p>
-    </div>
-    """
 
-def create_comparison_mini_chart(metric_name, jp_value, beacon_value, bar_color, height=150):
-    """Create mini bar chart comparing JPMorgan vs BeaconOne data"""
-    try:
-        # Convert hex to rgba with opacity for second bar
-        def hex_to_rgba(hex_color, opacity=0.8):
-            """Convert hex color to rgba with specified opacity"""
-            hex_color = hex_color.lstrip('#')
-            if len(hex_color) == 6:
-                r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
-                return f'rgba({r},{g},{b},{opacity})'
-            return hex_color
-        
-        # Convert string values to numeric for comparison
-        def parse_value(val):
-            if isinstance(val, str):
-                val = val.replace('$', '').replace('B', '').replace('M', '').replace(',', '').strip()
-                try:
-                    # Handle billions
-                    if 'B' in str(val) or float(val) > 1000:
-                        return float(val) if 'B' not in str(val) else float(val.replace('B', '')) * 1000
-                    return float(val)
-                except:
-                    return 0
-            return float(val) if val else 0
-        
-        jp_numeric = parse_value(jp_value)
-        beacon_numeric = parse_value(beacon_value)
-        
-        # Create figure
-        fig = go.Figure()
-        
-        # Add bars with proper color format - THINNER bars, READABLE data labels
-        fig.add_trace(go.Bar(
-            x=['JPMorgan', 'BeaconOne'],
-            y=[jp_numeric, beacon_numeric],
-            marker=dict(
-                color=[bar_color, hex_to_rgba(bar_color, 0.7)],  # Colored bars
-                line=dict(color='white', width=2)  # White outline on bars
-            ),
-            width=0.25,  # Make bars much thinner (was 0.5, now about half size)
-            text=[str(jp_value), str(beacon_value)],
-            textposition='outside',
-            textfont=dict(size=18, color='#333', family='Arial, sans-serif', weight='bold'),  # Readable size (18px) and bold
-            hovertemplate='<b>%{x}</b><br>%{text}<br><extra></extra>',
-            showlegend=False
-        ))
-        
-        # Update layout - light background, dark text, NO GRIDLINES, COMPACT
-        fig.update_layout(
-            title=dict(
-                text=metric_name,
-                font=dict(size=15, color='#333', family='Arial, sans-serif', weight='bold'),  # Title size
-                x=0.5,
-                xanchor='center',
-                y=0.95,
-                yanchor='top'
-            ),
-            plot_bgcolor='white',  # Clean white background
-            paper_bgcolor='white',
-            xaxis=dict(
-                showgrid=False,  # No gridlines
-                showticklabels=True,
-                tickfont=dict(size=12, color='#666'),  # Axis labels
-                title=None,
-                showline=False,  # No axis line
-                zeroline=False
-            ),
-            yaxis=dict(
-                showgrid=False,  # No gridlines
-                gridcolor='#e0e0e0',
-                gridwidth=1,
-                showticklabels=False,
-                title=None,
-                range=[0, max(jp_numeric, beacon_numeric) * 1.45] if max(jp_numeric, beacon_numeric) > 0 else [0, 100],  # Zoomed out more for better label visibility
-                showline=False,  # No axis line
-                zeroline=False
-            ),
-            height=height,
-            margin=dict(t=50, b=32, l=18, r=18),  # Compact margins
-            hovermode='x'
-        )
-        
-        return fig
-    except Exception as e:
-        st.error(f"Error creating comparison chart: {str(e)}")
-        return None
-
-def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
+def create_quarterly_chart(df, value_col, title):
     """Create quarterly stacked bar chart with deal count overlay"""
     try:
-        # Set colors based on chart type
-        bar_color = COLORS['ma_primary'] if chart_type == 'ma' else COLORS['venture_primary']
-        line_color = COLORS['count_line']
-        
-        # Filter out 'Undisclosed' quarters for cleaner data
-        df_filtered = df[df['Quarter'] != 'Undisclosed'].copy()
-        
-        if len(df_filtered) == 0:
-            st.warning(f"No data available for {title}")
-            return None
-        
         # Prepare data
-        quarterly_data = df_filtered.groupby('Quarter').agg({
+        quarterly_data = df.groupby('Quarter').agg({
             value_col: lambda x: sum([float(str(v).replace('$', '').replace('B', '').replace('M', '').replace(',', '')) 
                                      if v != 'Undisclosed' else 0 for v in x]),
             'Company': 'count'
@@ -373,67 +194,51 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
         quarterly_data['Quarter'] = pd.Categorical(quarterly_data['Quarter'], categories=quarter_order, ordered=True)
         quarterly_data = quarterly_data.sort_values('Quarter')
         
-        # Remove any NaN quarters
-        quarterly_data = quarterly_data[quarterly_data['Quarter'].notna()]
-        
-        if len(quarterly_data) == 0:
-            st.warning(f"No valid quarterly data for {title}")
-            return None
-        
         # Create figure
         fig = go.Figure()
         
         # Add bar chart for deal values
         fig.add_trace(go.Bar(
-            x=quarterly_data['Quarter'].astype(str),
+            x=quarterly_data['Quarter'],
             y=quarterly_data['Total_Value'],
             name='Deal Value',
-            marker_color=bar_color,
-            text=[f"<b>${v:,.0f}</b>" for v in quarterly_data['Total_Value']],  # Bold numbers
+            marker_color='#1f77b4',
+            text=[f"${v:,.0f}" for v in quarterly_data['Total_Value']],  # Full amount with commas
             textposition='outside',
-            textfont=dict(size=14),  # Larger text
             yaxis='y',
             hovertemplate='<b>%{x}</b><br>Deal Value: $%{y:,.0f}<br><extra></extra>'
         ))
         
         # Add line chart for deal count
         fig.add_trace(go.Scatter(
-            x=quarterly_data['Quarter'].astype(str),
+            x=quarterly_data['Quarter'],
             y=quarterly_data['Deal_Count'],
             name='Deal Count',
             mode='lines+markers+text',
-            line=dict(color=line_color, width=3),
-            marker=dict(size=10, color=line_color),
-            text=[f"<b>{c}</b>" for c in quarterly_data['Deal_Count']],  # Bold numbers
+            line=dict(color='#ff7f0e', width=3),
+            marker=dict(size=10),
+            text=quarterly_data['Deal_Count'],
             textposition='top center',
-            textfont=dict(size=14),  # Larger text
             yaxis='y2',
-            hovertemplate='<b>%{x}</b><br>Deal Count: %{y}<br><extra></extra>',
-            connectgaps=True
+            hovertemplate='<b>%{x}</b><br>Deal Count: %{y}<br><extra></extra>'
         ))
         
         # Update layout
         fig.update_layout(
-            title=dict(text=title, font=dict(size=20, color='#333', family='Arial, sans-serif')),  # Larger title
-            xaxis=dict(
-                title=dict(text='Quarter', font=dict(size=16)),  # Modern syntax
-                showgrid=False,
-                tickfont=dict(size=14)  # Larger tick labels
-            ),
+            title=title,
+            xaxis=dict(title='Quarter'),
             yaxis=dict(
-                title=dict(text='Total Deal Value (USD)', font=dict(size=16)),  # Modern syntax
+                title='Total Deal Value (USD)',
                 side='left',
-                showgrid=False,
-                range=[0, max(quarterly_data['Total_Value']) * 1.35] if len(quarterly_data) > 0 else [0, 1000],  # Increased from 1.2 to 1.35 for label space
-                tickfont=dict(size=13)  # Larger tick labels
+                showgrid=True,
+                range=[0, max(quarterly_data['Total_Value']) * 1.2]  # Extend y-axis by 20% for data labels
             ),
             yaxis2=dict(
-                title=dict(text='Number of Deals', font=dict(size=16)),  # Modern syntax
+                title='Number of Deals',
                 overlaying='y',
                 side='right',
                 showgrid=False,
-                range=[0, max(quarterly_data['Deal_Count']) * 1.5] if len(quarterly_data) > 0 else [0, 10],  # Increased from 1.3 to 1.5 for label space
-                tickfont=dict(size=13)  # Larger tick labels
+                range=[0, max(quarterly_data['Deal_Count']) * 1.3]  # Extend y2-axis by 30% for data labels
             ),
             hovermode='x unified',
             showlegend=True,
@@ -442,37 +247,31 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
                 yanchor="bottom",
                 y=1.02,
                 xanchor="right",
-                x=1,
-                font=dict(size=13)  # Larger legend text
+                x=1
             ),
-            height=height,
-            margin=dict(t=100, b=50, l=50, r=50),
-            plot_bgcolor='white',
-            paper_bgcolor='white',
-            font=dict(size=13, family='Arial, sans-serif')  # Base font larger
+            height=500,
+            margin=dict(t=100, b=50, l=50, r=50)
         )
         
         return fig
     except Exception as e:
         st.error(f"Error creating chart: {str(e)}")
-        import traceback
-        st.error(f"Details: {traceback.format_exc()}")
         return None
 
 def create_jp_morgan_chart_by_category(category, color):
     """Create JP Morgan chart for a specific category with deal count overlay"""
     try:
-        quarters = ['Q1', 'Q2', 'Q3']
+        quarters = ['Q1', 'Q2', 'Q3']  # Only Q1-Q3, Q4 not available yet
         
         # Actual data from JP Morgan 2025 reports
         data_map = {
             'M&A': {
-                'values': [9200, 2100, 21700],
+                'values': [9200, 2100, 21700],  # Q1: $9.2B (57 deals), Q2: $2.1B (43 deals), Q3: $21.7B (65 deals)
                 'counts': [57, 43, 65]
             },
             'Venture': {
-                'values': [3700, 2600, 2900],
-                'counts': [117, 90, 67]
+                'values': [3700, 2600, 2900],  # Q1: $3.7B (117 rounds), Q2: $2.6B (90 rounds), Q3: $2.9B (67 rounds)
+                'counts': [117, 90, 67]  # Q2: 90 venture rounds totaling $2.6 billion
             }
         }
         
@@ -488,9 +287,8 @@ def create_jp_morgan_chart_by_category(category, color):
             y=values,
             name='Deal Value ($M)',
             marker_color=color,
-            text=[f"<b>{format_currency(v)}</b>" for v in values],  # Bold numbers
+            text=[format_currency(v) for v in values],
             textposition='outside',
-            textfont=dict(size=14),  # Larger text
             yaxis='y',
             hovertemplate='<b>%{x}</b><br>Deal Value: %{text}<br><extra></extra>'
         ))
@@ -501,38 +299,30 @@ def create_jp_morgan_chart_by_category(category, color):
             y=counts,
             name='Deal Count',
             mode='lines+markers+text',
-            line=dict(color=COLORS['count_line'], width=3),
-            marker=dict(size=10, color=COLORS['count_line']),
-            text=[f"<b>{str(c)}</b>" if c > 0 else '' for c in counts],  # Bold numbers
+            line=dict(color='#90EE90', width=3),  # Light green for better visibility against blue and orange
+            marker=dict(size=10, color='#90EE90'),
+            text=[str(c) if c > 0 else '' for c in counts],
             textposition='top center',
-            textfont=dict(size=14),  # Larger text
             yaxis='y2',
-            hovertemplate='<b>%{x}</b><br>Deal Count: %{y}<br><extra></extra>',
-            connectgaps=True
+            hovertemplate='<b>%{x}</b><br>Deal Count: %{y}<br><extra></extra>'
         ))
         
         # Update layout with dual y-axes
         fig.update_layout(
-            title=dict(text=f'{category} Activity', font=dict(size=18, color='#333', family='Arial, sans-serif')),
-            xaxis=dict(
-                title=dict(text='Quarter', font=dict(size=16)),  # Modern syntax
-                showgrid=False,
-                tickfont=dict(size=14)
-            ),
+            title=f'{category} Activity',
+            xaxis=dict(title='Quarter'),
             yaxis=dict(
-                title=dict(text='Deal Value (Millions USD)', font=dict(size=16)),  # Modern syntax
+                title='Deal Value (Millions USD)',
                 side='left',
-                showgrid=False,
-                range=[0, max(values) * 1.35],  # Increased for label space
-                tickfont=dict(size=13)
+                showgrid=True,
+                range=[0, max(values) * 1.2]  # Extend y-axis by 20% for data labels
             ),
             yaxis2=dict(
-                title=dict(text='Number of Deals', font=dict(size=16)),  # Modern syntax
+                title='Number of Deals',
                 overlaying='y',
                 side='right',
                 showgrid=False,
-                range=[0, max(counts) * 1.5] if max(counts) > 0 else [0, 100],  # Increased for label space
-                tickfont=dict(size=13)
+                range=[0, max(counts) * 1.3] if max(counts) > 0 else [0, 100]  # Extend y2-axis
             ),
             hovermode='x unified',
             showlegend=True,
@@ -541,14 +331,10 @@ def create_jp_morgan_chart_by_category(category, color):
                 yanchor="bottom",
                 y=1.02,
                 xanchor="right",
-                x=1,
-                font=dict(size=13)
+                x=1
             ),
             height=350,
-            margin=dict(t=80, b=50, l=50, r=50),
-            plot_bgcolor='white',
-            paper_bgcolor='white',
-            font=dict(size=13, family='Arial, sans-serif')
+            margin=dict(t=80, b=50, l=50, r=50)
         )
         
         return fig
@@ -556,266 +342,49 @@ def create_jp_morgan_chart_by_category(category, color):
         st.error(f"Error creating {category} chart: {str(e)}")
         return None
 
-def create_sunburst_chart(df, value_col, deal_type, sector_col='Sector'):
-    """Create sunburst chart showing deal values by sector with top deals in hover"""
-    try:
-        # Filter out 'Undisclosed' sectors
-        df_filtered = df[df[sector_col] != 'Undisclosed'].copy()
-        
-        if len(df_filtered) == 0:
-            st.info(f"No sector data available for {deal_type}")
-            return None
-        
-        # Parse values to numeric
-        def parse_value(val):
-            if val == 'Undisclosed' or pd.isna(val):
-                return 0
-            val_str = str(val).replace('$', '').replace('B', '').replace('M', '').replace(',', '').strip()
-            try:
-                return float(val_str)
-            except:
-                return 0
-        
-        # Add numeric value column for sorting
-        df_filtered['_numeric_value'] = df_filtered[value_col].apply(parse_value)
-        
-        # Group by sector and get stats + top deals
-        sector_stats = []
-        for sector in df_filtered[sector_col].unique():
-            sector_df = df_filtered[df_filtered[sector_col] == sector]
-            total_value = sector_df['_numeric_value'].sum()
-            
-            # Get top 3 deals for this sector
-            top_deals = sector_df.nlargest(3, '_numeric_value')
-            deal_list = []
-            for idx, deal in top_deals.iterrows():
-                company = deal['Company']
-                value = deal['_numeric_value']
-                if value > 0:
-                    if value >= 1000000000:
-                        val_str = f"${value/1000000000:.1f}B"
-                    elif value >= 1000000:
-                        val_str = f"${value/1000000:.0f}M"
-                    else:
-                        val_str = f"${value:,.0f}"
-                    deal_list.append(f"{company} ({val_str})")
-            
-            sector_stats.append({
-                'Sector': sector,
-                'Total_Value': total_value,
-                'Top_Deals': '<br>  • '.join(deal_list) if deal_list else 'No deals'
-            })
-        
-        sector_data = pd.DataFrame(sector_stats)
-        
-        # Remove sectors with zero value
-        sector_data = sector_data[sector_data['Total_Value'] > 0]
-        
-        if len(sector_data) == 0:
-            st.info(f"No deal value data available for {deal_type} sectors")
-            return None
-        
-        # Sort by value descending
-        sector_data = sector_data.sort_values('Total_Value', ascending=False)
-        
-        # Create complementary muted color palette
-        if deal_type == 'M&A':
-            color_palette = [
-                '#7FA8C9', '#A8C9D1', '#6B8BA3', '#94B4C9', '#5A7A94',
-                '#8AA9BE', '#B5D0DC', '#6F98B3', '#84A8BD', '#9BBDD1'
-            ]
-        else:  # Venture
-            color_palette = [
-                '#C9A77F', '#D9C9A8', '#B89968', '#CCBB99', '#A88E6C',
-                '#D4BC94', '#E0D4BC', '#BEA77A', '#C8B490', '#D6C5A3'
-            ]
-        
-        # Assign colors
-        colors = [color_palette[i % len(color_palette)] for i in range(len(sector_data))]
-        
-        # Format values for display
-        def format_value_display(val):
-            if val >= 1000000000:
-                return f"${val/1000000000:.2f}B"
-            elif val >= 1000000:
-                return f"${val/1000000:.1f}M"
-            else:
-                return f"${val:,.0f}"
-        
-        sector_data['Value_Display'] = sector_data['Total_Value'].apply(format_value_display)
-        
-        # Calculate percentages
-        total = sector_data['Total_Value'].sum()
-        sector_data['Percentage'] = (sector_data['Total_Value'] / total * 100).round(1)
-        
-        # Create custom hover text with top deals
-        hover_text = []
-        for idx, row in sector_data.iterrows():
-            hover = f"<b>{row['Sector']}</b><br>"
-            hover += f"<b>Total Value:</b> {row['Value_Display']}<br>"
-            hover += f"<b>Percentage:</b> {row['Percentage']}%<br>"
-            hover += f"<b>Top Deals:</b><br>  • {row['Top_Deals']}"
-            hover_text.append(hover)
-        
-        # Create sunburst chart
-        fig = go.Figure(go.Sunburst(
-            labels=sector_data['Sector'],
-            parents=[''] * len(sector_data),
-            values=sector_data['Total_Value'],
-            text=sector_data['Value_Display'],
-            textinfo='label+text',
-            textfont=dict(size=14, family='Arial, sans-serif'),  # Larger text
-            marker=dict(colors=colors, line=dict(color='white', width=2)),
-            customdata=hover_text,
-            hovertemplate='%{customdata}<extra></extra>',
-            branchvalues='total'
-        ))
-        
-        # Update layout
-        fig.update_layout(
-            height=400,
-            margin=dict(t=10, b=10, l=10, r=10),
-            paper_bgcolor='white',
-            showlegend=False,
-            font=dict(size=14)  # Larger base font
-        )
-        
-        return fig
-        
-    except Exception as e:
-        st.error(f"Error creating sunburst chart: {str(e)}")
-        import traceback
-        st.error(f"Details: {traceback.format_exc()}")
-        return None
-
 # Main app
 def main():
-    st.title("🤝 MedTech M&A & Venture Dashboard")
-    
-    # Horizontal navigation with emojis
-    page = st.radio(
-        "Navigation",
-        ["📊 Deal Activity", "📈 JP Morgan Summary", "🏢 IPO Activity", "📤 Upload New Dataset"],
-        horizontal=True,
-        label_visibility="collapsed"
-    )
-    
-    st.markdown("---")
+    st.title("ðŸ¥¼ MedTech M&A & Venture Dashboard")
     
     # Load data
-    ma_df, inv_df, ipo_df = load_data()
+    ma_df, inv_df = load_data()
     
-    if page == "📊 Deal Activity":
+    # Sidebar navigation
+    st.sidebar.title("Navigation")
+    page = st.sidebar.radio("Go to", ["Deal Activity", "JP Morgan Summary", "Data Management"])
+    
+    if page == "Deal Activity":
         show_deal_activity(ma_df, inv_df)
-    elif page == "📈 JP Morgan Summary":
-        show_jp_morgan_summary(ma_df, inv_df)
-    elif page == "🏢 IPO Activity":
-        show_ipo_activity(ipo_df)
-    elif page == "📤 Upload New Dataset":
-        show_upload_dataset(ma_df, inv_df, ipo_df)
+    elif page == "JP Morgan Summary":
+        show_jp_morgan_summary()
+    elif page == "Data Management":
+        show_data_management(ma_df, inv_df)
 
 def show_deal_activity(ma_df, inv_df):
     """Display deal activity dashboard"""
     st.header("Deal Activity Dashboard")
     
-    # Overview section with smaller charts and cards below
-    st.markdown("### YTD Overview")
-    
-    # Two columns for overview
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # M&A Overview Chart (smaller)
-        fig_ma_overview = create_quarterly_chart(ma_df, 'Deal Value', 'M&A Activity Overview', 'ma', height=350)
-        if fig_ma_overview:
-            st.plotly_chart(fig_ma_overview, use_container_width=True)
-        
-        # Calculate M&A metrics
-        def parse_to_numeric(val):
-            if val == 'Undisclosed' or pd.isna(val):
-                return 0
-            val_str = str(val).replace('$', '').replace(',', '').strip()
-            try:
-                return float(val_str)
-            except:
-                return 0
-        
-        total_ma_deals = len(ma_df)
-        total_ma_value = sum(ma_df['Deal Value'].apply(parse_to_numeric))
-        if total_ma_value >= 1000000000:
-            ma_value_display = f"${total_ma_value/1000000000:.2f}B"
-        elif total_ma_value >= 1000000:
-            ma_value_display = f"${total_ma_value/1000000:.0f}M"
-        else:
-            ma_value_display = f"${total_ma_value:,.0f}"
-        
-        # Display metric cards
-        st.markdown(create_metric_card("Total M&A Deal Value", ma_value_display, 'ma'), unsafe_allow_html=True)
-        st.markdown(create_metric_card("Total M&A Deal Count", total_ma_deals, 'ma'), unsafe_allow_html=True)
-        
-        # M&A Sunburst Chart
-        st.markdown("#### M&A Deals by Sector")
-        
-        # Independent quarter filter for M&A sunburst
-        quarters_ma_sun = ['All'] + sorted([q for q in ma_df['Quarter'].unique() if q != 'Undisclosed'])
-        selected_quarter_ma_sun = st.selectbox("Filter by Quarter", quarters_ma_sun, key='ma_sunburst_quarter')
-        
-        filtered_ma_sun = ma_df.copy()
-        if selected_quarter_ma_sun != 'All':
-            filtered_ma_sun = filtered_ma_sun[filtered_ma_sun['Quarter'] == selected_quarter_ma_sun]
-        
-        fig_ma_sunburst = create_sunburst_chart(filtered_ma_sun, 'Deal Value', 'M&A', 'Sector')
-        if fig_ma_sunburst:
-            st.plotly_chart(fig_ma_sunburst, use_container_width=True)
-    
-    with col2:
-        # Venture Overview Chart (smaller)
-        fig_inv_overview = create_quarterly_chart(inv_df, 'Amount Raised', 'Venture Investment Overview', 'venture', height=350)
-        if fig_inv_overview:
-            st.plotly_chart(fig_inv_overview, use_container_width=True)
-        
-        # Calculate Venture metrics
-        total_inv_deals = len(inv_df)
-        total_inv_value = sum(inv_df['Amount Raised'].apply(
-            lambda x: float(x) if pd.notna(x) and x != 'Undisclosed' and str(x).replace('.','').replace('-','').isdigit() else 0
-        ))
-        if total_inv_value >= 1000000000:
-            inv_value_display = f"${total_inv_value/1000000000:.2f}B"
-        elif total_inv_value >= 1000000:
-            inv_value_display = f"${total_inv_value/1000000:.0f}M"
-        else:
-            inv_value_display = f"${total_inv_value:,.0f}"
-        
-        # Display metric cards
-        st.markdown(create_metric_card("Total Investment Value", inv_value_display, 'venture'), unsafe_allow_html=True)
-        st.markdown(create_metric_card("Total Investment Deal Count", total_inv_deals, 'venture'), unsafe_allow_html=True)
-        
-        # Venture Sunburst Chart
-        st.markdown("#### Venture Deals by Sector")
-        
-        # Independent quarter filter for Venture sunburst
-        quarters_inv_sun = ['All'] + sorted([q for q in inv_df['Quarter'].unique() if q != 'Undisclosed'])
-        selected_quarter_inv_sun = st.selectbox("Filter by Quarter", quarters_inv_sun, key='inv_sunburst_quarter')
-        
-        filtered_inv_sun = inv_df.copy()
-        if selected_quarter_inv_sun != 'All':
-            filtered_inv_sun = filtered_inv_sun[filtered_inv_sun['Quarter'] == selected_quarter_inv_sun]
-        
-        fig_inv_sunburst = create_sunburst_chart(filtered_inv_sun, 'Amount Raised', 'Venture', 'Sector')
-        if fig_inv_sunburst:
-            st.plotly_chart(fig_inv_sunburst, use_container_width=True)
-    
-    st.markdown("---")
-    
-    # M&A Activity Section
+    # M&A Activity Section - Full Width
     st.subheader("M&A Activity")
     
     # Search box
-    search_ma = st.text_input("🔍 Search M&A Deals", placeholder="Search by company, acquirer, technology...", key='search_ma')
+    search_ma = st.text_input("ðŸ” Search M&A Deals", placeholder="Search by company, acquirer, technology...", key='search_ma')
     
-    # Filters above table
-    st.markdown("#### Filters")
-    filtered_ma = create_filter_section(ma_df, 'ma_table', show_conference=True)
+    # Filters
+    filter_col1, filter_col2 = st.columns(2)
+    with filter_col1:
+        quarters_ma = ['All'] + sorted(ma_df['Quarter'].unique().tolist())
+        selected_quarter_ma = st.selectbox("Filter by Quarter", quarters_ma, key='ma_quarter')
+    with filter_col2:
+        months_ma = ['All'] + sorted(ma_df['Month'].unique().tolist())
+        selected_month_ma = st.selectbox("Filter by Month", months_ma, key='ma_month')
+    
+    # Apply filters
+    filtered_ma = ma_df.copy()
+    if selected_quarter_ma != 'All':
+        filtered_ma = filtered_ma[filtered_ma['Quarter'] == selected_quarter_ma]
+    if selected_month_ma != 'All':
+        filtered_ma = filtered_ma[filtered_ma['Month'] == selected_month_ma]
     
     # Apply search filter
     if search_ma:
@@ -823,103 +392,104 @@ def show_deal_activity(ma_df, inv_df):
         filtered_ma = filtered_ma[mask]
     
     # Tabs for table, top deals, and charts
-    tab1, tab2, tab3 = st.tabs(["📊 Table", "🏆 Top Deals", "📈 Charts"])
+    tab1, tab2, tab3 = st.tabs(["ðŸ“Š Table", "ðŸ† Top Deals", "ðŸ“ˆ Charts"])
     
     with tab1:
         # Create display dataframe with sortable numeric values
         ma_display = filtered_ma.copy()
         
+        # Add hidden numeric column for sorting - use -1 for Undisclosed so it goes to bottom
         def parse_to_numeric(val):
             if val == 'Undisclosed' or pd.isna(val):
-                return -1
+                return -1  # Changed from 0 to -1 to sort Undisclosed to bottom
             val_str = str(val).replace('$', '').replace(',', '').strip()
             try:
                 return float(val_str)
             except:
                 return -1
         
+        # Create a numeric sort column
         ma_display['_Deal_Value_Numeric'] = ma_display['Deal Value'].apply(parse_to_numeric)
+        
+        # Sort by Deal Value descending by default (highest deals first, Undisclosed at bottom)
         ma_display = ma_display.sort_values('_Deal_Value_Numeric', ascending=False)
         
-        # Format Deal Value with $ and commas
-        ma_display['Deal Value'] = ma_display['Deal Value'].apply(
-            lambda x: f"${float(str(x).replace('$', '').replace(',', '')):,.0f}" if x != 'Undisclosed' and pd.notna(x) and parse_to_numeric(x) > 0 else x
-        )
-        
-        # Display without the numeric column and unnamed columns
-        # Filter out: columns starting with '_', 'Unnamed', or empty strings
-        display_cols = [col for col in ma_display.columns 
-                       if not col.startswith('_') 
-                       and not col.startswith('Unnamed')
-                       and col.strip() != '']
+        # Display without the numeric column (it's just for sorting)
+        display_cols = [col for col in ma_display.columns if not col.startswith('_')]
         
         st.dataframe(
             ma_display[display_cols], 
-            use_container_width=True,
-            height=500,
+            use_container_width=True, 
+            height=400,
             column_config={
-                "Deal Value": st.column_config.TextColumn("Deal Value", help="Deal value in USD"),
-            },
-            hide_index=True
+                "Deal Value": st.column_config.TextColumn(
+                    "Deal Value",
+                    help="Deal value in USD",
+                )
+            }
         )
     
     with tab2:
-        # Top 3 deals with formatted values
+        # Top 3 deals
         top_deals = filtered_ma.copy()
-        top_deals['Deal_Value_Numeric'] = top_deals['Deal Value'].apply(parse_to_numeric)
+        
+        # Parse function - values in Excel are already actual dollars like "$350,000,000"
+        def parse_deal_value(val):
+            if val == 'Undisclosed' or pd.isna(val):
+                return 0
+            val_str = str(val).replace('$', '').replace(',', '').strip()
+            try:
+                # Value is already in actual dollars, not millions
+                return float(val_str)
+            except:
+                return 0
+        
+        top_deals['Deal_Value_Numeric'] = top_deals['Deal Value'].apply(parse_deal_value)
         top_deals = top_deals.nlargest(3, 'Deal_Value_Numeric')
         
         for idx, row in top_deals.iterrows():
-            # Format value with $ and commas
-            deal_value = row['Deal Value']
-            if deal_value != 'Undisclosed' and parse_to_numeric(deal_value) > 0:
-                try:
-                    numeric_val = parse_to_numeric(deal_value)
-                    formatted_value = f"${numeric_val:,.0f}"
-                except:
-                    formatted_value = str(deal_value)
-            else:
-                formatted_value = 'Undisclosed'
+            # Value is already in actual dollars, just format with commas
+            formatted_value = str(row['Deal Value']) if row['Deal Value'] != 'Undisclosed' else 'Undisclosed'
             
+            # Get deal type verb
             deal_type = row['Deal Type (Merger / Acquisition)']
             verb = "merged with" if deal_type == "Merger" else "acquired"
             
+            # Display with value directly from Excel (already formatted)
             st.markdown(f"**{row['Acquirer']} {verb} {row['Company']}**")
-            st.markdown(f"<h1 style='margin-top: -10px; margin-bottom: 5px; color: {COLORS['ma_primary']};'>{formatted_value}</h1>", unsafe_allow_html=True)
-            
-            # Add technology description in small font
-            tech_desc = str(row['Technology/Description']) if row['Technology/Description'] != 'Undisclosed' else 'No description available'
-            st.markdown(f"<p style='font-size: 12px; color: #666; margin-top: 5px;'><b>Technology:</b> {tech_desc}</p>", unsafe_allow_html=True)
-            
-            # Add deal details
-            sector = str(row['Sector']) if row['Sector'] != 'Undisclosed' else 'N/A'
-            quarter = str(row['Quarter']) if row['Quarter'] != 'Undisclosed' else 'N/A'
-            month = str(row['Month']) if row['Month'] != 'Undisclosed' else 'N/A'
-            st.markdown(f"<p style='font-size: 11px; color: #888;'><b>Sector:</b> {sector} | <b>Quarter:</b> {quarter} | <b>Month:</b> {month}</p>", unsafe_allow_html=True)
-            
+            st.markdown(f"<h1 style='margin-top: -10px; margin-bottom: -10px; color: #1f77b4;'>{formatted_value}</h1>", unsafe_allow_html=True)
             st.markdown("---")
     
     with tab3:
-        st.markdown("#### Chart Filters")
-        filtered_ma_chart = create_filter_section(ma_df, 'ma_chart', show_conference=True)
-        
-        fig = create_quarterly_chart(filtered_ma_chart, 'Deal Value', 'M&A Activity by Quarter', 'ma')
+        fig = create_quarterly_chart(filtered_ma, 'Deal Value', 'M&A Activity by Quarter')
         if fig:
             st.plotly_chart(fig, use_container_width=True)
     
-    # Add spacing
+    # Add spacing between sections
     st.markdown("---")
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Venture Investment Activity Section
+    # Venture Investment Activity Section - Full Width
     st.subheader("Venture Investment Activity")
     
     # Search box
-    search_inv = st.text_input("🔍 Search Investment Deals", placeholder="Search by company, investors, technology...", key='search_inv')
+    search_inv = st.text_input("ðŸ” Search Investment Deals", placeholder="Search by company, investors, technology...", key='search_inv')
     
-    # Filters above table
-    st.markdown("#### Filters")
-    filtered_inv = create_filter_section(inv_df, 'inv_table', show_conference=True)
+    # Filters
+    filter_col1, filter_col2 = st.columns(2)
+    with filter_col1:
+        quarters_inv = ['All'] + sorted(inv_df['Quarter'].unique().tolist())
+        selected_quarter_inv = st.selectbox("Filter by Quarter", quarters_inv, key='inv_quarter')
+    with filter_col2:
+        months_inv = ['All'] + sorted(inv_df['Month'].unique().tolist())
+        selected_month_inv = st.selectbox("Filter by Month", months_inv, key='inv_month')
+    
+    # Apply filters
+    filtered_inv = inv_df.copy()
+    if selected_quarter_inv != 'All':
+        filtered_inv = filtered_inv[filtered_inv['Quarter'] == selected_quarter_inv]
+    if selected_month_inv != 'All':
+        filtered_inv = filtered_inv[filtered_inv['Month'] == selected_month_inv]
     
     # Apply search filter
     if search_inv:
@@ -927,14 +497,18 @@ def show_deal_activity(ma_df, inv_df):
         filtered_inv = filtered_inv[mask]
     
     # Tabs for table, top deals, and charts
-    tab1, tab2, tab3 = st.tabs(["📊 Table", "🏆 Top Deals", "📈 Charts"])
+    tab1, tab2, tab3 = st.tabs(["ðŸ“Š Table", "ðŸ† Top Deals", "ðŸ“ˆ Charts"])
     
     with tab1:
-        # Format Amount Raised column for display
+        # Format Amount Raised column for display with sortable numeric values
         inv_display = filtered_inv.copy()
+        
+        # Add numeric sort column - use -1 for Undisclosed so it goes to bottom
         inv_display['_Amount_Numeric'] = inv_display['Amount Raised'].apply(
             lambda x: float(x) if pd.notna(x) and x != 'Undisclosed' and str(x).replace('.','').replace('-','').isdigit() else -1
         )
+        
+        # Sort by Amount descending by default (highest amounts first, Undisclosed at bottom)
         inv_display = inv_display.sort_values('_Amount_Numeric', ascending=False)
         
         # Format for display
@@ -942,31 +516,32 @@ def show_deal_activity(ma_df, inv_df):
             lambda x: f"${x:,.0f}" if pd.notna(x) and x != 'Undisclosed' and str(x).replace('.','').replace('-','').isdigit() else x
         )
         
-        # Display without the numeric column and unnamed columns
-        # Filter out: columns starting with '_', 'Unnamed', or empty strings
-        display_cols = [col for col in inv_display.columns 
-                       if not col.startswith('_') 
-                       and not col.startswith('Unnamed')
-                       and col.strip() != '']
+        # Display without the numeric column
+        display_cols = [col for col in inv_display.columns if not col.startswith('_')]
         
         st.dataframe(
             inv_display[display_cols],
-            use_container_width=True,
-            height=500,
+            use_container_width=True, 
+            height=400,
             column_config={
-                "Amount Raised": st.column_config.TextColumn("Amount Raised", help="Investment amount in USD"),
-            },
-            hide_index=True
+                "Amount Raised": st.column_config.TextColumn(
+                    "Amount Raised",
+                    help="Investment amount in USD",
+                )
+            }
         )
     
     with tab2:
-        # Top 3 deals with formatted values
+        # Top 3 deals
         top_deals = filtered_inv.copy()
+        
+        # Parse function - values in Excel are already actual dollars like "$467,000,000"
         def parse_amount_value(val):
             if val == 'Undisclosed' or pd.isna(val):
                 return 0
             val_str = str(val).replace('$', '').replace(',', '').strip()
             try:
+                # Value is already in actual dollars, not millions
                 return float(val_str)
             except:
                 return 0
@@ -975,7 +550,7 @@ def show_deal_activity(ma_df, inv_df):
         top_deals = top_deals.nlargest(3, 'Amount_Numeric')
         
         for idx, row in top_deals.iterrows():
-            # Format amount with $ and commas
+            # Format amount with commas
             amount_val = row['Amount Raised']
             if pd.notna(amount_val) and amount_val != 'Undisclosed':
                 try:
@@ -985,78 +560,49 @@ def show_deal_activity(ma_df, inv_df):
             else:
                 formatted_value = "Undisclosed"
             
+            # Display with formatted value
             st.markdown(f"**{row['Company']}**")
-            st.markdown(f"<h1 style='margin-top: -10px; margin-bottom: 5px; color: {COLORS['venture_primary']};'>{formatted_value}</h1>", unsafe_allow_html=True)
-            
-            # Add technology description in small font
-            tech_desc = str(row['Technology/Description']) if row['Technology/Description'] != 'Undisclosed' else 'No description available'
-            st.markdown(f"<p style='font-size: 12px; color: #666; margin-top: 5px;'><b>Technology:</b> {tech_desc}</p>", unsafe_allow_html=True)
-            
-            # Add deal details
-            funding_type = str(row['Funding type (VC / PE)']) if row['Funding type (VC / PE)'] != 'Undisclosed' else 'N/A'
-            sector = str(row['Sector']) if row['Sector'] != 'Undisclosed' else 'N/A'
-            lead_investors = str(row['Lead Investors']) if row['Lead Investors'] != 'Undisclosed' else 'N/A'
-            quarter = str(row['Quarter']) if row['Quarter'] != 'Undisclosed' else 'N/A'
-            st.markdown(f"<p style='font-size: 11px; color: #888;'><b>Type:</b> {funding_type} | <b>Sector:</b> {sector} | <b>Quarter:</b> {quarter}</p>", unsafe_allow_html=True)
-            st.markdown(f"<p style='font-size: 11px; color: #888;'><b>Lead Investors:</b> {lead_investors}</p>", unsafe_allow_html=True)
-            
+            st.markdown(f"<h1 style='margin-top: -10px; margin-bottom: -10px; color: #ff7f0e;'>{formatted_value}</h1>", unsafe_allow_html=True)
             st.markdown("---")
     
     with tab3:
-        st.markdown("#### Chart Filters")
-        filtered_inv_chart = create_filter_section(inv_df, 'inv_chart', show_conference=True)
-        
-        fig = create_quarterly_chart(filtered_inv_chart, 'Amount Raised', 'Venture Investment by Quarter', 'venture')
+        fig = create_quarterly_chart(filtered_inv, 'Amount Raised', 'Venture Investment by Quarter')
         if fig:
             st.plotly_chart(fig, use_container_width=True)
 
-def show_jp_morgan_summary(ma_df, inv_df):
+def show_jp_morgan_summary():
     """Display JP Morgan summary"""
     st.header("JP Morgan MedTech Industry Report")
     
+    # Load data for comparison
+    ma_df, inv_df = load_data()
+    
     # Calculate BeaconOne quarterly stats
     def calc_quarterly_stats(df, quarter, value_col):
-        try:
-            # Check if dataframe is empty or column doesn't exist
-            if df.empty or value_col not in df.columns:
-                return 0, "$0"
-                
-            q_data = df[df['Quarter'] == quarter]
-            
-            # Check if quarter data is empty
-            if q_data.empty:
-                return 0, "$0"
-            
-            def parse_value(val):
-                if pd.isna(val) or val == 'Undisclosed' or val == '' or val is None:
-                    return 0
-                val_str = str(val).replace('$', '').replace(',', '').strip()
-                try:
-                    return float(val_str)
-                except (ValueError, TypeError, AttributeError):
-                    return 0
-            
-            # Safely calculate total value
+        q_data = df[df['Quarter'] == quarter]
+        
+        # Parse values
+        def parse_value(val):
+            if val == 'Undisclosed' or pd.isna(val):
+                return 0
+            val_str = str(val).replace('$', '').replace(',', '').strip()
             try:
-                total_value = sum(q_data[value_col].apply(parse_value))
-            except Exception:
-                total_value = 0
-                
-            count = len(q_data)
+                return float(val_str)
+            except:
+                return 0
+        
+        total_value = sum(q_data[value_col].apply(parse_value))
+        count = len(q_data)
+        
+        # Format value
+        if total_value >= 1000000000:
+            formatted_value = f"${total_value/1000000000:.1f}B"
+        elif total_value >= 1000000:
+            formatted_value = f"${total_value/1000000:.0f}M"
+        else:
+            formatted_value = "$0"
             
-            if total_value >= 1000000000:
-                formatted_value = f"${total_value/1000000000:.1f}B"
-            elif total_value >= 1000000:
-                formatted_value = f"${total_value/1000000:.0f}M"
-            else:
-                formatted_value = "$0"
-                
-            return count, formatted_value
-            
-        except Exception as e:
-            # If anything fails, return safe defaults
-            print(f"Error in calc_quarterly_stats: {e}")
-            return 0, "$0"
+        return count, formatted_value
     
     # Calculate stats for each quarter
     beacon_stats = {}
@@ -1072,609 +618,1005 @@ def show_jp_morgan_summary(ma_df, inv_df):
     
     st.markdown("### 2025 Q1-Q3 Activity by Category")
     
-    # Create 1x2 grid for charts
+    # Create 1x2 grid for charts (only M&A and Venture)
     col1, col2 = st.columns(2)
     
+    # Left: M&A
     with col1:
-        fig_ma = create_jp_morgan_chart_by_category('M&A', COLORS['ma_primary'])
+        fig_ma = create_jp_morgan_chart_by_category('M&A', '#1f77b4')
         if fig_ma:
             st.plotly_chart(fig_ma, use_container_width=True)
     
+    # Right: Venture
     with col2:
-        fig_venture = create_jp_morgan_chart_by_category('Venture', COLORS['venture_primary'])
+        fig_venture = create_jp_morgan_chart_by_category('Venture', '#ff7f0e')
         if fig_venture:
             st.plotly_chart(fig_venture, use_container_width=True)
-    # Key trends
-    st.markdown("---")
-    st.subheader("Key Market Trends")
     
-    # Create three columns: M&A text | Table | Venture text
-    col1, col2, col3 = st.columns([3, 2, 3])
-    
-    with col1:
-        st.markdown(create_metric_card("M&A Activity", "Strategic Consolidation", 'ma'), unsafe_allow_html=True)
-        st.markdown("""
-        <div style="font-size: 14px; color: #000;">
-        <b>Q1 2024</b><br>
-        47 deals worth ~$18 B, a rebound driven by renewed strategic activity among large buyers. Continued strength in digital health and diagnostics acquisitions pointed to normalization of post-COVID valuations.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q2 2024</b><br>
-        114 deals totaling $40.3 B, nearly matching all of 2023 within six months. Headline transactions included J&J / Shockwave ($13 B) and Boston Scientific / Silk Road ($1.2 B), solidifying H1 as the strongest since 2021.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q3 2024</b><br>
-        195 deals worth $47 B through Q3, exceeding 2023 totals and positioning 2024 to rival 2021. Major transactions included J&J / V-Wave ($1.7 B) and Edwards Lifesciences / JenaValve ($1.6 B), marking a return to large-cap strategic acquisitions.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q4 2024</b><br>
-        305 transactions valued at $63.1 B for 2024 (up from 134 / $47 B in 2023), making it the second-highest year on record after 2021. Biggest deals included Novo Holdings / Catalent ($16.5 B) and J&J / Shockwave ($13.1 B) alongside Cardinal's acquisitions of GI Alliance and Advanced Diabetes Supply.
-        </div>
-        <br>
-        <div style="font-size: 16px; color: #000; font-weight: bold;">
-        🔸 EOY 2024 Summary<br>
-        M&A surged to 305 deals / $63.1 B (+34% YoY), driven by mega-deals and a resurgence of strategic buy-side confidence after two muted years.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q1 2025</b><br>
-        57 deals totaling $9.2 B, fewer transactions but significantly higher value than Q4 2024, led by Stryker's $4.9 B acquisition of Inari Medical and Zimmer Biomet's $1.2 B purchase of Paragon 28. Median upfronts rose to $250 M, signaling confidence in scaling revenue-stage assets.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q2 2025</b><br>
-        43 deals worth $2.1 B, down from Q1's $9.2 B as elevated interest rates and valuation gaps slowed new bids. Notable activity included Merit Medical's purchase of Biolife Delaware, reflecting steady appetite for niche device integrations despite market caution.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q3 2025</b><br>
-        65 transactions totaling $21.7 B, the most active quarter since 2022 and second-highest value in three years. The surge was led by Waters Corp's $17.5 B merger with BD's Biosciences & Diagnostics Solutions unit, alongside Terumo/OrganOx ($1.5 B) and ArchiMed/ZimVie ($730 M), underscoring renewed large-cap consolidation momentum.
-        </div>
-        <br>
-        <div style="font-size: 16px; color: #000; font-weight: bold;">
-        🔸 2025 YTD Summary<br>
-        M&A volumes remained historically strong at 165+ deals totaling ~$33 B, highlighting strategic expansion by industry leaders into adjacent diagnostic and therapeutic markets despite lingering macro headwinds.
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("### Quarterly Comparison")
-        
-        # Create the comparison table
-        comparison_data = {
-            'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025'],
-            'Venture ($B)': [5.5, 4.3, 5.1, 3.0, 3.7, 2.6, 2.9],
-            'V QoQ': ['—', '↓21.8%', '↑18.6%', '↓41.2%', '↑23.3%', '↓29.7%', '↑11.5%'],
-            'V YoY': ['—', '—', '↑27%', '↑12%', '↓32.7%', '↓39.5%', '↓43.1%'],
-            'M&A ($B)': [18.0, 40.3, 47.0, 63.1, 9.2, 2.1, 21.7],
-            'M QoQ': ['—', '↑124%', '↑16.6%', '↑34.3%', '↓85.4%', '↓77.2%', '↑933%'],
-            'M YoY': ['—', '—', '—', '↑34%', '↓49%', '↓94.8%', '↓53.8%']
-        }
-        
-        import pandas as pd
-        comparison_df = pd.DataFrame(comparison_data)
-        
-        st.dataframe(
-            comparison_df,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "Quarter": st.column_config.TextColumn("Quarter", width="small"),
-                "Venture ($B)": st.column_config.NumberColumn("Venture ($B)", format="%.1f"),
-                "V QoQ": st.column_config.TextColumn("V QoQ", width="small"),
-                "V YoY": st.column_config.TextColumn("V YoY", width="small"),
-                "M&A ($B)": st.column_config.NumberColumn("M&A ($B)", format="%.1f"),
-                "M QoQ": st.column_config.TextColumn("M QoQ", width="small"),
-                "M YoY": st.column_config.TextColumn("M YoY", width="small")
-            }
-        )
-        
-    with col3:
-        st.markdown(create_metric_card("Venture Capital", "Selective Investment", 'venture'), unsafe_allow_html=True)
-        st.markdown("""
-        <div style="font-size: 14px; color: #000;">
-        <b>Q1 2024</b><br>
-        ~$5.5 B invested across 182 rounds as early signs of recovery emerged after a weak 2023. Most checks were under $50 M, but multiple $100 M+ raises (e.g., Element Biosciences and Lila Sciences) signaled returning investor confidence in AI-driven diagnostics and platform plays.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q2 2024</b><br>
-        $4.3 B raised across 167 rounds (H1 total $9.7 B / 341 rounds). The quarter saw a modest expansion led by Amber Therapeutics' $100 M Series A and early-stage capital revival ($2.4 B in Seed and Series A funding). Momentum reflected growing appetite for device and neuro-stimulation platforms.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q3 2024</b><br>
-        $5.1 B across 154 rounds (YTD $16.1 B / 554). Most rounds remained below $50 M (383 of 486 disclosed), though a cluster of large deals including Element Biosciences ($277 M) and Flo Health ($200 M) helped drive a 27% YoY growth trajectory.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q4 2024</b><br>
-        $3.0 B across 125 rounds (2024 total $19.1 B / 691 rounds). While the number of rounds fell 5% YoY, the dollar total rose 12%. Selective confidence in high-value plays continued, highlighted by Impress ($117 M) and Nusano ($115 M) later-stage raises amid tight funding conditions.
-        </div>
-        <br>
-        <div style="font-size: 16px; color: #000; font-weight: bold;">
-        🔸 EOY 2024 Summary<br>
-        Medtech venture funding rebounded to $19.1 B (+12% YoY) despite fewer rounds, as capital flowed selectively toward platform and AI-linked technologies.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q1 2025</b><br>
-        $3.7 B invested across 117 rounds (+9% YoY), driven by fewer but larger financings. Mega-rounds like Lila Sciences ($200 M) and OganOx ($142 M) marked investor preference for AI-enabled diagnostics and advanced therapeutic devices amid slower seed formation and consolidation around later-stage bets.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q2 2025</b><br>
-        $2.6 B across 90 rounds (H1 total $6.8 B/194 rounds), sustaining a "flight to quality." Large financings like Neuralink ($650 M Series E) and Biolinq ($100 M Series C) dominated, while early-stage participation fell as investors favored proven clinical and regulatory traction.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q3 2025</b><br>
-        $2.9 B across 67 rounds (YTD $9.5 B/259 rounds), a sequential uptick from Q2 but still below 2024 levels. Late-stage deals like Lila Sciences ($235 M Series A), Supira Medical ($120 M Series E), and SetPoint Medical ($115 M Series D) drove totals while early-stage rounds lagged amid macro pressure.
-        </div>
-        <br>
-        <div style="font-size: 16px; color: #000; font-weight: bold;">
-        🔸 2025 YTD Summary<br>
-        Medtech venture capital reached $9.5 B across 259 rounds (through Q3), with capital increasingly concentrated in AI-driven platform and neuro-tech devices.
-        </div>
-        """, unsafe_allow_html=True)
-
-    # Add comparison section
+    # JPMorgan vs BeaconOne Comparison Table - MOVED BEFORE Key Market Trends
     st.markdown("---")
     st.markdown("### JPMorgan vs BeaconOne Data - Quarterly Comparison")
     
-    # Define MORE DISTINCT colors for each metric across all quarters
-    METRIC_COLORS = {
-        'ma_count': '#5B9BD5',      # Bright blue for M&A count
-        'ma_value': '#2E5C8A',      # Dark navy for M&A value
-        'inv_count': '#D4A574',     # Bright tan for Investment count
-        'inv_value': '#8B6F47'      # Dark brown for Investment value
-    }
+    # Helper function to calculate delta and color
+    def calc_delta(jp_val, beacon_val):
+        """Calculate delta percentage and return color (green for positive, red for negative)"""
+        try:
+            # Parse JP Morgan value
+            jp_str = str(jp_val).replace('$', '').replace('B', '').replace(',', '').strip()
+            jp_num = float(jp_str)
+            
+            # Parse BeaconOne value  
+            beacon_str = str(beacon_val).replace('$', '').replace('B', '').replace('M', '').replace(',', '').strip()
+            # Convert millions to billions for comparison
+            if 'M' in str(beacon_val):
+                beacon_num = float(beacon_str) / 1000
+            else:
+                beacon_num = float(beacon_str)
+            
+            if jp_num == 0:
+                return "", "white"
+            
+            delta_pct = ((beacon_num - jp_num) / jp_num) * 100
+            
+            # Only show delta if it's notable (>5% difference)
+            if abs(delta_pct) >= 5:
+                sign = "+" if delta_pct > 0 else ""
+                color = "#2ECC71" if delta_pct > 0 else "#E74C3C"  # Green for positive, red for negative
+                return f"{sign}{delta_pct:.1f}%", color
+            else:
+                return "", "white"
+        except:
+            return "", "white"
     
-    # Different border color for EACH quarter
-    QUARTER_COLORS = {
-        'Q1': '#7FA8C9',   # Muted blue
-        'Q2': '#C9A77F',   # Muted tan
-        'Q3': '#9B8BA8'    # Muted purple
-    }
+    # Create full-width comparison table
+    st.markdown("""
+    <style>
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 18px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .comparison-table th {
+            background-color: #34495e;
+            color: white;
+            padding: 18px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .comparison-table td {
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        .comparison-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .comparison-table tr:hover {
+            background-color: #e9ecef;
+        }
+        .metric-header {
+            background-color: #5d6d7e;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+    </style>
+    """, unsafe_allow_html=True)
     
-    # Create columns with separators: Q1 | separator | Q2 | separator | Q3
-    q1_col, sep1, q2_col, sep2, q3_col = st.columns([10, 0.5, 10, 0.5, 10])
+    # Calculate deltas for each metric
+    q1_ma_count_delta, q1_ma_count_color = calc_delta(57, beacon_stats['Q1']['ma_count'])
+    q1_ma_value_delta, q1_ma_value_color = calc_delta(9.2, beacon_stats['Q1']['ma_value'])
+    q1_inv_count_delta, q1_inv_count_color = calc_delta(117, beacon_stats['Q1']['inv_count'])
+    q1_inv_value_delta, q1_inv_value_color = calc_delta(3.7, beacon_stats['Q1']['inv_value'])
     
-    quarters_data = [
-        (q1_col, 'Q1', QUARTER_COLORS['Q1']),
-        (q2_col, 'Q2', QUARTER_COLORS['Q2']),
-        (q3_col, 'Q3', QUARTER_COLORS['Q3'])
-    ]
+    q2_ma_count_delta, q2_ma_count_color = calc_delta(43, beacon_stats['Q2']['ma_count'])
+    q2_ma_value_delta, q2_ma_value_color = calc_delta(2.1, beacon_stats['Q2']['ma_value'])
+    q2_inv_count_delta, q2_inv_count_color = calc_delta(90, beacon_stats['Q2']['inv_count'])
+    q2_inv_value_delta, q2_inv_value_color = calc_delta(2.6, beacon_stats['Q2']['inv_value'])
     
-    for col, quarter, border_color in quarters_data:
-        with col:
-            # Use a container to group all elements
-            with st.container():
-                # Opening border div - SMALLER header box
-                st.markdown(f"""
-                <div style="border: 3px solid {border_color}; border-radius: 12px; padding: 15px 12px 15px 12px; background-color: #fafbfc; margin-bottom: 20px;">
-                    <h3 style="text-align: center; color: #333; margin: 0 0 22px 0; font-family: Arial, sans-serif; font-size: 20px; font-weight: bold;">{quarter} 2025</h3>
-                """, unsafe_allow_html=True)
-                
-                # JP Morgan data
-                jp_ma_count = {'Q1': 57, 'Q2': 43, 'Q3': 65}[quarter]
-                jp_ma_value = {'Q1': '$9.2B', 'Q2': '$2.1B', 'Q3': '$21.7B'}[quarter]
-                jp_inv_count = {'Q1': 117, 'Q2': 90, 'Q3': 67}[quarter]
-                jp_inv_value = {'Q1': '$3.7B', 'Q2': '$2.6B', 'Q3': '$2.9B'}[quarter]
-                
-                # M&A Deal Count chart
-                fig_ma_count = create_comparison_mini_chart(
-                    'M&A Deal Count',
-                    jp_ma_count,
-                    beacon_stats[quarter]['ma_count'],
-                    METRIC_COLORS['ma_count'],
-                    height=140
-                )
-                if fig_ma_count:
-                    st.plotly_chart(fig_ma_count, use_container_width=True, key=f'{quarter}_ma_count', config={'displayModeBar': False})
-                
-                # Add spacing between charts
-                st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
-                
-                # M&A Deal Value chart
-                fig_ma_value = create_comparison_mini_chart(
-                    'M&A Deal Value',
-                    jp_ma_value,
-                    beacon_stats[quarter]['ma_value'],
-                    METRIC_COLORS['ma_value'],
-                    height=140
-                )
-                if fig_ma_value:
-                    st.plotly_chart(fig_ma_value, use_container_width=True, key=f'{quarter}_ma_value', config={'displayModeBar': False})
-                
-                # Add spacing between charts
-                st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
-                
-                # Investment Count chart
-                fig_inv_count = create_comparison_mini_chart(
-                    'Investment Count',
-                    jp_inv_count,
-                    beacon_stats[quarter]['inv_count'],
-                    METRIC_COLORS['inv_count'],
-                    height=140
-                )
-                if fig_inv_count:
-                    st.plotly_chart(fig_inv_count, use_container_width=True, key=f'{quarter}_inv_count', config={'displayModeBar': False})
-                
-                # Add spacing between charts
-                st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
-                
-                # Investment Value chart
-                fig_inv_value = create_comparison_mini_chart(
-                    'Investment Value',
-                    jp_inv_value,
-                    beacon_stats[quarter]['inv_value'],
-                    METRIC_COLORS['inv_value'],
-                    height=140
-                )
-                if fig_inv_value:
-                    st.plotly_chart(fig_inv_value, use_container_width=True, key=f'{quarter}_inv_value', config={'displayModeBar': False})
-                
-                # Closing border div
-                st.markdown("</div>", unsafe_allow_html=True)
+    q3_ma_count_delta, q3_ma_count_color = calc_delta(65, beacon_stats['Q3']['ma_count'])
+    q3_ma_value_delta, q3_ma_value_color = calc_delta(21.7, beacon_stats['Q3']['ma_value'])
+    q3_inv_count_delta, q3_inv_count_color = calc_delta(67, beacon_stats['Q3']['inv_count'])
+    q3_inv_value_delta, q3_inv_value_color = calc_delta(2.9, beacon_stats['Q3']['inv_value'])
     
-    # Add vertical divider lines in the separator columns
-    with sep1:
-        st.markdown("""
-        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 720px; margin: 0 auto;"></div>
-        """, unsafe_allow_html=True)
+    # Render full-width table
+    st.markdown(f"""
+    <table class="comparison-table">
+        <tr>
+            <th style="width: 20%;">Metric</th>
+            <th style="width: 11%;">Q1 2025<br>JPMorgan</th>
+            <th style="width: 11%;">Q1 2025<br>BeaconOne</th>
+            <th style="width: 8%;">Δ</th>
+            <th style="width: 11%;">Q2 2025<br>JPMorgan</th>
+            <th style="width: 11%;">Q2 2025<br>BeaconOne</th>
+            <th style="width: 8%;">Δ</th>
+            <th style="width: 11%;">Q3 2025<br>JPMorgan</th>
+            <th style="width: 11%;">Q3 2025<br>BeaconOne</th>
+            <th style="width: 8%;">Δ</th>
+        </tr>
+        <tr>
+            <td class="metric-header">M&A Deal Count</td>
+            <td>57</td>
+            <td>{beacon_stats['Q1']['ma_count']}</td>
+            <td style="color: {q1_ma_count_color}; font-weight: bold; font-size: 16px;">{q1_ma_count_delta}</td>
+            <td>43</td>
+            <td>{beacon_stats['Q2']['ma_count']}</td>
+            <td style="color: {q2_ma_count_color}; font-weight: bold; font-size: 16px;">{q2_ma_count_delta}</td>
+            <td>65</td>
+            <td>{beacon_stats['Q3']['ma_count']}</td>
+            <td style="color: {q3_ma_count_color}; font-weight: bold; font-size: 16px;">{q3_ma_count_delta}</td>
+        </tr>
+        <tr>
+            <td class="metric-header">M&A Deal Value</td>
+            <td>$9.2B</td>
+            <td>{beacon_stats['Q1']['ma_value']}</td>
+            <td style="color: {q1_ma_value_color}; font-weight: bold; font-size: 16px;">{q1_ma_value_delta}</td>
+            <td>$2.1B</td>
+            <td>{beacon_stats['Q2']['ma_value']}</td>
+            <td style="color: {q2_ma_value_color}; font-weight: bold; font-size: 16px;">{q2_ma_value_delta}</td>
+            <td>$21.7B</td>
+            <td>{beacon_stats['Q3']['ma_value']}</td>
+            <td style="color: {q3_ma_value_color}; font-weight: bold; font-size: 16px;">{q3_ma_value_delta}</td>
+        </tr>
+        <tr>
+            <td class="metric-header">Investment Count</td>
+            <td>117</td>
+            <td>{beacon_stats['Q1']['inv_count']}</td>
+            <td style="color: {q1_inv_count_color}; font-weight: bold; font-size: 16px;">{q1_inv_count_delta}</td>
+            <td>90</td>
+            <td>{beacon_stats['Q2']['inv_count']}</td>
+            <td style="color: {q2_inv_count_color}; font-weight: bold; font-size: 16px;">{q2_inv_count_delta}</td>
+            <td>67</td>
+            <td>{beacon_stats['Q3']['inv_count']}</td>
+            <td style="color: {q3_inv_count_color}; font-weight: bold; font-size: 16px;">{q3_inv_count_delta}</td>
+        </tr>
+        <tr>
+            <td class="metric-header">Investment Value</td>
+            <td>$3.7B</td>
+            <td>{beacon_stats['Q1']['inv_value']}</td>
+            <td style="color: {q1_inv_value_color}; font-weight: bold; font-size: 16px;">{q1_inv_value_delta}</td>
+            <td>$2.6B</td>
+            <td>{beacon_stats['Q2']['inv_value']}</td>
+            <td style="color: {q2_inv_value_color}; font-weight: bold; font-size: 16px;">{q2_inv_value_delta}</td>
+            <td>$2.9B</td>
+            <td>{beacon_stats['Q3']['inv_value']}</td>
+            <td style="color: {q3_inv_value_color}; font-weight: bold; font-size: 16px;">{q3_inv_value_delta}</td>
+        </tr>
+    </table>
+    """, unsafe_allow_html=True)
     
-    with sep2:
-        st.markdown("""
-        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 720px; margin: 0 auto;"></div>
-        """, unsafe_allow_html=True)
-
-
-def show_ipo_activity(ipo_df):
-    """Display IPO activity"""
-    st.header("IPO Activity - YTD 2025")
-    
-    if ipo_df.empty:
-        st.info("No IPO data available")
-        return
-    
-    # YTD Overview Chart
-    st.markdown("### YTD IPO Overview")
-    
-    # Quarter filter for IPO chart
-    quarters_ipo = ['All'] + sorted([q for q in ipo_df['Quarter'].unique() if pd.notna(q) and q != 'Undisclosed'])
-    selected_quarter_ipo = st.selectbox("Filter by Quarter", quarters_ipo, key='ipo_chart_quarter')
-    
-    # Filter data for chart
-    filtered_ipo_chart = ipo_df.copy()
-    if selected_quarter_ipo != 'All':
-        filtered_ipo_chart = filtered_ipo_chart[filtered_ipo_chart['Quarter'] == selected_quarter_ipo]
-    
-    # Create IPO chart
-    fig_ipo = create_ipo_chart(filtered_ipo_chart)
-    if fig_ipo:
-        st.plotly_chart(fig_ipo, use_container_width=True)
-    
+    # Key trends AFTER the comparison table
     st.markdown("---")
-    
-    # Search and filters for table
-    search_ipo = st.text_input("🔍 Search IPOs", placeholder="Search by company, type, technology...", key='search_ipo')
-    
-    st.markdown("#### Filters")
-    filtered_ipo = ipo_df.copy()
+    st.subheader("Key Market Trends")
     
     col1, col2 = st.columns(2)
+    
     with col1:
-        quarters = ['All'] + sorted([q for q in ipo_df['Quarter'].unique() if pd.notna(q)])
-        selected_quarter = st.selectbox("Quarter", quarters, key='ipo_table_quarter')
-        if selected_quarter != 'All':
-            filtered_ipo = filtered_ipo[filtered_ipo['Quarter'] == selected_quarter]
-    
+        st.markdown("**M&A Activity**")
+        st.markdown("")
+        st.markdown("<div style='font-size: 16px;'>• <b>Q1 2025</b>: 57 medtech M&A deals were announced, totaling $9.2 billion</div>", unsafe_allow_html=True)
+        st.markdown("")
+        st.markdown("<div style='font-size: 16px;'>• <b>Q2 2025</b>: 43 medtech M&A deals were announced, totaling $2.1 billion</div>", unsafe_allow_html=True)
+        st.markdown("")
+        st.markdown("<div style='font-size: 16px;'>• <b>Q3 2025</b>: 65 medtech M&A deals were announced, totaling $21.7 billion in upfront cash and equity</div>", unsafe_allow_html=True)
+        st.markdown("")
+        st.markdown("<div style='font-size: 16px; font-weight: bold;'>Overarching Trend: Medtech M&A activity increased through Q3 2025, surpassing full-year 2024 numbers, with strategic consolidation driving large-scale transactions</div>", unsafe_allow_html=True)
+        
     with col2:
-        types = ['All'] + sorted([t for t in ipo_df['Type'].unique() if pd.notna(t)])
-        selected_type = st.selectbox("Type", types, key='ipo_type')
-        if selected_type != 'All':
-            filtered_ipo = filtered_ipo[filtered_ipo['Type'] == selected_type]
-    
-    # Apply search
-    if search_ipo:
-        mask = filtered_ipo.apply(lambda row: row.astype(str).str.contains(search_ipo, case=False).any(), axis=1)
-        filtered_ipo = filtered_ipo[mask]
-    
-    # Display metrics
-    total_ipos = len(filtered_ipo)
-    st.markdown(create_metric_card("Total IPOs YTD", total_ipos, 'ma'), unsafe_allow_html=True)
-    
-    # Format Amount column with $ and commas
-    ipo_display = filtered_ipo.copy()
-    if 'Amount' in ipo_display.columns:
-        ipo_display['Amount'] = ipo_display['Amount'].apply(
-            lambda x: f"${float(x):,.0f}" if pd.notna(x) and x != 'Undisclosed' and str(x).replace('.','').replace('-','').isdigit() else x
-        )
-    
-    # Remove unnamed columns
-    display_cols = [col for col in ipo_display.columns 
-                   if not col.startswith('_') 
-                   and not col.startswith('Unnamed')
-                   and col.strip() != '']
-    
-    # Display table
-    st.dataframe(
-        ipo_display[display_cols], 
-        use_container_width=True, 
-        height=500, 
-        hide_index=True,
-        column_config={
-            "Amount": st.column_config.TextColumn("Amount", help="IPO amount in USD"),
-        }
-    )
+        st.markdown("**Venture Capital**")
+        st.markdown("")
+        st.markdown("<div style='font-size: 16px;'>• <b>Q1 2025</b>: Medtech venture investment activity continued to see larger rounds into fewer companies to post a higher dollar total for Q1 2025, exceeding Q1 2024</div>", unsafe_allow_html=True)
+        st.markdown("")
+        st.markdown("<div style='font-size: 16px;'>• <b>Q2 2025</b>: The medtech venture landscape continues to show resilience, with total venture funding reaching $6.8 billion in the first half of 2025, positioning the sector to potentially exceed 2024's $12.7 billion full-year total</div>", unsafe_allow_html=True)
+        st.markdown("")
+        st.markdown("<div style='font-size: 16px;'>• <b>Q3 2025</b>: Medtech venture funding started the year strong yet had a weaker Q2 and Q3 in a challenging venture funding environment across all of healthcare and life sciences</div>", unsafe_allow_html=True)
+        st.markdown("")
+        st.markdown("<div style='font-size: 16px; font-weight: bold;'>Overarching Trend: Late-stage venture rounds continue to dominate at $7.9B YTD, while early-stage funding remains selective as investors focus on companies with proven traction</div>", unsafe_allow_html=True)
 
-def create_ipo_chart(df):
-    """Create IPO quarterly chart"""
-    try:
-        # Filter out undisclosed quarters
-        df_filtered = df[df['Quarter'] != 'Undisclosed'].copy()
+def show_data_management(ma_df, inv_df):
+    """Data management page for adding deals and uploading JP Morgan reports"""
+    st.header("Data Management")
+    
+    # Add undo button at the top
+    if 'changes_made' in st.session_state and st.session_state.changes_made:
+        col1, col2, col3 = st.columns([1, 1, 4])
+        with col1:
+            if st.button("â†©ï¸ Undo Last Action", type="secondary", use_container_width=True):
+                success, message = undo_last_action()
+                if success:
+                    st.success(f"âœ… {message}")
+                    st.rerun()
+                else:
+                    st.error(f"âŒ {message}")
+        with col2:
+            if 'last_backup_time' in st.session_state:
+                st.caption(f"Last change: {st.session_state.last_backup_time.strftime('%I:%M %p')}")
         
-        if len(df_filtered) == 0:
-            st.warning("No data available for IPO chart")
-            return None
-        
-        # Parse amount values
-        def parse_amount(val):
-            if val == 'Undisclosed' or pd.isna(val):
-                return 0
-            val_str = str(val).replace('$', '').replace(',', '').strip()
-            try:
-                return float(val_str)
-            except:
-                return 0
-        
-        df_filtered['_Amount_Numeric'] = df_filtered['Amount'].apply(parse_amount)
-        
-        # Group by quarter
-        quarterly_data = df_filtered.groupby('Quarter').agg({
-            '_Amount_Numeric': 'sum',
-            'Company': 'count'
-        }).reset_index()
-        quarterly_data.columns = ['Quarter', 'Total_Amount', 'IPO_Count']
-        
-        # Sort quarters
-        quarter_order = ['Q1', 'Q2', 'Q3', 'Q4']
-        quarterly_data['Quarter'] = pd.Categorical(quarterly_data['Quarter'], categories=quarter_order, ordered=True)
-        quarterly_data = quarterly_data.sort_values('Quarter')
-        quarterly_data = quarterly_data[quarterly_data['Quarter'].notna()]
-        
-        if len(quarterly_data) == 0:
-            st.warning("No valid quarterly data for IPO chart")
-            return None
-        
-        # Create figure
-        fig = go.Figure()
-        
-        # Add bars for IPO amounts
-        fig.add_trace(go.Bar(
-            x=quarterly_data['Quarter'].astype(str),
-            y=quarterly_data['Total_Amount'],
-            name='IPO Value',
-            marker_color='#9B59B6',  # Purple for IPO
-            text=[f"<b>${v:,.0f}</b>" for v in quarterly_data['Total_Amount']],
-            textposition='outside',
-            textfont=dict(size=14),
-            yaxis='y',
-            hovertemplate='<b>%{x}</b><br>IPO Value: $%{y:,.0f}<br><extra></extra>'
-        ))
-        
-        # Add line for IPO count
-        fig.add_trace(go.Scatter(
-            x=quarterly_data['Quarter'].astype(str),
-            y=quarterly_data['IPO_Count'],
-            name='IPO Count',
-            mode='lines+markers+text',
-            line=dict(color=COLORS['count_line'], width=3),
-            marker=dict(size=10, color=COLORS['count_line']),
-            text=[f"<b>{c}</b>" for c in quarterly_data['IPO_Count']],
-            textposition='top center',
-            textfont=dict(size=14),
-            yaxis='y2',
-            hovertemplate='<b>%{x}</b><br>IPO Count: %{y}<br><extra></extra>',
-            connectgaps=True
-        ))
-        
-        # Update layout
-        fig.update_layout(
-            title=dict(text='IPO Activity by Quarter', font=dict(size=20, color='#333', family='Arial, sans-serif')),
-            xaxis=dict(
-                title=dict(text='Quarter', font=dict(size=16)),  # Modern syntax
-                showgrid=False,
-                tickfont=dict(size=14)
-            ),
-            yaxis=dict(
-                title=dict(text='Total IPO Value (USD)', font=dict(size=16)),  # Modern syntax
-                side='left',
-                showgrid=False,
-                range=[0, max(quarterly_data['Total_Amount']) * 1.35] if len(quarterly_data) > 0 else [0, 1000],  # Increased for label space
-                tickfont=dict(size=13)
-            ),
-            yaxis2=dict(
-                title=dict(text='Number of IPOs', font=dict(size=16)),  # Modern syntax
-                overlaying='y',
-                side='right',
-                showgrid=False,
-                range=[0, max(quarterly_data['IPO_Count']) * 1.5] if len(quarterly_data) > 0 else [0, 10],  # Increased for label space
-                tickfont=dict(size=13)
-            ),
-            hovermode='x unified',
-            showlegend=True,
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="right",
-                x=1,
-                font=dict(size=13)
-            ),
-            height=450,
-            margin=dict(t=100, b=50, l=50, r=50),
-            plot_bgcolor='white',
-            paper_bgcolor='white',
-            font=dict(size=13, family='Arial, sans-serif')
-        )
-        
-        return fig
-    except Exception as e:
-        st.error(f"Error creating IPO chart: {str(e)}")
-        import traceback
-        st.error(f"Details: {traceback.format_exc()}")
-        return None
+        st.markdown("---")
+    
+    # Create tabs for different data management tasks
+    tab1, tab2, tab3 = st.tabs(["ðŸ“ Add Manual Deals", "ðŸŒ Web Scraper", "ðŸ“Š Upload JP Morgan Report"])
+    
+    with tab1:
+        show_manual_deal_entry(ma_df, inv_df)
+    
+    with tab2:
+        show_web_scraper(ma_df, inv_df)
+    
+    with tab3:
+        show_jp_morgan_upload()
 
-def show_upload_dataset(ma_df, inv_df, ipo_df):
-    """Password-protected data upload page"""
-    st.header("📤 Upload New Dataset")
+def show_manual_deal_entry(ma_df, inv_df):
+    """Manual deal entry forms"""
+    st.subheader("Add New Deal Manually")
     
-    # Password protection
-    if 'upload_authenticated' not in st.session_state:
-        st.session_state.upload_authenticated = False
+    # Select deal type
+    deal_type = st.radio("Select Deal Type", ["M&A Activity", "Venture Investment"])
     
-    if not st.session_state.upload_authenticated:
-        st.info("🔒 This page is password-protected. Please enter the password to continue.")
+    if deal_type == "M&A Activity":
+        st.subheader("Add M&A Deal")
         
-        password = st.text_input("Password", type="password", key="upload_password")
+        with st.form("ma_form"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                company = st.text_input("Company*")
+                acquirer = st.text_input("Acquirer*")
+                deal_type_ma = st.selectbox("Deal Type*", ["Acquisition", "Merger"])
+            
+            with col2:
+                technology = st.text_area("Technology/Description*")
+                deal_value = st.text_input("Deal Value (e.g., 100M, 1.5B, or Undisclosed)")
+            
+            col3, col4 = st.columns(2)
+            with col3:
+                quarter = st.selectbox("Quarter*", ["Q1", "Q2", "Q3", "Q4"])
+            with col4:
+                month = st.selectbox("Month*", [
+                    "January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"
+                ])
+            
+            submitted = st.form_submit_button("Add M&A Deal")
+            
+            if submitted:
+                if company and acquirer and technology:
+                    # Parse deal value to standardized format
+                    def parse_deal_input(val):
+                        if not val or val.lower() == 'undisclosed':
+                            return 'Undisclosed'
+                        val_str = val.upper().replace('$', '').replace(',', '').strip()
+                        try:
+                            if 'B' in val_str:
+                                num = float(val_str.replace('B', ''))
+                                return f"${num * 1000000000:,.0f}"
+                            elif 'M' in val_str:
+                                num = float(val_str.replace('M', ''))
+                                return f"${num * 1000000:,.0f}"
+                            else:
+                                return f"${float(val_str):,.0f}"
+                        except:
+                            return 'Undisclosed'
+                    
+                    formatted_value = parse_deal_input(deal_value)
+                    
+                    new_deal = pd.DataFrame({
+                        'Company': [company],
+                        'Acquirer': [acquirer],
+                        'Deal Type (Merger / Acquisition)': [deal_type_ma],
+                        'Technology/Description': [technology],
+                        'Deal Value': [formatted_value],
+                        'Quarter': [quarter],
+                        'Month': [month]
+                    })
+                    
+                    # Append to dataframe
+                    ma_df_updated = pd.concat([ma_df, new_deal], ignore_index=True)
+                    
+                    # Save data
+                    if save_data(ma_df_updated, inv_df):
+                        st.success("âœ… M&A deal added successfully!")
+                        st.balloons()
+                        # Clear cache to reload data
+                        st.cache_data.clear()
+                        st.rerun()
+                else:
+                    st.error("Please fill in all required fields (*)")
+    
+    else:  # Venture Investment
+        st.subheader("Add Venture Investment Deal")
         
-        if st.button("Submit", type="primary"):
-            if password == "BeaconOne":
-                st.session_state.upload_authenticated = True
-                st.success("✅ Access granted!")
-                st.rerun()
-            else:
-                st.error("❌ Incorrect password. Please try again.")
-        
+        with st.form("inv_form"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                company = st.text_input("Company*")
+                funding_type = st.selectbox("Funding Type*", ["VC", "PE"])
+            
+            with col2:
+                technology = st.text_area("Technology/Description*")
+                amount = st.text_input("Amount Raised (e.g., 50M, 1.2B, or Undisclosed)")
+            
+            lead_investors = st.text_input("Lead Investors")
+            
+            col3, col4 = st.columns(2)
+            with col3:
+                quarter = st.selectbox("Quarter*", ["Q1", "Q2", "Q3", "Q4"])
+            with col4:
+                month = st.selectbox("Month*", [
+                    "January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"
+                ])
+            
+            submitted = st.form_submit_button("Add Investment Deal")
+            
+            if submitted:
+                if company and technology:
+                    # Parse amount to numeric format (just the number, no formatting)
+                    def parse_amount_input(val):
+                        if not val or val.lower() == 'undisclosed':
+                            return 'Undisclosed'
+                        val_str = val.upper().replace('$', '').replace(',', '').strip()
+                        try:
+                            if 'B' in val_str:
+                                num = float(val_str.replace('B', ''))
+                                return int(num * 1000000000)
+                            elif 'M' in val_str:
+                                num = float(val_str.replace('M', ''))
+                                return int(num * 1000000)
+                            else:
+                                return int(float(val_str))
+                        except:
+                            return 'Undisclosed'
+                    
+                    formatted_amount = parse_amount_input(amount)
+                    
+                    new_deal = pd.DataFrame({
+                        'Company': [company],
+                        'Funding type (VC / PE)': [funding_type],
+                        'Technology/Description': [technology],
+                        'Amount Raised': [formatted_amount],
+                        'Lead Investors': [lead_investors if lead_investors else 'Undisclosed'],
+                        'Quarter': [quarter],
+                        'Month': [month]
+                    })
+                    
+                    # Append to dataframe
+                    inv_df_updated = pd.concat([inv_df, new_deal], ignore_index=True)
+                    
+                    # Save data
+                    if save_data(ma_df, inv_df_updated):
+                        st.success("âœ… Investment deal added successfully!")
+                        st.balloons()
+                        # Clear cache to reload data
+                        st.cache_data.clear()
+                        st.rerun()
+                else:
+                    st.error("Please fill in all required fields (*)")
+
+def process_extracted_deals(extracted_deals, ma_df, inv_df):
+    """Common function to process and save extracted deals from URL or PDF"""
+    if not extracted_deals:
         return
     
-    # Show upload interface after authentication
-    st.success("🔓 Authenticated")
-    
-    if st.button("🔒 Lock Page", type="secondary"):
-        st.session_state.upload_authenticated = False
-        st.rerun()
-    
     st.markdown("---")
+    st.subheader("Review Extracted Deals")
+    st.markdown(f"**{len(extracted_deals)} deals found** - Edit or remove deals before adding to dashboard:")
     
-    st.markdown("""
-    ### Instructions
-    1. Upload your Excel file with the following sheets:
-       - **YTD M&A Activity**
-       - **YTD Investment Activity** 
-       - **YTD IPO** (optional)
-    2. Choose whether to **append** new deals or **replace** all existing data
-    3. Click **Upload** to process the file
-    4. **Refresh the page** to see updated data
+    deals_to_add = []
+    
+    for idx, deal in enumerate(extracted_deals):
+        with st.expander(f"Deal {idx + 1}: {deal['company']}", expanded=True):
+            # Add delete button at the top right
+            col_delete, col_spacer = st.columns([1, 5])
+            with col_delete:
+                if st.button(f"ðŸ—‘ï¸ Remove", key=f"delete_{idx}", type="secondary", use_container_width=True):
+                    # Remove this deal from the list
+                    st.session_state.scraped_deals.pop(idx)
+                    st.success(f"Removed deal: {deal['company']}")
+                    st.rerun()
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                deal_type_select = st.selectbox(
+                    "Deal Type*", 
+                    ["M&A Activity", "Venture Investment"],
+                    index=0 if deal['type'] == 'M&A' else 1,
+                    key=f"type_{idx}"
+                )
+                
+                company = st.text_input("Company*", value=deal['company'], key=f"company_{idx}")
+                
+                if deal_type_select == "M&A Activity":
+                    acquirer = st.text_input("Acquirer*", value=deal.get('acquirer', ''), key=f"acquirer_{idx}")
+                    deal_subtype = st.selectbox("Deal Subtype*", ["Acquisition", "Merger"], key=f"subtype_{idx}")
+                else:
+                    funding_type = st.selectbox("Funding Type*", ["VC", "PE"], key=f"funding_{idx}")
+                    lead_investors = st.text_input("Lead Investors", key=f"investors_{idx}")
+            
+            with col2:
+                technology = st.text_area("Technology/Description*", value=deal.get('description', ''), height=100, key=f"tech_{idx}")
+                deal_value = st.text_input("Deal Value (e.g., 100M, 1.5B, or Undisclosed)", value=deal.get('value', 'Undisclosed'), key=f"value_{idx}")
+                
+            col3, col4 = st.columns(2)
+            with col3:
+                quarter = st.selectbox("Quarter*", ["Q1", "Q2", "Q3", "Q4"], key=f"quarter_{idx}")
+            with col4:
+                month = st.selectbox("Month*", [
+                    "January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"
+                ], key=f"month_{idx}")
+            
+            # Store edited deal info
+            if deal_type_select == "M&A Activity":
+                deals_to_add.append({
+                    'type': 'M&A',
+                    'company': company,
+                    'acquirer': acquirer,
+                    'deal_subtype': deal_subtype,
+                    'technology': technology,
+                    'value': deal_value,
+                    'quarter': quarter,
+                    'month': month
+                })
+            else:
+                deals_to_add.append({
+                    'type': 'Venture',
+                    'company': company,
+                    'funding_type': funding_type,
+                    'lead_investors': lead_investors,
+                    'technology': technology,
+                    'value': deal_value,
+                    'quarter': quarter,
+                    'month': month
+                })
+    
+    # Add action buttons
+    st.markdown("---")
+    col1, col2, col3 = st.columns([2, 2, 2])
+    
+    with col1:
+        add_all_clicked = st.button("âœ… Add All Deals to Dashboard", type="primary", use_container_width=True)
+    
+    with col2:
+        if st.button("ðŸ—‘ï¸ Clear All Deals", type="secondary", use_container_width=True):
+            st.session_state.scraped_deals = []
+            st.success("All deals cleared!")
+            st.rerun()
+    
+    with col3:
+        st.metric("Deals to Add", len(deals_to_add))
+    
+    # Only proceed with adding if the Add All button was clicked
+    if add_all_clicked:
+        ma_updated = ma_df.copy()
+        inv_updated = inv_df.copy()
+        
+        added_ma = 0
+        added_inv = 0
+        skipped_duplicates = []
+        
+        for deal in deals_to_add:
+            if deal['type'] == 'M&A':
+                # Parse and format deal value
+                def parse_deal_input(val):
+                    if not val or val.lower() == 'undisclosed':
+                        return 'Undisclosed'
+                    val_str = val.upper().replace('$', '').replace(',', '').strip()
+                    try:
+                        if 'B' in val_str:
+                            num = float(val_str.replace('B', '').replace('ILLION', ''))
+                            return f"${num * 1000000000:,.0f}"
+                        elif 'M' in val_str:
+                            num = float(val_str.replace('M', '').replace('ILLION', ''))
+                            return f"${num * 1000000:,.0f}"
+                        else:
+                            return f"${float(val_str):,.0f}"
+                    except:
+                        return 'Undisclosed'
+                
+                formatted_value = parse_deal_input(deal['value'])
+                
+                # Check for duplicates - compare company name and deal value
+                is_duplicate = False
+                for idx, existing_row in ma_updated.iterrows():
+                    existing_company = str(existing_row['Company']).strip().lower()
+                    existing_value = str(existing_row['Deal Value']).strip()
+                    
+                    new_company = deal['company'].strip().lower()
+                    
+                    # Compare company names (exact match or very similar)
+                    if existing_company == new_company or existing_company in new_company or new_company in existing_company:
+                        # Compare deal values
+                        if existing_value == formatted_value:
+                            is_duplicate = True
+                            skipped_duplicates.append(f"M&A: {deal['company']} ({formatted_value})")
+                            break
+                
+                if not is_duplicate:
+                    new_deal = pd.DataFrame({
+                        'Company': [deal['company']],
+                        'Acquirer': [deal['acquirer']],
+                        'Deal Type (Merger / Acquisition)': [deal['deal_subtype']],
+                        'Technology/Description': [deal['technology']],
+                        'Deal Value': [formatted_value],
+                        'Quarter': [deal['quarter']],
+                        'Month': [deal['month']]
+                    })
+                    ma_updated = pd.concat([ma_updated, new_deal], ignore_index=True)
+                    added_ma += 1
+            
+            else:  # Venture
+                # Parse and format amount
+                def parse_amount_input(val):
+                    if not val or val.lower() == 'undisclosed':
+                        return 'Undisclosed'
+                    val_str = val.upper().replace('$', '').replace(',', '').strip()
+                    try:
+                        if 'B' in val_str:
+                            num = float(val_str.replace('B', '').replace('ILLION', ''))
+                            return int(num * 1000000000)
+                        elif 'M' in val_str:
+                            num = float(val_str.replace('M', '').replace('ILLION', ''))
+                            return int(num * 1000000)
+                        else:
+                            return int(float(val_str))
+                    except:
+                        return 'Undisclosed'
+                
+                formatted_amount = parse_amount_input(deal['value'])
+                
+                # Check for duplicates - compare company name and amount
+                is_duplicate = False
+                for idx, existing_row in inv_updated.iterrows():
+                    existing_company = str(existing_row['Company']).strip().lower()
+                    existing_amount = str(existing_row['Amount Raised']).strip()
+                    
+                    new_company = deal['company'].strip().lower()
+                    
+                    # Compare company names (exact match or very similar)
+                    if existing_company == new_company or existing_company in new_company or new_company in existing_company:
+                        # Compare amounts
+                        if str(formatted_amount) == existing_amount:
+                            is_duplicate = True
+                            # Format for display
+                            if formatted_amount != 'Undisclosed':
+                                display_val = f"${formatted_amount:,}"
+                            else:
+                                display_val = 'Undisclosed'
+                            skipped_duplicates.append(f"Venture: {deal['company']} ({display_val})")
+                            break
+                
+                if not is_duplicate:
+                    new_deal = pd.DataFrame({
+                        'Company': [deal['company']],
+                        'Funding type (VC / PE)': [deal['funding_type']],
+                        'Technology/Description': [deal['technology']],
+                        'Amount Raised': [formatted_amount],
+                        'Lead Investors': [deal.get('lead_investors', 'Undisclosed')],
+                        'Quarter': [deal['quarter']],
+                        'Month': [deal['month']]
+                    })
+                    inv_updated = pd.concat([inv_updated, new_deal], ignore_index=True)
+                    added_inv += 1
+        
+        # Save data
+        if save_data(ma_updated, inv_updated):
+            success_msg = f"âœ… Successfully added {added_ma} M&A deals and {added_inv} Venture deals!"
+            if skipped_duplicates:
+                success_msg += f"\n\nâš ï¸ Skipped {len(skipped_duplicates)} duplicate(s):"
+                for dup in skipped_duplicates:
+                    success_msg += f"\nâ€¢ {dup}"
+            
+            st.success(success_msg)
+            if added_ma > 0 or added_inv > 0:
+                st.balloons()
+            # Clear session state
+            st.session_state.scraped_deals = []
+            # Clear cache to reload data
+            st.cache_data.clear()
+            st.rerun()
+
+def show_web_scraper(ma_df, inv_df):
+    """Web scraper for extracting deals from news articles and websites"""
+    st.subheader("Web Scraper - Extract Deals from Articles")
+    
+    st.info("""
+    ðŸŒ **Two options to extract deals:**
+    - **Option 1: URL Scraping** - Paste article URL and auto-extract
+    - **Option 2: PDF Upload** - Upload PDF (great for blocked websites)
+    """)
+    
+    # Create two columns for URL and PDF options
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("### ðŸŒ Option 1: Scrape from URL")
+        url = st.text_input("Enter Article URL", placeholder="https://example.com/medtech-deals-2025", key="scraper_url")
+        scrape_button = st.button("ðŸ” Scrape Deals from URL", type="primary", key="scrape_url_btn")
+    
+    with col2:
+        st.markdown("### ðŸ“„ Option 2: Upload PDF")
+        uploaded_pdf = st.file_uploader(
+            "Upload PDF of article",
+            type=['pdf'],
+            help="Print webpage as PDF (Ctrl+P) and upload",
+            key="pdf_uploader"
+        )
+        if uploaded_pdf:
+            extract_pdf_button = st.button("ðŸ” Extract Deals from PDF", type="primary", key="extract_pdf_btn")
+        else:
+            extract_pdf_button = False
+    
+    # Handle URL scraping
+    if scrape_button:
+        if url:
+            with st.spinner("Fetching and analyzing article..."):
+                try:
+                    import requests
+                    from bs4 import BeautifulSoup
+                    import re
+                    
+                    # Fetch the webpage with better headers to avoid 403 errors
+                    headers = {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                        'Accept-Language': 'en-US,en;q=0.5',
+                        'Accept-Encoding': 'gzip, deflate, br',
+                        'DNT': '1',
+                        'Connection': 'keep-alive',
+                        'Upgrade-Insecure-Requests': '1',
+                        'Sec-Fetch-Dest': 'document',
+                        'Sec-Fetch-Mode': 'navigate',
+                        'Sec-Fetch-Site': 'none',
+                        'Cache-Control': 'max-age=0'
+                    }
+                    
+                    try:
+                        response = requests.get(url, headers=headers, timeout=15, allow_redirects=True)
+                        response.raise_for_status()
+                    except requests.exceptions.HTTPError as e:
+                        if e.response.status_code == 403:
+                            st.error("âŒ This website blocks automated scraping (403 Forbidden)")
+                            st.info("ðŸ’¡ **Try Option 2**: Use the PDF upload option instead!")
+                            return
+                        else:
+                            raise
+                    
+                    # Parse with BeautifulSoup
+                    soup = BeautifulSoup(response.content, 'html.parser')
+                    
+                    # Extract text content
+                    text = soup.get_text()
+                    
+                    # Simple pattern matching for common deal structures
+                    patterns = [
+                        r'([A-Z][A-Za-z\s&]+?)\s+(?:acquired|purchased|bought)\s+(?:by\s+)?([A-Z][A-Za-z\s&]+?)(?:\s+for\s+\$?([\d.]+)\s*(billion|million|B|M))?',
+                        r'([A-Z][A-Za-z\s&]+?)\s+(?:raises|raised|secures|secured)\s+\$?([\d.]+)\s*(billion|million|B|M)',
+                        r'([A-Z][A-Za-z\s&]+?)\s+(?:acquires|purchases)\s+([A-Z][A-Za-z\s&]+?)(?:\s+for\s+\$?([\d.]+)\s*(billion|million|B|M))?',
+                    ]
+                    
+                    extracted_deals = []
+                    
+                    # Find all paragraphs
+                    paragraphs = soup.find_all(['p', 'li'])
+                    
+                    for para in paragraphs:
+                        para_text = para.get_text()
+                        
+                        # Check for acquisition patterns
+                        for pattern in patterns:
+                            matches = re.finditer(pattern, para_text, re.IGNORECASE)
+                            for match in matches:
+                                groups = match.groups()
+                                
+                                # Determine deal type and extract info
+                                if 'acquir' in para_text.lower() or 'purchas' in para_text.lower() or 'bought' in para_text.lower():
+                                    deal_type = 'M&A'
+                                    if len(groups) >= 2:
+                                        company = groups[0].strip()
+                                        acquirer = groups[1].strip() if len(groups) > 1 else ''
+                                        value = groups[2] if len(groups) > 2 and groups[2] else 'Undisclosed'
+                                        unit = groups[3] if len(groups) > 3 and groups[3] else ''
+                                        
+                                        extracted_deals.append({
+                                            'type': deal_type,
+                                            'company': company,
+                                            'acquirer': acquirer,
+                                            'value': f"{value}{unit}" if value != 'Undisclosed' else 'Undisclosed',
+                                            'description': para_text[:200]
+                                        })
+                                
+                                elif 'rais' in para_text.lower() or 'secur' in para_text.lower():
+                                    deal_type = 'Venture'
+                                    if len(groups) >= 2:
+                                        company = groups[0].strip()
+                                        value = groups[1] if len(groups) > 1 and groups[1] else 'Undisclosed'
+                                        unit = groups[2] if len(groups) > 2 and groups[2] else ''
+                                        
+                                        extracted_deals.append({
+                                            'type': deal_type,
+                                            'company': company,
+                                            'acquirer': '',
+                                            'value': f"{value}{unit}" if value != 'Undisclosed' else 'Undisclosed',
+                                            'description': para_text[:200]
+                                        })
+                    
+                    if extracted_deals:
+                        st.session_state.scraped_deals = extracted_deals
+                        st.success(f"âœ… Found {len(extracted_deals)} potential deals! Review and edit below.")
+                    else:
+                        st.warning("âš ï¸ No deals found automatically. Try the PDF upload or manual entry.")
+                
+                except Exception as e:
+                    error_msg = str(e)
+                    st.error(f"âŒ Error scraping URL: {error_msg}")
+                    st.info("ðŸ’¡ **Try Option 2**: Use the PDF upload option instead!")
+        else:
+            st.warning("Please enter a URL")
+    
+    # Handle PDF extraction
+    if extract_pdf_button and uploaded_pdf:
+        with st.spinner("Reading PDF and extracting deal information..."):
+            try:
+                try:
+                    import PyPDF2
+                except ImportError:
+                    st.error("âŒ PyPDF2 is not installed")
+                    st.info("ðŸ’¡ Run: `pip install PyPDF2` or use manual entry instead")
+                    return
+                import io
+                import re
+                
+                # Currency conversion rates to USD (approximate)
+                currency_rates = {
+                    'Â£': 1.27,    # GBP
+                    'â‚¬': 1.09,    # EUR
+                    'A$': 0.65,   # AUD
+                    'AU$': 0.65,  # AUD
+                    'CA$': 0.72,  # CAD
+                    'C$': 0.72,   # CAD
+                }
+                
+                def convert_to_usd(amount, currency_symbol):
+                    """Convert foreign currency to USD"""
+                    if currency_symbol in currency_rates:
+                        return amount * currency_rates[currency_symbol]
+                    return amount
+                
+                def extract_table_deals(text):
+                    """Extract deals from table-formatted text"""
+                    deals = []
+                    
+                    # Split into lines
+                    lines = text.split('\n')
+                    
+                    current_deal = {}
+                    
+                    for i, line in enumerate(lines):
+                        line = line.strip()
+                        
+                        # Look for deal type indicators
+                        if any(x in line for x in ['Series A', 'Series B', 'Series C', 'Series D', 
+                                                     'Seed', 'IPO', 'Grant', 'Mergers and Acquisitions',
+                                                     'Strategic Partnership', 'Other', 'Debt Financing',
+                                                     'Later Stage']):
+                            if current_deal and 'company' in current_deal:
+                                deals.append(current_deal)
+                            current_deal = {'deal_type': line}
+                            
+                            # Look backwards for company name
+                            for j in range(i-1, max(i-3, 0), -1):
+                                prev_line = lines[j].strip()
+                                if prev_line and len(prev_line) > 2 and prev_line[0].isupper():
+                                    current_deal['company'] = prev_line
+                                    break
+                        
+                        # Extract amounts with currency symbols
+                        amount_patterns = [
+                            r'([$Â£â‚¬]|A\$|AU\$|CA\$|C\$)([\d,]+(?:\.\d+)?)\s*(million|billion|M|B)?',
+                            r'([\d,]+(?:\.\d+)?)\s*(million|billion|M|B)',
+                        ]
+                        
+                        for pattern in amount_patterns:
+                            match = re.search(pattern, line, re.IGNORECASE)
+                            if match:
+                                try:
+                                    groups = match.groups()
+                                    if len(groups) == 3:
+                                        currency = groups[0] if groups[0] else '$'
+                                        amount_str = groups[1].replace(',', '')
+                                        if not amount_str or amount_str == '':
+                                            continue
+                                        amount = float(amount_str)
+                                        unit = groups[2] if groups[2] else ''
+                                    else:
+                                        currency = '$'
+                                        amount_str = groups[0].replace(',', '')
+                                        if not amount_str or amount_str == '':
+                                            continue
+                                        amount = float(amount_str)
+                                        unit = groups[1] if groups[1] else ''
+                                    
+                                    # Convert to USD if needed
+                                    if currency != '$':
+                                        amount = convert_to_usd(amount, currency)
+                                    
+                                    # Convert to actual dollar amount
+                                    if unit and unit.upper() in ['B', 'BILLION']:
+                                        amount = amount * 1000
+                                    
+                                    current_deal['amount'] = f"{amount}M"
+                                except (ValueError, AttributeError):
+                                    # Skip if conversion fails
+                                    continue
+                                break
+                        
+                        # Look for technology description
+                        if 'technology' not in current_deal and len(line) > 30 and any(word in line.lower() for word in ['platform', 'device', 'system', 'technology', 'solution']):
+                            current_deal['technology'] = line[:200]
+                        
+                        # Extract dates
+                        date_match = re.search(r'(\d{2}/\d{2}/\d{4})', line)
+                        if date_match:
+                            current_deal['date'] = date_match.group(1)
+                    
+                    # Add last deal
+                    if current_deal and 'company' in current_deal:
+                        deals.append(current_deal)
+                    
+                    return deals
+                
+                # Read PDF
+                pdf_reader = PyPDF2.PdfReader(io.BytesIO(uploaded_pdf.read()))
+                
+                # Extract text from all pages
+                all_text = []
+                for page_num, page in enumerate(pdf_reader.pages):
+                    text = page.extract_text()
+                    all_text.append(text)
+                    st.success(f"âœ“ Processed page {page_num + 1} of {len(pdf_reader.pages)}")
+                
+                combined_text = "\n\n".join(all_text)
+                
+                if not combined_text.strip():
+                    st.error("âŒ No text could be extracted from the PDF")
+                    st.info("ðŸ’¡ **Try**: Make sure the PDF contains selectable text (not scanned images)")
+                    return
+                
+                st.success(f"âœ… Extracted {len(combined_text)} characters from PDF")
+                
+                # Try table extraction first
+                table_deals = extract_table_deals(combined_text)
+                
+                extracted_deals = []
+                
+                # Convert table deals to standard format
+                for deal in table_deals:
+                    deal_type = 'Venture'
+                    if 'deal_type' in deal:
+                        if 'merger' in deal['deal_type'].lower() or 'acquisition' in deal['deal_type'].lower():
+                            deal_type = 'M&A'
+                    
+                    extracted_deals.append({
+                        'type': deal_type,
+                        'company': deal.get('company', 'Unknown'),
+                        'acquirer': '',
+                        'value': deal.get('amount', 'Undisclosed'),
+                        'description': deal.get('technology', '')[:200]
+                    })
+                
+                # Remove duplicates based on company name
+                seen = set()
+                unique_deals = []
+                for deal in extracted_deals:
+                    key = (deal['company'].lower(), deal['value'])
+                    if key not in seen and deal['company'] != 'Unknown':
+                        seen.add(key)
+                        unique_deals.append(deal)
+                
+                if unique_deals:
+                    st.session_state.scraped_deals = unique_deals
+                    st.success(f"âœ… Extracted {len(unique_deals)} deals from PDF! Review and edit below.")
+                    st.rerun()
+                else:
+                    st.warning("âš ï¸ No deals found in the PDF using pattern matching")
+                    st.info("""
+                    **What to try:**
+                    1. Make sure the PDF contains the full article text
+                    2. Check if deals are mentioned with phrases like "acquired by" or "raises $"
+                    3. Use 'Add Manual Deals' tab for guaranteed accuracy
+                    """)
+                    
+                    # Show a sample of extracted text
+                    with st.expander("ðŸ“„ View extracted text (first 1000 characters)"):
+                        st.text(combined_text[:1000])
+            
+            except Exception as pdf_error:
+                st.error(f"Error processing PDF: {str(pdf_error)}")
+                st.info("ðŸ’¡ **Manual entry recommended**: Switch to 'Add Manual Deals' tab")
+    
+    # Display and edit scraped deals (common for both URL and PDF)
+    if 'scraped_deals' in st.session_state and st.session_state.scraped_deals:
+        process_extracted_deals(st.session_state.scraped_deals, ma_df, inv_df)
+
+def show_jp_morgan_upload():
+    """JP Morgan report upload and data extraction"""
+    st.subheader("Upload JP Morgan MedTech Industry Report")
+    
+    st.info("""
+    ðŸ“„ **Instructions:**
+    1. Upload the quarterly JP Morgan MedTech Industry Report (PDF or text)
+    2. The system will extract key data for M&A and Venture activity
+    3. Charts and key takeaways will be automatically updated in the JP Morgan Summary page
     """)
     
     # File uploader
     uploaded_file = st.file_uploader(
-        "Choose Excel file",
-        type=['xlsx', 'xls'],
-        help="Upload MedTech deals data file"
+        "Choose JP Morgan Report", 
+        type=['pdf', 'txt', 'docx'],
+        help="Upload the quarterly JP Morgan MedTech Industry Report"
     )
     
     if uploaded_file is not None:
-        st.success(f"✅ File uploaded: {uploaded_file.name}")
+        st.success(f"âœ… File uploaded: {uploaded_file.name}")
         
-        # Preview uploaded data
-        try:
-            preview_ma = pd.read_excel(uploaded_file, sheet_name='YTD M&A Activity', nrows=5)
-            preview_inv = pd.read_excel(uploaded_file, sheet_name='YTD Investment Activity', nrows=5)
-            
-            st.markdown("### Preview")
+        # Quarter selection
+        col1, col2 = st.columns(2)
+        with col1:
+            report_year = st.selectbox("Report Year", [2025, 2024, 2023])
+        with col2:
+            report_quarter = st.selectbox("Report Quarter", ["Q1", "Q2", "Q3", "Q4"])
+        
+        st.markdown("### Enter Data Manually")
+        st.markdown("Please enter the key metrics from the report:")
+        
+        with st.form("jp_morgan_data_form"):
+            st.markdown("#### M&A Activity")
             col1, col2 = st.columns(2)
-            
             with col1:
-                st.markdown("**M&A Activity (first 5 rows)**")
-                st.dataframe(preview_ma, use_container_width=True)
-            
+                ma_value = st.number_input("M&A Deal Value ($M)", min_value=0.0, value=0.0, step=100.0)
             with col2:
-                st.markdown("**Investment Activity (first 5 rows)**")
-                st.dataframe(preview_inv, use_container_width=True)
+                ma_count = st.number_input("M&A Deal Count", min_value=0, value=0, step=1)
             
-            # Upload options
-            st.markdown("---")
-            st.markdown("### Upload Options")
+            st.markdown("#### Venture Capital")
+            col1, col2 = st.columns(2)
+            with col1:
+                vc_value = st.number_input("Venture Deal Value ($M)", min_value=0.0, value=0.0, step=100.0)
+            with col2:
+                vc_count = st.number_input("Venture Deal Count", min_value=0, value=0, step=1)
             
-            upload_mode = st.radio(
-                "How would you like to update the data?",
-                ["Append new deals to existing data", "Replace all existing data"],
-                help="Append will add new deals to current data. Replace will overwrite everything."
-            )
+            st.markdown("#### Key Takeaways")
+            ma_takeaway = st.text_area("M&A Key Takeaway", placeholder="Enter key insight for M&A activity...")
+            vc_takeaway = st.text_area("Venture Capital Key Takeaway", placeholder="Enter key insight for VC activity...")
             
-            if st.button("📤 Upload and Process Data", type="primary", use_container_width=True):
-                with st.spinner("Processing upload..."):
-                    try:
-                        # Read full datasets
-                        new_ma = pd.read_excel(uploaded_file, sheet_name='YTD M&A Activity')
-                        new_inv = pd.read_excel(uploaded_file, sheet_name='YTD Investment Activity')
-                        
-                        try:
-                            new_ipo = pd.read_excel(uploaded_file, sheet_name='YTD IPO')
-                        except:
-                            new_ipo = ipo_df  # Keep existing if not in upload
-                        
-                        # Clean data
-                        new_ma = new_ma.fillna('Undisclosed')
-                        new_inv = new_inv.fillna('Undisclosed')
-                        
-                        # Remove unnamed columns
-                        new_ma = new_ma.loc[:, ~new_ma.columns.str.contains('^Unnamed')]
-                        new_inv = new_inv.loc[:, ~new_inv.columns.str.contains('^Unnamed')]
-                        if not new_ipo.empty:
-                            new_ipo = new_ipo.loc[:, ~new_ipo.columns.str.contains('^Unnamed')]
-                        
-                        # Strip year from Quarter column
-                        if 'Quarter' in new_ma.columns:
-                            new_ma['Quarter'] = new_ma['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
-                            new_ma['Quarter'] = new_ma['Quarter'].fillna('Undisclosed')
-                        
-                        if 'Quarter' in new_inv.columns:
-                            new_inv['Quarter'] = new_inv['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
-                            new_inv['Quarter'] = new_inv['Quarter'].fillna('Undisclosed')
-                        
-                        if not new_ipo.empty and 'Quarter' in new_ipo.columns:
-                            new_ipo['Quarter'] = new_ipo['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
-                            new_ipo['Quarter'] = new_ipo['Quarter'].fillna('Undisclosed')
-                        
-                        if upload_mode == "Append new deals to existing data":
-                            # Append mode - combine old and new
-                            final_ma = pd.concat([ma_df, new_ma], ignore_index=True)
-                            final_inv = pd.concat([inv_df, new_inv], ignore_index=True)
-                            
-                            # Remove duplicates based on key columns
-                            final_ma = final_ma.drop_duplicates(subset=['Company', 'Acquirer', 'Deal Value'], keep='last')
-                            final_inv = final_inv.drop_duplicates(subset=['Company', 'Amount Raised'], keep='last')
-                            
-                            st.info(f"📊 Added {len(final_ma) - len(ma_df)} new M&A deals and {len(final_inv) - len(inv_df)} new investment deals")
-                        else:
-                            # Replace mode - use only new data
-                            final_ma = new_ma
-                            final_inv = new_inv
-                            st.info(f"📊 Replaced data: {len(final_ma)} M&A deals, {len(final_inv)} investment deals")
-                        
-                        # Save to file
-                        if save_data(final_ma, final_inv, new_ipo):
-                            st.success("✅ Data uploaded successfully!")
-                            st.balloons()
-                            st.markdown("---")
-                            st.markdown("### ⚠️ Important: Please refresh the page to see updated data")
-                            st.markdown("Press **R** or click the refresh button in your browser")
-                        
-                    except Exception as e:
-                        st.error(f"❌ Error processing upload: {str(e)}")
-                        st.info("Make sure your Excel file has the correct sheet names and column structure")
-        
-        except Exception as e:
-            st.error(f"❌ Error reading file: {str(e)}")
-            st.info("Please ensure the file has 'YTD M&A Activity' and 'YTD Investment Activity' sheets")
+            submitted = st.form_submit_button("ðŸ’¾ Save JP Morgan Data")
+            
+            if submitted:
+                # Save the data to a JSON file or database
+                jp_morgan_data = {
+                    'year': report_year,
+                    'quarter': report_quarter,
+                    'ma': {'value': ma_value, 'count': ma_count, 'takeaway': ma_takeaway},
+                    'venture': {'value': vc_value, 'count': vc_count, 'takeaway': vc_takeaway}
+                }
+                
+                # Create data directory if it doesn't exist
+                os.makedirs('data', exist_ok=True)
+                
+                # Save to JSON file
+                import json
+                json_path = f'data/jp_morgan_{report_year}_{report_quarter}.json'
+                with open(json_path, 'w') as f:
+                    json.dump(jp_morgan_data, f, indent=2)
+                
+                st.success(f"âœ… JP Morgan {report_year} {report_quarter} data saved successfully!")
+                st.info("ðŸ“Š The JP Morgan Summary page will now reflect this data. Navigate to 'JP Morgan Summary' to view the updated charts.")
+                st.balloons()
 
 if __name__ == "__main__":
     main()
