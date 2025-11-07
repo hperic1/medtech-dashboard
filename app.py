@@ -312,12 +312,16 @@ def create_comparison_mini_chart(metric_name, jp_value, beacon_value, bar_color,
         # Convert string values to numeric for comparison
         def parse_value(val):
             if isinstance(val, str):
-                val = val.replace('$', '').replace('B', '').replace('M', '').replace(',', '').strip()
+                val_str = str(val).replace('$', '').replace(',', '').strip()
                 try:
-                    # Handle billions
-                    if 'B' in str(val) or float(val) > 1000:
-                        return float(val) if 'B' not in str(val) else float(val.replace('B', '')) * 1000
-                    return float(val)
+                    # Check if it's billions before removing B
+                    if 'B' in val_str:
+                        numeric_val = float(val_str.replace('B', ''))
+                        return numeric_val * 1000  # Convert billions to millions for consistent scale
+                    elif 'M' in val_str:
+                        return float(val_str.replace('M', ''))
+                    else:
+                        return float(val_str)
                 except:
                     return 0
             return float(val) if val else 0
@@ -520,11 +524,11 @@ def create_jp_morgan_chart_by_category(category, color):
         
         fig = go.Figure()
         
-        # Add bars for deal values
+        # Add bars for deal values - convert to billions for display
         fig.add_trace(go.Bar(
             x=quarters,
-            y=values,
-            name='Deal Value ($M)',
+            y=[v/1000 for v in values],  # Convert millions to billions for Y-axis
+            name='Deal Value',
             marker_color=color,
             text=[f"<b>{format_currency_from_millions(v)}</b>" for v in values],  # Values are in millions
             textposition='outside',
@@ -558,10 +562,10 @@ def create_jp_morgan_chart_by_category(category, color):
                 tickfont=dict(size=14)
             ),
             yaxis=dict(
-                title=dict(text='Deal Value (Millions USD)', font=dict(size=16)),  # Modern syntax
+                title=dict(text='Deal Value (Billions USD)', font=dict(size=16)),  # Changed to Billions
                 side='left',
                 showgrid=False,
-                range=[0, max(values) * 1.35],  # Increased for label space
+                range=[0, max([v/1000 for v in values]) * 1.35],  # Increased for label space, using billions
                 tickfont=dict(size=13)
             ),
             yaxis2=dict(
@@ -1132,31 +1136,44 @@ def show_jp_morgan_summary(ma_df, inv_df):
     
     # Function to color-code cells based on their values
     def color_delta_cells(val):
-        """Color code ONLY significant changes (≥20%), leave others black"""
+        """Color code ONLY significant changes (≥50%), leave others black"""
         if val == 'None' or pd.isna(val):
             return 'color: #000000'  # Black for None
         
         if '↑' in str(val):
             # Extract percentage
             pct = float(str(val).replace('↑', '').replace('%', ''))
-            if pct >= 20:
-                return 'color: #00A86B; font-weight: bold'  # Dark green ONLY for ≥20% increase
+            if pct >= 50:
+                return 'color: #00A86B; font-weight: bold'  # Dark green ONLY for ≥50% increase
             else:
-                return 'color: #000000'  # Black for <20% increase
+                return 'color: #000000'  # Black for <50% increase
         elif '↓' in str(val):
             # Extract percentage
             pct = float(str(val).replace('↓', '').replace('%', ''))
-            if pct >= 20:
-                return 'color: #D85252; font-weight: bold'  # Dark red ONLY for ≥20% decrease
+            if pct >= 50:
+                return 'color: #D85252; font-weight: bold'  # Dark red ONLY for ≥50% decrease
             else:
-                return 'color: #000000'  # Black for <20% decrease
+                return 'color: #000000'  # Black for <50% decrease
         
         return 'color: #000000'  # Default black
+    
+    # Function to format dollar values
+    def format_dollar_value(val):
+        """Format numeric values as $X.XB"""
+        try:
+            # Round to 1 decimal to avoid floating point errors
+            rounded_val = round(float(val), 1)
+            return f"${rounded_val:.1f}B"
+        except:
+            return str(val)
     
     # Apply styling to the dataframe
     styled_df = comparison_df.style.applymap(
         color_delta_cells,
         subset=['V QoQ Change', 'V YoY Change', 'M QoQ Change', 'M YoY Change']
+    ).format(
+        format_dollar_value,
+        subset=['Venture ($B)', 'M&A ($B)']
     ).set_properties(**{
         'text-align': 'center'
     }, subset=['V QoQ Change', 'V YoY Change', 'M QoQ Change', 'M YoY Change']
