@@ -319,26 +319,23 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
         fig.update_layout(
             title=dict(text=title, font=dict(size=20, color='#333', family='Arial, sans-serif')),  # Larger title
             xaxis=dict(
-                title='Quarter',
+                title=dict(text='Quarter', font=dict(size=16)),  # Modern syntax
                 showgrid=False,
-                titlefont=dict(size=16),  # Larger axis title
                 tickfont=dict(size=14)  # Larger tick labels
             ),
             yaxis=dict(
-                title='Total Deal Value (USD)',
+                title=dict(text='Total Deal Value (USD)', font=dict(size=16)),  # Modern syntax
                 side='left',
                 showgrid=False,
                 range=[0, max(quarterly_data['Total_Value']) * 1.2] if len(quarterly_data) > 0 else [0, 1000],
-                titlefont=dict(size=16),  # Larger axis title
                 tickfont=dict(size=13)  # Larger tick labels
             ),
             yaxis2=dict(
-                title='Number of Deals',
+                title=dict(text='Number of Deals', font=dict(size=16)),  # Modern syntax
                 overlaying='y',
                 side='right',
                 showgrid=False,
                 range=[0, max(quarterly_data['Deal_Count']) * 1.3] if len(quarterly_data) > 0 else [0, 10],
-                titlefont=dict(size=16),  # Larger axis title
                 tickfont=dict(size=13)  # Larger tick labels
             ),
             hovermode='x unified',
@@ -421,26 +418,23 @@ def create_jp_morgan_chart_by_category(category, color):
         fig.update_layout(
             title=dict(text=f'{category} Activity', font=dict(size=18, color='#333', family='Arial, sans-serif')),
             xaxis=dict(
-                title='Quarter',
+                title=dict(text='Quarter', font=dict(size=16)),  # Modern syntax
                 showgrid=False,
-                titlefont=dict(size=16),
                 tickfont=dict(size=14)
             ),
             yaxis=dict(
-                title='Deal Value (Millions USD)',
+                title=dict(text='Deal Value (Millions USD)', font=dict(size=16)),  # Modern syntax
                 side='left',
                 showgrid=False,
                 range=[0, max(values) * 1.2],
-                titlefont=dict(size=16),
                 tickfont=dict(size=13)
             ),
             yaxis2=dict(
-                title='Number of Deals',
+                title=dict(text='Number of Deals', font=dict(size=16)),  # Modern syntax
                 overlaying='y',
                 side='right',
                 showgrid=False,
                 range=[0, max(counts) * 1.3] if max(counts) > 0 else [0, 100],
-                titlefont=dict(size=16),
                 tickfont=dict(size=13)
             ),
             hovermode='x unified',
@@ -1235,26 +1229,23 @@ def create_ipo_chart(df):
         fig.update_layout(
             title=dict(text='IPO Activity by Quarter', font=dict(size=20, color='#333', family='Arial, sans-serif')),
             xaxis=dict(
-                title='Quarter',
+                title=dict(text='Quarter', font=dict(size=16)),  # Modern syntax
                 showgrid=False,
-                titlefont=dict(size=16),
                 tickfont=dict(size=14)
             ),
             yaxis=dict(
-                title='Total IPO Value (USD)',
+                title=dict(text='Total IPO Value (USD)', font=dict(size=16)),  # Modern syntax
                 side='left',
                 showgrid=False,
                 range=[0, max(quarterly_data['Total_Amount']) * 1.2] if len(quarterly_data) > 0 else [0, 1000],
-                titlefont=dict(size=16),
                 tickfont=dict(size=13)
             ),
             yaxis2=dict(
-                title='Number of IPOs',
+                title=dict(text='Number of IPOs', font=dict(size=16)),  # Modern syntax
                 overlaying='y',
                 side='right',
                 showgrid=False,
                 range=[0, max(quarterly_data['IPO_Count']) * 1.3] if len(quarterly_data) > 0 else [0, 10],
-                titlefont=dict(size=16),
                 tickfont=dict(size=13)
             ),
             hovermode='x unified',
