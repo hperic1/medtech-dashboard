@@ -128,17 +128,18 @@ def load_data():
         if not ipo_df.empty:
             ipo_df = ipo_df.loc[:, ~ipo_df.columns.str.contains('^Unnamed')]
         
-        # Strip year from Quarter column (e.g., "Q1 2025" -> "Q1")
+        # Keep year in Quarter column for context (e.g., "Q1 2025" stays as "Q1 2025")
+        # This ensures quarters display with year throughout the app
         if 'Quarter' in ma_df.columns:
-            ma_df['Quarter'] = ma_df['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
+            ma_df['Quarter'] = ma_df['Quarter'].astype(str)
             ma_df['Quarter'] = ma_df['Quarter'].fillna('Undisclosed')
         
         if 'Quarter' in inv_df.columns:
-            inv_df['Quarter'] = inv_df['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
+            inv_df['Quarter'] = inv_df['Quarter'].astype(str)
             inv_df['Quarter'] = inv_df['Quarter'].fillna('Undisclosed')
         
         if not ipo_df.empty and 'Quarter' in ipo_df.columns:
-            ipo_df['Quarter'] = ipo_df['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
+            ipo_df['Quarter'] = ipo_df['Quarter'].astype(str)
             ipo_df['Quarter'] = ipo_df['Quarter'].fillna('Undisclosed')
         
         return ma_df, inv_df, ipo_df
@@ -1133,10 +1134,12 @@ def show_jp_morgan_summary(ma_df, inv_df):
     
     # Calculate stats for each quarter
     beacon_stats = {}
-    for q in ['Q1', 'Q2', 'Q3']:
+    for q in ['Q1 2025', 'Q2 2025', 'Q3 2025']:
         ma_count, ma_value = calc_quarterly_stats(ma_df, q, 'Deal Value')
         inv_count, inv_value = calc_quarterly_stats(inv_df, q, 'Amount Raised')
-        beacon_stats[q] = {
+        # Store with short key for display
+        q_short = q.split()[0]  # Just 'Q1', 'Q2', 'Q3' for keys
+        beacon_stats[q_short] = {
             'ma_count': ma_count,
             'ma_value': ma_value,
             'inv_count': inv_count,
@@ -1208,6 +1211,13 @@ def show_jp_morgan_summary(ma_df, inv_df):
         except:
             return str(val)
     
+    # Function to add separator line between 2024 and 2025
+    def highlight_year_separator(row):
+        """Add bottom border after Q4 2024 to separate years"""
+        if row.name == 3:  # Index 3 is Q4 2024 (0-indexed)
+            return ['border-bottom: 3px solid #2c3e50;'] * len(row)
+        return [''] * len(row)
+    
     # Apply styling to the dataframe
     styled_df = comparison_df.style.applymap(
         color_delta_cells,
@@ -1215,6 +1225,9 @@ def show_jp_morgan_summary(ma_df, inv_df):
     ).format(
         format_dollar_value,
         subset=['M&A ($B)', 'Venture ($B)']
+    ).apply(
+        highlight_year_separator, 
+        axis=1
     ).set_properties(**{
         'text-align': 'center'
     }, subset=['M&A QoQ Change', 'M&A YoY Change', 'Venture QoQ Change', 'Venture YoY Change']
@@ -1237,8 +1250,8 @@ def show_jp_morgan_summary(ma_df, inv_df):
     table_col, trends_col = st.columns([3, 2])
     
     with table_col:
-        # Display the styled dataframe
-        st.dataframe(styled_df, use_container_width=True, hide_index=True, height=350)
+        # Display the styled dataframe without fixed height to prevent empty rows
+        st.dataframe(styled_df, use_container_width=True, hide_index=True)
     
     with trends_col:
         st.markdown("#### Key Overall Trends")
@@ -1513,11 +1526,12 @@ def show_ipo_activity(ipo_df):
             lambda x: f"${float(x):,.0f}" if pd.notna(x) and x != 'Undisclosed' and str(x).replace('.','').replace('-','').isdigit() else x
         )
     
-    # Remove unnamed columns
+    # Remove unnamed columns and Date column
     display_cols = [col for col in ipo_display.columns 
                    if not col.startswith('_') 
                    and not col.startswith('Unnamed')
-                   and col.strip() != '']
+                   and col.strip() != ''
+                   and col != 'Date']  # Exclude Date column
     
     # Display table
     st.dataframe(
@@ -1783,17 +1797,17 @@ def show_upload_dataset(ma_df, inv_df, ipo_df):
                         if not new_ipo.empty:
                             new_ipo = new_ipo.loc[:, ~new_ipo.columns.str.contains('^Unnamed')]
                         
-                        # Strip year from Quarter column
+                        # Keep year in Quarter column for context
                         if 'Quarter' in new_ma.columns:
-                            new_ma['Quarter'] = new_ma['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
+                            new_ma['Quarter'] = new_ma['Quarter'].astype(str)
                             new_ma['Quarter'] = new_ma['Quarter'].fillna('Undisclosed')
                         
                         if 'Quarter' in new_inv.columns:
-                            new_inv['Quarter'] = new_inv['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
+                            new_inv['Quarter'] = new_inv['Quarter'].astype(str)
                             new_inv['Quarter'] = new_inv['Quarter'].fillna('Undisclosed')
                         
                         if not new_ipo.empty and 'Quarter' in new_ipo.columns:
-                            new_ipo['Quarter'] = new_ipo['Quarter'].astype(str).str.extract(r'(Q[1-4])', expand=False)
+                            new_ipo['Quarter'] = new_ipo['Quarter'].astype(str)
                             new_ipo['Quarter'] = new_ipo['Quarter'].fillna('Undisclosed')
                         
                         if upload_mode == "Append new deals to existing data":
