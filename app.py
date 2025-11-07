@@ -249,7 +249,7 @@ def create_metric_card(label, value, color_scheme='ma'):
     </div>
     """
 
-def create_comparison_mini_chart(metric_name, jp_value, beacon_value, color, height=150):
+def create_comparison_mini_chart(metric_name, jp_value, beacon_value, bar_color, height=150):
     """Create mini bar chart comparing JPMorgan vs BeaconOne data"""
     try:
         # Convert hex to rgba with opacity for second bar
@@ -280,45 +280,52 @@ def create_comparison_mini_chart(metric_name, jp_value, beacon_value, color, hei
         # Create figure
         fig = go.Figure()
         
-        # Add bars with proper color format
+        # Add bars with proper color format - bars are colored, background is light
         fig.add_trace(go.Bar(
             x=['JPMorgan', 'BeaconOne'],
             y=[jp_numeric, beacon_numeric],
             marker=dict(
-                color=[color, hex_to_rgba(color, 0.75)],  # Second bar with 75% opacity
-                line=dict(color='white', width=0)
+                color=[bar_color, hex_to_rgba(bar_color, 0.7)],  # Colored bars
+                line=dict(color='white', width=2)  # White outline on bars
             ),
             text=[str(jp_value), str(beacon_value)],
             textposition='outside',
-            textfont=dict(size=14, color='white', family='Arial Black, sans-serif'),
+            textfont=dict(size=13, color='#333', family='Arial, sans-serif', weight='bold'),
             hovertemplate='<b>%{x}</b><br>%{text}<br><extra></extra>',
             showlegend=False
         ))
         
-        # Update layout
+        # Update layout - light background, dark text
         fig.update_layout(
             title=dict(
                 text=metric_name,
-                font=dict(size=12, color='white', family='Arial, sans-serif'),
+                font=dict(size=13, color='#333', family='Arial, sans-serif', weight='bold'),
                 x=0.5,
-                xanchor='center'
+                xanchor='center',
+                y=0.95,
+                yanchor='top'
             ),
-            plot_bgcolor=color,
-            paper_bgcolor=color,
+            plot_bgcolor='#f8f9fa',  # Light gray background
+            paper_bgcolor='white',
             xaxis=dict(
                 showgrid=False,
                 showticklabels=True,
-                tickfont=dict(size=10, color='white'),
-                title=None
+                tickfont=dict(size=11, color='#666'),
+                title=None,
+                showline=True,
+                linecolor='#ddd',
+                linewidth=1
             ),
             yaxis=dict(
-                showgrid=False,
+                showgrid=True,
+                gridcolor='#e0e0e0',
+                gridwidth=1,
                 showticklabels=False,
                 title=None,
-                range=[0, max(jp_numeric, beacon_numeric) * 1.3]
+                range=[0, max(jp_numeric, beacon_numeric) * 1.3] if max(jp_numeric, beacon_numeric) > 0 else [0, 100]
             ),
             height=height,
-            margin=dict(t=40, b=30, l=10, r=10),
+            margin=dict(t=50, b=40, l=15, r=15),
             hovermode='x'
         )
         
@@ -1081,16 +1088,28 @@ def show_jp_morgan_summary(ma_df, inv_df):
     st.markdown("---")
     st.markdown("### JPMorgan vs BeaconOne Data - Quarterly Comparison")
     
+    # Define consistent colors for each metric across all quarters
+    METRIC_COLORS = {
+        'ma_count': '#7FA8C9',      # Muted blue for M&A count
+        'ma_value': '#5A8BAD',      # Darker blue for M&A value
+        'inv_count': '#C9A77F',     # Muted tan for Investment count
+        'inv_value': '#B3915C'      # Darker tan for Investment value
+    }
+    
+    # Quarter border color
+    QUARTER_BORDER_COLOR = '#90A9B0'  # Muted teal from palette
+    
     # Create three columns for Q1, Q2, Q3
     q1_col, q2_col, q3_col = st.columns(3)
     
-    for col, quarter, ma_color, inv_color in [
-        (q1_col, 'Q1', '#7FA8C9', '#C9A77F'),  # Using muted colors from palette
-        (q2_col, 'Q2', '#7FA8C9', '#C9A77F'),
-        (q3_col, 'Q3', '#9B59B6', '#C9A77F')  # Purple for Q3 M&A
-    ]:
+    for col, quarter in [(q1_col, 'Q1'), (q2_col, 'Q2'), (q3_col, 'Q3')]:
         with col:
-            st.markdown(f"#### {quarter} 2025")
+            # Quarter header with border container
+            st.markdown(f"""
+            <div style='border: 3px solid {QUARTER_BORDER_COLOR}; border-radius: 12px; padding: 15px; background-color: #fafbfc; margin-bottom: 20px;'>
+                <h4 style='text-align: center; color: #333; margin: 0 0 15px 0; font-family: Arial, sans-serif;'>{quarter} 2025</h4>
+            </div>
+            """, unsafe_allow_html=True)
             
             # JP Morgan data
             jp_ma_count = {'Q1': 57, 'Q2': 43, 'Q3': 65}[quarter]
@@ -1098,46 +1117,46 @@ def show_jp_morgan_summary(ma_df, inv_df):
             jp_inv_count = {'Q1': 117, 'Q2': 90, 'Q3': 67}[quarter]
             jp_inv_value = {'Q1': '$3.7B', 'Q2': '$2.6B', 'Q3': '$2.9B'}[quarter]
             
-            # M&A Deal Count chart
+            # M&A Deal Count chart - consistent color across quarters
             fig_ma_count = create_comparison_mini_chart(
                 'M&A Deal Count',
                 jp_ma_count,
                 beacon_stats[quarter]['ma_count'],
-                ma_color,
-                height=150
+                METRIC_COLORS['ma_count'],
+                height=140
             )
             if fig_ma_count:
                 st.plotly_chart(fig_ma_count, use_container_width=True, key=f'{quarter}_ma_count')
             
-            # M&A Deal Value chart
+            # M&A Deal Value chart - consistent color across quarters
             fig_ma_value = create_comparison_mini_chart(
                 'M&A Deal Value',
                 jp_ma_value,
                 beacon_stats[quarter]['ma_value'],
-                ma_color,
-                height=150
+                METRIC_COLORS['ma_value'],
+                height=140
             )
             if fig_ma_value:
                 st.plotly_chart(fig_ma_value, use_container_width=True, key=f'{quarter}_ma_value')
             
-            # Investment Count chart
+            # Investment Count chart - consistent color across quarters
             fig_inv_count = create_comparison_mini_chart(
                 'Investment Count',
                 jp_inv_count,
                 beacon_stats[quarter]['inv_count'],
-                inv_color,
-                height=150
+                METRIC_COLORS['inv_count'],
+                height=140
             )
             if fig_inv_count:
                 st.plotly_chart(fig_inv_count, use_container_width=True, key=f'{quarter}_inv_count')
             
-            # Investment Value chart
+            # Investment Value chart - consistent color across quarters
             fig_inv_value = create_comparison_mini_chart(
                 'Investment Value',
                 jp_inv_value,
                 beacon_stats[quarter]['inv_value'],
-                inv_color,
-                height=150
+                METRIC_COLORS['inv_value'],
+                height=140
             )
             if fig_inv_value:
                 st.plotly_chart(fig_inv_value, use_container_width=True, key=f'{quarter}_inv_value')
