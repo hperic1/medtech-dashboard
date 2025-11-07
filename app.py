@@ -1090,26 +1090,32 @@ def show_jp_morgan_summary(ma_df, inv_df):
     st.markdown("---")
     st.markdown("### JPMorgan vs BeaconOne Data - Quarterly Comparison")
     
-    # Define consistent colors for each metric across all quarters
+    # Define MORE DISTINCT colors for each metric across all quarters
     METRIC_COLORS = {
-        'ma_count': '#7FA8C9',      # Muted blue for M&A count
-        'ma_value': '#5A8BAD',      # Darker blue for M&A value
-        'inv_count': '#C9A77F',     # Muted tan for Investment count
-        'inv_value': '#B3915C'      # Darker tan for Investment value
+        'ma_count': '#5B9BD5',      # Bright blue for M&A count
+        'ma_value': '#2E5C8A',      # Dark navy for M&A value
+        'inv_count': '#D4A574',     # Bright tan for Investment count
+        'inv_value': '#8B6F47'      # Dark brown for Investment value
     }
     
-    # Quarter border color
-    QUARTER_BORDER_COLOR = '#90A9B0'  # Muted teal from palette
+    # Different border color for EACH quarter
+    QUARTER_COLORS = {
+        'Q1': '#7FA8C9',   # Muted blue
+        'Q2': '#C9A77F',   # Muted tan
+        'Q3': '#9B8BA8'    # Muted purple
+    }
     
     # Create three columns for Q1, Q2, Q3
     q1_col, q2_col, q3_col = st.columns(3)
     
     for col, quarter in [(q1_col, 'Q1'), (q2_col, 'Q2'), (q3_col, 'Q3')]:
         with col:
-            # Open single border container that wraps EVERYTHING (header + all charts)
+            # Each quarter gets its own border color - wraps header AND all charts
+            border_color = QUARTER_COLORS[quarter]
+            
             st.markdown(f"""
-            <div style='border: 3px solid {QUARTER_BORDER_COLOR}; border-radius: 12px; padding: 20px 12px; background-color: #fafbfc; margin-bottom: 20px;'>
-                <h4 style='text-align: center; color: #333; margin: 0 0 20px 0; padding-bottom: 15px; border-bottom: 2px solid {QUARTER_BORDER_COLOR}; font-family: Arial, sans-serif;'>{quarter} 2025</h4>
+            <div style='border: 3px solid {border_color}; border-radius: 12px; padding: 20px 12px; background-color: #fafbfc; margin-bottom: 20px;'>
+                <h4 style='text-align: center; color: #333; margin: 0 0 20px 0; padding-bottom: 15px; border-bottom: 2px solid {border_color}; font-family: Arial, sans-serif;'>{quarter} 2025</h4>
             """, unsafe_allow_html=True)
             
             # JP Morgan data
@@ -1118,7 +1124,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
             jp_inv_count = {'Q1': 117, 'Q2': 90, 'Q3': 67}[quarter]
             jp_inv_value = {'Q1': '$3.7B', 'Q2': '$2.6B', 'Q3': '$2.9B'}[quarter]
             
-            # M&A Deal Count chart - consistent color across quarters
+            # M&A Deal Count chart - bright blue
             fig_ma_count = create_comparison_mini_chart(
                 'M&A Deal Count',
                 jp_ma_count,
@@ -1129,7 +1135,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
             if fig_ma_count:
                 st.plotly_chart(fig_ma_count, use_container_width=True, key=f'{quarter}_ma_count')
             
-            # M&A Deal Value chart - consistent color across quarters
+            # M&A Deal Value chart - dark navy
             fig_ma_value = create_comparison_mini_chart(
                 'M&A Deal Value',
                 jp_ma_value,
@@ -1140,7 +1146,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
             if fig_ma_value:
                 st.plotly_chart(fig_ma_value, use_container_width=True, key=f'{quarter}_ma_value')
             
-            # Investment Count chart - consistent color across quarters
+            # Investment Count chart - bright tan
             fig_inv_count = create_comparison_mini_chart(
                 'Investment Count',
                 jp_inv_count,
@@ -1151,7 +1157,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
             if fig_inv_count:
                 st.plotly_chart(fig_inv_count, use_container_width=True, key=f'{quarter}_inv_count')
             
-            # Investment Value chart - consistent color across quarters
+            # Investment Value chart - dark brown
             fig_inv_value = create_comparison_mini_chart(
                 'Investment Value',
                 jp_inv_value,
