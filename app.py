@@ -119,8 +119,21 @@ def load_data():
             ipo_df = pd.DataFrame()
         
         # Clean and standardize data
-        ma_df = ma_df.fillna('Undisclosed')
-        inv_df = inv_df.fillna('Undisclosed')
+        # Fill Conference column with '--' for blank cells, other columns with 'Undisclosed'
+        for col in ma_df.columns:
+            if col == 'Conference':
+                ma_df[col] = ma_df[col].fillna('--')
+            else:
+                ma_df[col] = ma_df[col].fillna('Undisclosed')
+        
+        for col in inv_df.columns:
+            if col == 'Conference':
+                inv_df[col] = inv_df[col].fillna('--')
+            else:
+                inv_df[col] = inv_df[col].fillna('Undisclosed')
+        
+        if not ipo_df.empty:
+            ipo_df = ipo_df.fillna('Undisclosed')
         
         # Remove unnamed columns
         ma_df = ma_df.loc[:, ~ma_df.columns.str.contains('^Unnamed')]
@@ -257,7 +270,7 @@ def create_filter_section(df, section_key, show_conference=True):
         
         if show_conference:
             with col4:
-                conferences = ['All'] + sorted([c for c in df['Conference'].unique() if c != 'Undisclosed'])
+                conferences = ['All'] + sorted([c for c in df['Conference'].unique() if c not in ['Undisclosed', '--']])
                 selected_conference = st.selectbox("Conference", conferences, key=f'conference_{section_key}')
         
         st.markdown('</div>', unsafe_allow_html=True)
@@ -814,7 +827,7 @@ def main():
 
 def show_deal_activity(ma_df, inv_df):
     """Display deal activity dashboard"""
-    st.header("Deal Activity Dashboard")
+    st.header("Deal Activity Dashboard (Source: BeaconOne Desk Research)")
     
     # Overview section with smaller charts and cards below
     st.markdown("### YTD Overview")
@@ -1476,6 +1489,14 @@ def show_jp_morgan_summary(ma_df, inv_df):
         st.markdown("""
         <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 720px; margin: 0 auto;"></div>
         """, unsafe_allow_html=True)
+    
+    # Add source link at the bottom
+    st.markdown("---")
+    st.markdown("""
+    <p style="font-size: 11px; color: #666; text-align: center; margin-top: 20px;">
+    Source: <a href="https://www.jpmorgan.com/insights/markets-and-economy/outlook/biopharma-medtech-deal-reports" target="_blank" style="color: #666;">JP Morgan Biopharma & MedTech Deal Reports</a>
+    </p>
+    """, unsafe_allow_html=True)
 
 
 def show_ipo_activity(ipo_df):
@@ -1814,9 +1835,21 @@ def show_upload_dataset(ma_df, inv_df, ipo_df):
                         except:
                             new_ipo = ipo_df  # Keep existing if not in upload
                         
-                        # Clean data
-                        new_ma = new_ma.fillna('Undisclosed')
-                        new_inv = new_inv.fillna('Undisclosed')
+                        # Clean data - use '--' for Conference, 'Undisclosed' for other columns
+                        for col in new_ma.columns:
+                            if col == 'Conference':
+                                new_ma[col] = new_ma[col].fillna('--')
+                            else:
+                                new_ma[col] = new_ma[col].fillna('Undisclosed')
+                        
+                        for col in new_inv.columns:
+                            if col == 'Conference':
+                                new_inv[col] = new_inv[col].fillna('--')
+                            else:
+                                new_inv[col] = new_inv[col].fillna('Undisclosed')
+                        
+                        if not new_ipo.empty:
+                            new_ipo = new_ipo.fillna('Undisclosed')
                         
                         # Remove unnamed columns
                         new_ma = new_ma.loc[:, ~new_ma.columns.str.contains('^Unnamed')]
