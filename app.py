@@ -8,7 +8,7 @@ import os
 # Page configuration
 st.set_page_config(
     page_title="MedTech M&A & Venture Dashboard",
-    page_icon="🥼",
+    page_icon="🤝",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -292,8 +292,9 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
             y=quarterly_data['Total_Value'],
             name='Deal Value',
             marker_color=bar_color,
-            text=[f"${v:,.0f}" for v in quarterly_data['Total_Value']],
+            text=[f"<b>${v:,.0f}</b>" for v in quarterly_data['Total_Value']],  # Bold numbers
             textposition='outside',
+            textfont=dict(size=14),  # Larger text
             yaxis='y',
             hovertemplate='<b>%{x}</b><br>Deal Value: $%{y:,.0f}<br><extra></extra>'
         ))
@@ -306,29 +307,39 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
             mode='lines+markers+text',
             line=dict(color=line_color, width=3),
             marker=dict(size=10, color=line_color),
-            text=quarterly_data['Deal_Count'],
+            text=[f"<b>{c}</b>" for c in quarterly_data['Deal_Count']],  # Bold numbers
             textposition='top center',
+            textfont=dict(size=14),  # Larger text
             yaxis='y2',
             hovertemplate='<b>%{x}</b><br>Deal Count: %{y}<br><extra></extra>',
-            connectgaps=True  # Ensure lines are connected
+            connectgaps=True
         ))
         
         # Update layout
         fig.update_layout(
-            title=dict(text=title, font=dict(size=18, color='#333')),
-            xaxis=dict(title='Quarter', showgrid=False),
+            title=dict(text=title, font=dict(size=20, color='#333', family='Arial, sans-serif')),  # Larger title
+            xaxis=dict(
+                title='Quarter',
+                showgrid=False,
+                titlefont=dict(size=16),  # Larger axis title
+                tickfont=dict(size=14)  # Larger tick labels
+            ),
             yaxis=dict(
                 title='Total Deal Value (USD)',
                 side='left',
                 showgrid=False,
-                range=[0, max(quarterly_data['Total_Value']) * 1.2] if len(quarterly_data) > 0 else [0, 1000]
+                range=[0, max(quarterly_data['Total_Value']) * 1.2] if len(quarterly_data) > 0 else [0, 1000],
+                titlefont=dict(size=16),  # Larger axis title
+                tickfont=dict(size=13)  # Larger tick labels
             ),
             yaxis2=dict(
                 title='Number of Deals',
                 overlaying='y',
                 side='right',
                 showgrid=False,
-                range=[0, max(quarterly_data['Deal_Count']) * 1.3] if len(quarterly_data) > 0 else [0, 10]
+                range=[0, max(quarterly_data['Deal_Count']) * 1.3] if len(quarterly_data) > 0 else [0, 10],
+                titlefont=dict(size=16),  # Larger axis title
+                tickfont=dict(size=13)  # Larger tick labels
             ),
             hovermode='x unified',
             showlegend=True,
@@ -337,12 +348,14 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
                 yanchor="bottom",
                 y=1.02,
                 xanchor="right",
-                x=1
+                x=1,
+                font=dict(size=13)  # Larger legend text
             ),
             height=height,
             margin=dict(t=100, b=50, l=50, r=50),
             plot_bgcolor='white',
-            paper_bgcolor='white'
+            paper_bgcolor='white',
+            font=dict(size=13, family='Arial, sans-serif')  # Base font larger
         )
         
         return fig
@@ -381,8 +394,9 @@ def create_jp_morgan_chart_by_category(category, color):
             y=values,
             name='Deal Value ($M)',
             marker_color=color,
-            text=[format_currency(v) for v in values],
+            text=[f"<b>{format_currency(v)}</b>" for v in values],  # Bold numbers
             textposition='outside',
+            textfont=dict(size=14),  # Larger text
             yaxis='y',
             hovertemplate='<b>%{x}</b><br>Deal Value: %{text}<br><extra></extra>'
         ))
@@ -395,8 +409,9 @@ def create_jp_morgan_chart_by_category(category, color):
             mode='lines+markers+text',
             line=dict(color=COLORS['count_line'], width=3),
             marker=dict(size=10, color=COLORS['count_line']),
-            text=[str(c) if c > 0 else '' for c in counts],
+            text=[f"<b>{str(c)}</b>" if c > 0 else '' for c in counts],  # Bold numbers
             textposition='top center',
+            textfont=dict(size=14),  # Larger text
             yaxis='y2',
             hovertemplate='<b>%{x}</b><br>Deal Count: %{y}<br><extra></extra>',
             connectgaps=True
@@ -404,20 +419,29 @@ def create_jp_morgan_chart_by_category(category, color):
         
         # Update layout with dual y-axes
         fig.update_layout(
-            title=dict(text=f'{category} Activity', font=dict(size=16, color='#333')),
-            xaxis=dict(title='Quarter', showgrid=False),
+            title=dict(text=f'{category} Activity', font=dict(size=18, color='#333', family='Arial, sans-serif')),
+            xaxis=dict(
+                title='Quarter',
+                showgrid=False,
+                titlefont=dict(size=16),
+                tickfont=dict(size=14)
+            ),
             yaxis=dict(
                 title='Deal Value (Millions USD)',
                 side='left',
                 showgrid=False,
-                range=[0, max(values) * 1.2]
+                range=[0, max(values) * 1.2],
+                titlefont=dict(size=16),
+                tickfont=dict(size=13)
             ),
             yaxis2=dict(
                 title='Number of Deals',
                 overlaying='y',
                 side='right',
                 showgrid=False,
-                range=[0, max(counts) * 1.3] if max(counts) > 0 else [0, 100]
+                range=[0, max(counts) * 1.3] if max(counts) > 0 else [0, 100],
+                titlefont=dict(size=16),
+                tickfont=dict(size=13)
             ),
             hovermode='x unified',
             showlegend=True,
@@ -426,12 +450,14 @@ def create_jp_morgan_chart_by_category(category, color):
                 yanchor="bottom",
                 y=1.02,
                 xanchor="right",
-                x=1
+                x=1,
+                font=dict(size=13)
             ),
             height=350,
             margin=dict(t=80, b=50, l=50, r=50),
             plot_bgcolor='white',
-            paper_bgcolor='white'
+            paper_bgcolor='white',
+            font=dict(size=13, family='Arial, sans-serif')
         )
         
         return fig
@@ -440,7 +466,7 @@ def create_jp_morgan_chart_by_category(category, color):
         return None
 
 def create_sunburst_chart(df, value_col, deal_type, sector_col='Sector'):
-    """Create sunburst chart showing deal values by sector"""
+    """Create sunburst chart showing deal values by sector with top deals in hover"""
     try:
         # Filter out 'Undisclosed' sectors
         df_filtered = df[df[sector_col] != 'Undisclosed'].copy()
@@ -459,11 +485,37 @@ def create_sunburst_chart(df, value_col, deal_type, sector_col='Sector'):
             except:
                 return 0
         
-        # Group by sector and sum values
-        sector_data = df_filtered.groupby(sector_col).agg({
-            value_col: lambda x: sum([parse_value(v) for v in x])
-        }).reset_index()
-        sector_data.columns = ['Sector', 'Total_Value']
+        # Add numeric value column for sorting
+        df_filtered['_numeric_value'] = df_filtered[value_col].apply(parse_value)
+        
+        # Group by sector and get stats + top deals
+        sector_stats = []
+        for sector in df_filtered[sector_col].unique():
+            sector_df = df_filtered[df_filtered[sector_col] == sector]
+            total_value = sector_df['_numeric_value'].sum()
+            
+            # Get top 3 deals for this sector
+            top_deals = sector_df.nlargest(3, '_numeric_value')
+            deal_list = []
+            for idx, deal in top_deals.iterrows():
+                company = deal['Company']
+                value = deal['_numeric_value']
+                if value > 0:
+                    if value >= 1000000000:
+                        val_str = f"${value/1000000000:.1f}B"
+                    elif value >= 1000000:
+                        val_str = f"${value/1000000:.0f}M"
+                    else:
+                        val_str = f"${value:,.0f}"
+                    deal_list.append(f"{company} ({val_str})")
+            
+            sector_stats.append({
+                'Sector': sector,
+                'Total_Value': total_value,
+                'Top_Deals': '<br>  • '.join(deal_list) if deal_list else 'No deals'
+            })
+        
+        sector_data = pd.DataFrame(sector_stats)
         
         # Remove sectors with zero value
         sector_data = sector_data[sector_data['Total_Value'] > 0]
@@ -477,19 +529,17 @@ def create_sunburst_chart(df, value_col, deal_type, sector_col='Sector'):
         
         # Create complementary muted color palette
         if deal_type == 'M&A':
-            # Muted blues and related colors
             color_palette = [
                 '#7FA8C9', '#A8C9D1', '#6B8BA3', '#94B4C9', '#5A7A94',
                 '#8AA9BE', '#B5D0DC', '#6F98B3', '#84A8BD', '#9BBDD1'
             ]
         else:  # Venture
-            # Muted oranges, tans, and warm colors
             color_palette = [
                 '#C9A77F', '#D9C9A8', '#B89968', '#CCBB99', '#A88E6C',
                 '#D4BC94', '#E0D4BC', '#BEA77A', '#C8B490', '#D6C5A3'
             ]
         
-        # Assign colors (cycle if more sectors than colors)
+        # Assign colors
         colors = [color_palette[i % len(color_palette)] for i in range(len(sector_data))]
         
         # Format values for display
@@ -503,15 +553,30 @@ def create_sunburst_chart(df, value_col, deal_type, sector_col='Sector'):
         
         sector_data['Value_Display'] = sector_data['Total_Value'].apply(format_value_display)
         
+        # Calculate percentages
+        total = sector_data['Total_Value'].sum()
+        sector_data['Percentage'] = (sector_data['Total_Value'] / total * 100).round(1)
+        
+        # Create custom hover text with top deals
+        hover_text = []
+        for idx, row in sector_data.iterrows():
+            hover = f"<b>{row['Sector']}</b><br>"
+            hover += f"<b>Total Value:</b> {row['Value_Display']}<br>"
+            hover += f"<b>Percentage:</b> {row['Percentage']}%<br>"
+            hover += f"<b>Top Deals:</b><br>  • {row['Top_Deals']}"
+            hover_text.append(hover)
+        
         # Create sunburst chart
         fig = go.Figure(go.Sunburst(
             labels=sector_data['Sector'],
-            parents=[''] * len(sector_data),  # All sectors are at root level
+            parents=[''] * len(sector_data),
             values=sector_data['Total_Value'],
             text=sector_data['Value_Display'],
             textinfo='label+text',
+            textfont=dict(size=14, family='Arial, sans-serif'),  # Larger text
             marker=dict(colors=colors, line=dict(color='white', width=2)),
-            hovertemplate='<b>%{label}</b><br>Total Value: %{text}<br>Percentage: %{percentRoot:.1%}<extra></extra>',
+            customdata=hover_text,
+            hovertemplate='%{customdata}<extra></extra>',
             branchvalues='total'
         ))
         
@@ -520,7 +585,8 @@ def create_sunburst_chart(df, value_col, deal_type, sector_col='Sector'):
             height=400,
             margin=dict(t=10, b=10, l=10, r=10),
             paper_bgcolor='white',
-            showlegend=False  # Sunburst is self-labeled
+            showlegend=False,
+            font=dict(size=14)  # Larger base font
         )
         
         return fig
@@ -533,7 +599,7 @@ def create_sunburst_chart(df, value_col, deal_type, sector_col='Sector'):
 
 # Main app
 def main():
-    st.title("🥼 MedTech M&A & Venture Dashboard")
+    st.title("🤝 MedTech M&A & Venture Dashboard")
     
     # Horizontal navigation with emojis
     page = st.radio(
@@ -631,7 +697,7 @@ def show_deal_activity(ma_df, inv_df):
         
         # Display metric cards
         st.markdown(create_metric_card("Total Investment Value", inv_value_display, 'venture'), unsafe_allow_html=True)
-        st.markdown(create_metric_card("Total Investment Count", total_inv_deals, 'venture'), unsafe_allow_html=True)
+        st.markdown(create_metric_card("Total Investment Deal Count", total_inv_deals, 'venture'), unsafe_allow_html=True)
         
         # Venture Sunburst Chart
         st.markdown("#### Venture Deals by Sector")
@@ -683,6 +749,11 @@ def show_deal_activity(ma_df, inv_df):
         
         ma_display['_Deal_Value_Numeric'] = ma_display['Deal Value'].apply(parse_to_numeric)
         ma_display = ma_display.sort_values('_Deal_Value_Numeric', ascending=False)
+        
+        # Format Deal Value with $ and commas
+        ma_display['Deal Value'] = ma_display['Deal Value'].apply(
+            lambda x: f"${float(str(x).replace('$', '').replace(',', '')):,.0f}" if x != 'Undisclosed' and pd.notna(x) and parse_to_numeric(x) > 0 else x
+        )
         
         # Display without the numeric column and unnamed columns
         # Filter out: columns starting with '_', 'Unnamed', or empty strings
@@ -1018,7 +1089,26 @@ def show_ipo_activity(ipo_df):
         st.info("No IPO data available")
         return
     
-    # Search and filters
+    # YTD Overview Chart
+    st.markdown("### YTD IPO Overview")
+    
+    # Quarter filter for IPO chart
+    quarters_ipo = ['All'] + sorted([q for q in ipo_df['Quarter'].unique() if pd.notna(q) and q != 'Undisclosed'])
+    selected_quarter_ipo = st.selectbox("Filter by Quarter", quarters_ipo, key='ipo_chart_quarter')
+    
+    # Filter data for chart
+    filtered_ipo_chart = ipo_df.copy()
+    if selected_quarter_ipo != 'All':
+        filtered_ipo_chart = filtered_ipo_chart[filtered_ipo_chart['Quarter'] == selected_quarter_ipo]
+    
+    # Create IPO chart
+    fig_ipo = create_ipo_chart(filtered_ipo_chart)
+    if fig_ipo:
+        st.plotly_chart(fig_ipo, use_container_width=True)
+    
+    st.markdown("---")
+    
+    # Search and filters for table
     search_ipo = st.text_input("🔍 Search IPOs", placeholder="Search by company, type, technology...", key='search_ipo')
     
     st.markdown("#### Filters")
@@ -1027,7 +1117,7 @@ def show_ipo_activity(ipo_df):
     col1, col2 = st.columns(2)
     with col1:
         quarters = ['All'] + sorted([q for q in ipo_df['Quarter'].unique() if pd.notna(q)])
-        selected_quarter = st.selectbox("Quarter", quarters, key='ipo_quarter')
+        selected_quarter = st.selectbox("Quarter", quarters, key='ipo_table_quarter')
         if selected_quarter != 'All':
             filtered_ipo = filtered_ipo[filtered_ipo['Quarter'] == selected_quarter]
     
@@ -1046,8 +1136,150 @@ def show_ipo_activity(ipo_df):
     total_ipos = len(filtered_ipo)
     st.markdown(create_metric_card("Total IPOs YTD", total_ipos, 'ma'), unsafe_allow_html=True)
     
+    # Format Amount column with $ and commas
+    ipo_display = filtered_ipo.copy()
+    if 'Amount' in ipo_display.columns:
+        ipo_display['Amount'] = ipo_display['Amount'].apply(
+            lambda x: f"${float(x):,.0f}" if pd.notna(x) and x != 'Undisclosed' and str(x).replace('.','').replace('-','').isdigit() else x
+        )
+    
+    # Remove unnamed columns
+    display_cols = [col for col in ipo_display.columns 
+                   if not col.startswith('_') 
+                   and not col.startswith('Unnamed')
+                   and col.strip() != '']
+    
     # Display table
-    st.dataframe(filtered_ipo, use_container_width=True, height=500, hide_index=True)
+    st.dataframe(
+        ipo_display[display_cols], 
+        use_container_width=True, 
+        height=500, 
+        hide_index=True,
+        column_config={
+            "Amount": st.column_config.TextColumn("Amount", help="IPO amount in USD"),
+        }
+    )
+
+def create_ipo_chart(df):
+    """Create IPO quarterly chart"""
+    try:
+        # Filter out undisclosed quarters
+        df_filtered = df[df['Quarter'] != 'Undisclosed'].copy()
+        
+        if len(df_filtered) == 0:
+            st.warning("No data available for IPO chart")
+            return None
+        
+        # Parse amount values
+        def parse_amount(val):
+            if val == 'Undisclosed' or pd.isna(val):
+                return 0
+            val_str = str(val).replace('$', '').replace(',', '').strip()
+            try:
+                return float(val_str)
+            except:
+                return 0
+        
+        df_filtered['_Amount_Numeric'] = df_filtered['Amount'].apply(parse_amount)
+        
+        # Group by quarter
+        quarterly_data = df_filtered.groupby('Quarter').agg({
+            '_Amount_Numeric': 'sum',
+            'Company': 'count'
+        }).reset_index()
+        quarterly_data.columns = ['Quarter', 'Total_Amount', 'IPO_Count']
+        
+        # Sort quarters
+        quarter_order = ['Q1', 'Q2', 'Q3', 'Q4']
+        quarterly_data['Quarter'] = pd.Categorical(quarterly_data['Quarter'], categories=quarter_order, ordered=True)
+        quarterly_data = quarterly_data.sort_values('Quarter')
+        quarterly_data = quarterly_data[quarterly_data['Quarter'].notna()]
+        
+        if len(quarterly_data) == 0:
+            st.warning("No valid quarterly data for IPO chart")
+            return None
+        
+        # Create figure
+        fig = go.Figure()
+        
+        # Add bars for IPO amounts
+        fig.add_trace(go.Bar(
+            x=quarterly_data['Quarter'].astype(str),
+            y=quarterly_data['Total_Amount'],
+            name='IPO Value',
+            marker_color='#9B59B6',  # Purple for IPO
+            text=[f"<b>${v:,.0f}</b>" for v in quarterly_data['Total_Amount']],
+            textposition='outside',
+            textfont=dict(size=14),
+            yaxis='y',
+            hovertemplate='<b>%{x}</b><br>IPO Value: $%{y:,.0f}<br><extra></extra>'
+        ))
+        
+        # Add line for IPO count
+        fig.add_trace(go.Scatter(
+            x=quarterly_data['Quarter'].astype(str),
+            y=quarterly_data['IPO_Count'],
+            name='IPO Count',
+            mode='lines+markers+text',
+            line=dict(color=COLORS['count_line'], width=3),
+            marker=dict(size=10, color=COLORS['count_line']),
+            text=[f"<b>{c}</b>" for c in quarterly_data['IPO_Count']],
+            textposition='top center',
+            textfont=dict(size=14),
+            yaxis='y2',
+            hovertemplate='<b>%{x}</b><br>IPO Count: %{y}<br><extra></extra>',
+            connectgaps=True
+        ))
+        
+        # Update layout
+        fig.update_layout(
+            title=dict(text='IPO Activity by Quarter', font=dict(size=20, color='#333', family='Arial, sans-serif')),
+            xaxis=dict(
+                title='Quarter',
+                showgrid=False,
+                titlefont=dict(size=16),
+                tickfont=dict(size=14)
+            ),
+            yaxis=dict(
+                title='Total IPO Value (USD)',
+                side='left',
+                showgrid=False,
+                range=[0, max(quarterly_data['Total_Amount']) * 1.2] if len(quarterly_data) > 0 else [0, 1000],
+                titlefont=dict(size=16),
+                tickfont=dict(size=13)
+            ),
+            yaxis2=dict(
+                title='Number of IPOs',
+                overlaying='y',
+                side='right',
+                showgrid=False,
+                range=[0, max(quarterly_data['IPO_Count']) * 1.3] if len(quarterly_data) > 0 else [0, 10],
+                titlefont=dict(size=16),
+                tickfont=dict(size=13)
+            ),
+            hovermode='x unified',
+            showlegend=True,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1,
+                font=dict(size=13)
+            ),
+            height=450,
+            margin=dict(t=100, b=50, l=50, r=50),
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            font=dict(size=13, family='Arial, sans-serif')
+        )
+        
+        return fig
+    except Exception as e:
+        st.error(f"Error creating IPO chart: {str(e)}")
+        import traceback
+        st.error(f"Details: {traceback.format_exc()}")
+        return None
 
 def show_upload_dataset(ma_df, inv_df, ipo_df):
     """Password-protected data upload page"""
