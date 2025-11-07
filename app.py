@@ -249,6 +249,72 @@ def create_metric_card(label, value, color_scheme='ma'):
     </div>
     """
 
+def create_comparison_mini_chart(metric_name, jp_value, beacon_value, color, height=150):
+    """Create mini bar chart comparing JPMorgan vs BeaconOne data"""
+    try:
+        # Convert string values to numeric for comparison
+        def parse_value(val):
+            if isinstance(val, str):
+                val = val.replace('$', '').replace('B', '').replace('M', '').replace(',', '').strip()
+                try:
+                    # Handle billions
+                    if 'B' in str(val) or float(val) > 1000:
+                        return float(val) if 'B' not in str(val) else float(val.replace('B', '')) * 1000
+                    return float(val)
+                except:
+                    return 0
+            return float(val) if val else 0
+        
+        jp_numeric = parse_value(jp_value)
+        beacon_numeric = parse_value(beacon_value)
+        
+        # Create figure
+        fig = go.Figure()
+        
+        # Add bars
+        fig.add_trace(go.Bar(
+            x=['JPMorgan', 'BeaconOne'],
+            y=[jp_numeric, beacon_numeric],
+            marker_color=[color, f"{color}CC"],  # Second bar slightly transparent
+            text=[str(jp_value), str(beacon_value)],
+            textposition='outside',
+            textfont=dict(size=14, color='white', family='Arial Black, sans-serif'),
+            hovertemplate='<b>%{x}</b><br>%{text}<br><extra></extra>',
+            showlegend=False
+        ))
+        
+        # Update layout
+        fig.update_layout(
+            title=dict(
+                text=metric_name,
+                font=dict(size=12, color='white', family='Arial, sans-serif'),
+                x=0.5,
+                xanchor='center'
+            ),
+            plot_bgcolor=color,
+            paper_bgcolor=color,
+            xaxis=dict(
+                showgrid=False,
+                showticklabels=True,
+                tickfont=dict(size=10, color='white'),
+                title=None
+            ),
+            yaxis=dict(
+                showgrid=False,
+                showticklabels=False,
+                title=None,
+                range=[0, max(jp_numeric, beacon_numeric) * 1.3]
+            ),
+            height=height,
+            margin=dict(t=40, b=30, l=10, r=10),
+            hovermode='x'
+        )
+        
+        return fig
+    except Exception as e:
+        st.error(f"Error creating comparison chart: {str(e)}")
+        return None
+
 def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
     """Create quarterly stacked bar chart with deal count overlay"""
     try:
@@ -327,7 +393,7 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
                 title=dict(text='Total Deal Value (USD)', font=dict(size=16)),  # Modern syntax
                 side='left',
                 showgrid=False,
-                range=[0, max(quarterly_data['Total_Value']) * 1.2] if len(quarterly_data) > 0 else [0, 1000],
+                range=[0, max(quarterly_data['Total_Value']) * 1.35] if len(quarterly_data) > 0 else [0, 1000],  # Increased from 1.2 to 1.35 for label space
                 tickfont=dict(size=13)  # Larger tick labels
             ),
             yaxis2=dict(
@@ -335,7 +401,7 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
                 overlaying='y',
                 side='right',
                 showgrid=False,
-                range=[0, max(quarterly_data['Deal_Count']) * 1.3] if len(quarterly_data) > 0 else [0, 10],
+                range=[0, max(quarterly_data['Deal_Count']) * 1.5] if len(quarterly_data) > 0 else [0, 10],  # Increased from 1.3 to 1.5 for label space
                 tickfont=dict(size=13)  # Larger tick labels
             ),
             hovermode='x unified',
@@ -426,7 +492,7 @@ def create_jp_morgan_chart_by_category(category, color):
                 title=dict(text='Deal Value (Millions USD)', font=dict(size=16)),  # Modern syntax
                 side='left',
                 showgrid=False,
-                range=[0, max(values) * 1.2],
+                range=[0, max(values) * 1.35],  # Increased for label space
                 tickfont=dict(size=13)
             ),
             yaxis2=dict(
@@ -434,7 +500,7 @@ def create_jp_morgan_chart_by_category(category, color):
                 overlaying='y',
                 side='right',
                 showgrid=False,
-                range=[0, max(counts) * 1.3] if max(counts) > 0 else [0, 100],
+                range=[0, max(counts) * 1.5] if max(counts) > 0 else [0, 100],  # Increased for label space
                 tickfont=dict(size=13)
             ),
             hovermode='x unified',
@@ -1007,9 +1073,9 @@ def show_jp_morgan_summary(ma_df, inv_df):
     q1_col, q2_col, q3_col = st.columns(3)
     
     for col, quarter, ma_color, inv_color in [
-        (q1_col, 'Q1', '#4A90E2', '#50C878'),
-        (q2_col, 'Q2', '#4A90E2', '#50C878'),
-        (q3_col, 'Q3', '#9B59B6', '#50C878')
+        (q1_col, 'Q1', '#7FA8C9', '#C9A77F'),  # Using muted colors from palette
+        (q2_col, 'Q2', '#7FA8C9', '#C9A77F'),
+        (q3_col, 'Q3', '#9B59B6', '#C9A77F')  # Purple for Q3 M&A
     ]:
         with col:
             st.markdown(f"#### {quarter} 2025")
@@ -1020,60 +1086,50 @@ def show_jp_morgan_summary(ma_df, inv_df):
             jp_inv_count = {'Q1': 117, 'Q2': 90, 'Q3': 67}[quarter]
             jp_inv_value = {'Q1': '$3.7B', 'Q2': '$2.6B', 'Q3': '$2.9B'}[quarter]
             
-            st.markdown(f"""
-            <div style='background-color: {ma_color}; padding: 20px; border-radius: 10px; margin-bottom: 10px;'>
-                <p style='color: white; margin: 0; font-size: 12px;'>M&A Deal Count</p>
-                <div style='display: flex; justify-content: space-between; align-items: baseline;'>
-                    <div>
-                        <p style='color: white; margin: 0; font-size: 10px;'>JPMorgan</p>
-                        <p style='color: white; margin: 0; font-size: 32px; font-weight: bold;'>{jp_ma_count}</p>
-                    </div>
-                    <div style='text-align: right;'>
-                        <p style='color: white; margin: 0; font-size: 10px;'>BeaconOne</p>
-                        <p style='color: white; margin: 0; font-size: 32px; font-weight: bold;'>{beacon_stats[quarter]['ma_count']}</p>
-                    </div>
-                </div>
-            </div>
-            <div style='background-color: {ma_color}; opacity: 0.8; padding: 20px; border-radius: 10px; margin-bottom: 10px;'>
-                <p style='color: white; margin: 0; font-size: 12px;'>M&A Deal Value</p>
-                <div style='display: flex; justify-content: space-between; align-items: baseline;'>
-                    <div>
-                        <p style='color: white; margin: 0; font-size: 10px;'>JPMorgan</p>
-                        <p style='color: white; margin: 0; font-size: 32px; font-weight: bold;'>{jp_ma_value}</p>
-                    </div>
-                    <div style='text-align: right;'>
-                        <p style='color: white; margin: 0; font-size: 10px;'>BeaconOne</p>
-                        <p style='color: white; margin: 0; font-size: 32px; font-weight: bold;'>{beacon_stats[quarter]['ma_value']}</p>
-                    </div>
-                </div>
-            </div>
-            <div style='background-color: {inv_color}; padding: 20px; border-radius: 10px; margin-bottom: 10px;'>
-                <p style='color: white; margin: 0; font-size: 12px;'>Investment Count</p>
-                <div style='display: flex; justify-content: space-between; align-items: baseline;'>
-                    <div>
-                        <p style='color: white; margin: 0; font-size: 10px;'>JPMorgan</p>
-                        <p style='color: white; margin: 0; font-size: 32px; font-weight: bold;'>{jp_inv_count}</p>
-                    </div>
-                    <div style='text-align: right;'>
-                        <p style='color: white; margin: 0; font-size: 10px;'>BeaconOne</p>
-                        <p style='color: white; margin: 0; font-size: 32px; font-weight: bold;'>{beacon_stats[quarter]['inv_count']}</p>
-                    </div>
-                </div>
-            </div>
-            <div style='background-color: {inv_color}; opacity: 0.8; padding: 20px; border-radius: 10px;'>
-                <p style='color: white; margin: 0; font-size: 12px;'>Investment Value</p>
-                <div style='display: flex; justify-content: space-between; align-items: baseline;'>
-                    <div>
-                        <p style='color: white; margin: 0; font-size: 10px;'>JPMorgan</p>
-                        <p style='color: white; margin: 0; font-size: 32px; font-weight: bold;'>{jp_inv_value}</p>
-                    </div>
-                    <div style='text-align: right;'>
-                        <p style='color: white; margin: 0; font-size: 10px;'>BeaconOne</p>
-                        <p style='color: white; margin: 0; font-size: 32px; font-weight: bold;'>{beacon_stats[quarter]['inv_value']}</p>
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+            # M&A Deal Count chart
+            fig_ma_count = create_comparison_mini_chart(
+                'M&A Deal Count',
+                jp_ma_count,
+                beacon_stats[quarter]['ma_count'],
+                ma_color,
+                height=150
+            )
+            if fig_ma_count:
+                st.plotly_chart(fig_ma_count, use_container_width=True, key=f'{quarter}_ma_count')
+            
+            # M&A Deal Value chart
+            fig_ma_value = create_comparison_mini_chart(
+                'M&A Deal Value',
+                jp_ma_value,
+                beacon_stats[quarter]['ma_value'],
+                ma_color,
+                height=150
+            )
+            if fig_ma_value:
+                st.plotly_chart(fig_ma_value, use_container_width=True, key=f'{quarter}_ma_value')
+            
+            # Investment Count chart
+            fig_inv_count = create_comparison_mini_chart(
+                'Investment Count',
+                jp_inv_count,
+                beacon_stats[quarter]['inv_count'],
+                inv_color,
+                height=150
+            )
+            if fig_inv_count:
+                st.plotly_chart(fig_inv_count, use_container_width=True, key=f'{quarter}_inv_count')
+            
+            # Investment Value chart
+            fig_inv_value = create_comparison_mini_chart(
+                'Investment Value',
+                jp_inv_value,
+                beacon_stats[quarter]['inv_value'],
+                inv_color,
+                height=150
+            )
+            if fig_inv_value:
+                st.plotly_chart(fig_inv_value, use_container_width=True, key=f'{quarter}_inv_value')
+
 
 def show_ipo_activity(ipo_df):
     """Display IPO activity"""
@@ -1237,7 +1293,7 @@ def create_ipo_chart(df):
                 title=dict(text='Total IPO Value (USD)', font=dict(size=16)),  # Modern syntax
                 side='left',
                 showgrid=False,
-                range=[0, max(quarterly_data['Total_Amount']) * 1.2] if len(quarterly_data) > 0 else [0, 1000],
+                range=[0, max(quarterly_data['Total_Amount']) * 1.35] if len(quarterly_data) > 0 else [0, 1000],  # Increased for label space
                 tickfont=dict(size=13)
             ),
             yaxis2=dict(
@@ -1245,7 +1301,7 @@ def create_ipo_chart(df):
                 overlaying='y',
                 side='right',
                 showgrid=False,
-                range=[0, max(quarterly_data['IPO_Count']) * 1.3] if len(quarterly_data) > 0 else [0, 10],
+                range=[0, max(quarterly_data['IPO_Count']) * 1.5] if len(quarterly_data) > 0 else [0, 10],  # Increased for label space
                 tickfont=dict(size=13)
             ),
             hovermode='x unified',
