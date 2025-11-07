@@ -1089,95 +1089,64 @@ def show_jp_morgan_summary(ma_df, inv_df):
     st.markdown("---")
     st.markdown("### Quarterly Comparison")
     
-    # Helper function to color-code delta values
-    def format_delta(delta_str):
-        """Format delta with color based on significance and direction"""
-        if delta_str == '—' or delta_str == '':
-            return delta_str
+    # Create comparison dataframe with exact column names requested
+    comparison_data = {
+        'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025'],
+        'Venture ($B)': [5.5, 4.3, 5.1, 3.0, 3.7, 2.6, 2.9],
+        'V QoQ Change': ['None', '↓21.8%', '↑18.6%', '↓41.2%', '↑23.3%', '↓29.7%', '↑11.5%'],
+        'V YoY Change': ['None', 'None', '↑27%', '↑12%', '↓32.7%', '↓39.5%', '↓43.1%'],
+        'M&A ($B)': [18.0, 40.3, 47.0, 63.1, 9.2, 2.1, 21.7],
+        'M QoQ Change': ['None', '↑124%', '↑16.6%', '↑34.3%', '↓85.4%', '↓77.2%', '↑933%'],
+        'M YoY Change': ['None', 'None', 'None', '↑34%', '↓49%', '↓94.8%', '↓53.8%']
+    }
+    
+    comparison_df = pd.DataFrame(comparison_data)
+    
+    # Function to color-code cells based on their values
+    def color_delta_cells(val):
+        """Color code ONLY significant changes (≥20%), leave others black"""
+        if val == 'None' or pd.isna(val):
+            return 'color: #000000'  # Black for None
         
-        # Extract percentage value
-        import re
-        match = re.search(r'([↓↑])([\d.]+)%', delta_str)
-        if not match:
-            return delta_str
-        
-        direction = match.group(1)
-        value = float(match.group(2))
-        
-        # Determine color based on significance
-        # Significant = >20% change
-        if value >= 20:
-            if direction == '↑':
-                # Dark green for significant increase
-                return f'<span style="color: #00A86B; font-weight: bold;">{delta_str}</span>'
+        if '↑' in str(val):
+            # Extract percentage
+            pct = float(str(val).replace('↑', '').replace('%', ''))
+            if pct >= 20:
+                return 'color: #00A86B; font-weight: bold'  # Dark green ONLY for ≥20% increase
             else:
-                # Dark red for significant decrease  
-                return f'<span style="color: #D85252; font-weight: bold;">{delta_str}</span>'
-        else:
-            # Moderate change (<20%) - lighter colors
-            if direction == '↑':
-                return f'<span style="color: #6B8E23;">{delta_str}</span>'
+                return 'color: #000000'  # Black for <20% increase
+        elif '↓' in str(val):
+            # Extract percentage
+            pct = float(str(val).replace('↓', '').replace('%', ''))
+            if pct >= 20:
+                return 'color: #D85252; font-weight: bold'  # Dark red ONLY for ≥20% decrease
             else:
-                return f'<span style="color: #CD5C5C;">{delta_str}</span>'
-    
-    # Create the comparison table with formatted HTML
-    table_html = """
-    <div style="display: flex; justify-content: center; margin: 20px 0 30px 0;">
-        <table style="border-collapse: collapse; width: 90%; max-width: 1100px; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <thead>
-                <tr style="background-color: #f0f2f5; border-bottom: 2px solid #dee2e6;">
-                    <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; font-weight: bold; color: #2c3e50;">Quarter</th>
-                    <th style="padding: 12px; text-align: right; border: 1px solid #dee2e6; font-weight: bold; color: #2c3e50;">Venture ($B)</th>
-                    <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6; font-weight: bold; color: #2c3e50;">V QoQ</th>
-                    <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6; font-weight: bold; color: #2c3e50;">V YoY</th>
-                    <th style="padding: 12px; text-align: right; border: 1px solid #dee2e6; font-weight: bold; color: #2c3e50;">M&A ($B)</th>
-                    <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6; font-weight: bold; color: #2c3e50;">M QoQ</th>
-                    <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6; font-weight: bold; color: #2c3e50;">M YoY</th>
-                </tr>
-            </thead>
-            <tbody>
-    """
-    
-    # Data rows
-    rows_data = [
-        ('Q1 2024', 5.5, '—', '—', 18.0, '—', '—'),
-        ('Q2 2024', 4.3, '↓21.8%', '—', 40.3, '↑124%', '—'),
-        ('Q3 2024', 5.1, '↑18.6%', '↑27%', 47.0, '↑16.6%', '—'),
-        ('Q4 2024', 3.0, '↓41.2%', '↑12%', 63.1, '↑34.3%', '↑34%'),
-        ('Q1 2025', 3.7, '↑23.3%', '↓32.7%', 9.2, '↓85.4%', '↓49%'),
-        ('Q2 2025', 2.6, '↓29.7%', '↓39.5%', 2.1, '↓77.2%', '↓94.8%'),
-        ('Q3 2025', 2.9, '↑11.5%', '↓43.1%', 21.7, '↑933%', '↓53.8%'),
-    ]
-    
-    for i, (quarter, v_val, v_qoq, v_yoy, ma_val, ma_qoq, ma_yoy) in enumerate(rows_data):
-        # Alternate row colors
-        bg_color = '#ffffff' if i % 2 == 0 else '#fafbfc'
+                return 'color: #000000'  # Black for <20% decrease
         
-        # Format delta strings with colors
-        v_qoq_formatted = format_delta(v_qoq)
-        v_yoy_formatted = format_delta(v_yoy)
-        ma_qoq_formatted = format_delta(ma_qoq)
-        ma_yoy_formatted = format_delta(ma_yoy)
-        
-        table_html += f"""
-                <tr style="background-color: {bg_color};">
-                    <td style="padding: 10px; border: 1px solid #dee2e6; font-weight: 500; color: #2c3e50;">{quarter}</td>
-                    <td style="padding: 10px; text-align: right; border: 1px solid #dee2e6; color: #2c3e50;">{v_val}</td>
-                    <td style="padding: 10px; text-align: center; border: 1px solid #dee2e6;">{v_qoq_formatted}</td>
-                    <td style="padding: 10px; text-align: center; border: 1px solid #dee2e6;">{v_yoy_formatted}</td>
-                    <td style="padding: 10px; text-align: right; border: 1px solid #dee2e6; color: #2c3e50;">{ma_val}</td>
-                    <td style="padding: 10px; text-align: center; border: 1px solid #dee2e6;">{ma_qoq_formatted}</td>
-                    <td style="padding: 10px; text-align: center; border: 1px solid #dee2e6;">{ma_yoy_formatted}</td>
-                </tr>
-        """
+        return 'color: #000000'  # Default black
     
-    table_html += """
-            </tbody>
-        </table>
-    </div>
-    """
+    # Apply styling to the dataframe
+    styled_df = comparison_df.style.applymap(
+        color_delta_cells,
+        subset=['V QoQ Change', 'V YoY Change', 'M QoQ Change', 'M YoY Change']
+    ).set_properties(**{
+        'text-align': 'center'
+    }, subset=['V QoQ Change', 'V YoY Change', 'M QoQ Change', 'M YoY Change']
+    ).set_properties(**{
+        'text-align': 'right'
+    }, subset=['Venture ($B)', 'M&A ($B)']
+    ).set_properties(**{
+        'text-align': 'left'
+    }, subset=['Quarter']
+    ).set_table_styles([
+        {'selector': 'th', 'props': [('background-color', '#f0f2f5'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '12px')]},
+        {'selector': 'td', 'props': [('padding', '10px'), ('border', '1px solid #e0e0e0')]},
+        {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
+        {'selector': 'tr:hover', 'props': [('background-color', '#f5f5f5')]},
+    ])
     
-    st.markdown(table_html, unsafe_allow_html=True)
+    # Display the styled dataframe
+    st.dataframe(styled_df, use_container_width=True, hide_index=True)
     
     # ====== KEY MARKET TRENDS - NOW 2 COLUMNS (NO TABLE IN MIDDLE) ======
     st.markdown("---")
