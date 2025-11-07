@@ -250,6 +250,25 @@ def format_currency_abbreviated(value):
     except:
         return str(value)
 
+def format_currency_from_millions(value):
+    """Format currency values when input is in millions (e.g., 9200 -> $9.2B)"""
+    if pd.isna(value) or value == 'Undisclosed':
+        return 'Undisclosed'
+    try:
+        value = float(str(value).replace('$', '').replace('B', '').replace('M', '').replace(',', ''))
+        # Value is in millions, so multiply by 1,000,000 to get actual dollars
+        value_in_dollars = value * 1000000
+        if value_in_dollars >= 1000000000:  # 1 billion or more
+            return f"${value_in_dollars/1000000000:.1f}B"
+        elif value_in_dollars >= 1000000:  # 1 million or more
+            return f"${value_in_dollars/1000000:.1f}M"
+        elif value_in_dollars > 0:
+            return f"${value_in_dollars:,.0f}"
+        else:
+            return 'Undisclosed'
+    except:
+        return str(value)
+
 def format_currency_full(value):
     """Format currency values for tables (e.g., $350,000,000)"""
     if pd.isna(value) or value == 'Undisclosed':
@@ -507,7 +526,7 @@ def create_jp_morgan_chart_by_category(category, color):
             y=values,
             name='Deal Value ($M)',
             marker_color=color,
-            text=[f"<b>{format_currency(v)}</b>" for v in values],  # Bold numbers
+            text=[f"<b>{format_currency_from_millions(v)}</b>" for v in values],  # Values are in millions
             textposition='outside',
             textfont=dict(size=14),  # Larger text
             yaxis='y',
