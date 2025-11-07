@@ -1108,68 +1108,70 @@ def show_jp_morgan_summary(ma_df, inv_df):
     # Create three columns for Q1, Q2, Q3
     q1_col, q2_col, q3_col = st.columns(3)
     
-    for col, quarter in [(q1_col, 'Q1'), (q2_col, 'Q2'), (q3_col, 'Q3')]:
+    for col, quarter, border_color in [(q1_col, 'Q1', QUARTER_COLORS['Q1']), 
+                                        (q2_col, 'Q2', QUARTER_COLORS['Q2']), 
+                                        (q3_col, 'Q3', QUARTER_COLORS['Q3'])]:
         with col:
-            # Each quarter gets its own border color - wraps header AND all charts
-            border_color = QUARTER_COLORS[quarter]
-            
-            st.markdown(f"""
-            <div style='border: 3px solid {border_color}; border-radius: 12px; padding: 20px 12px; background-color: #fafbfc; margin-bottom: 20px;'>
-                <h4 style='text-align: center; color: #333; margin: 0 0 20px 0; padding-bottom: 15px; border-bottom: 2px solid {border_color}; font-family: Arial, sans-serif;'>{quarter} 2025</h4>
-            """, unsafe_allow_html=True)
-            
-            # JP Morgan data
-            jp_ma_count = {'Q1': 57, 'Q2': 43, 'Q3': 65}[quarter]
-            jp_ma_value = {'Q1': '$9.2B', 'Q2': '$2.1B', 'Q3': '$21.7B'}[quarter]
-            jp_inv_count = {'Q1': 117, 'Q2': 90, 'Q3': 67}[quarter]
-            jp_inv_value = {'Q1': '$3.7B', 'Q2': '$2.6B', 'Q3': '$2.9B'}[quarter]
-            
-            # M&A Deal Count chart - bright blue
-            fig_ma_count = create_comparison_mini_chart(
-                'M&A Deal Count',
-                jp_ma_count,
-                beacon_stats[quarter]['ma_count'],
-                METRIC_COLORS['ma_count'],
-                height=130
-            )
-            if fig_ma_count:
-                st.plotly_chart(fig_ma_count, use_container_width=True, key=f'{quarter}_ma_count')
-            
-            # M&A Deal Value chart - dark navy
-            fig_ma_value = create_comparison_mini_chart(
-                'M&A Deal Value',
-                jp_ma_value,
-                beacon_stats[quarter]['ma_value'],
-                METRIC_COLORS['ma_value'],
-                height=130
-            )
-            if fig_ma_value:
-                st.plotly_chart(fig_ma_value, use_container_width=True, key=f'{quarter}_ma_value')
-            
-            # Investment Count chart - bright tan
-            fig_inv_count = create_comparison_mini_chart(
-                'Investment Count',
-                jp_inv_count,
-                beacon_stats[quarter]['inv_count'],
-                METRIC_COLORS['inv_count'],
-                height=130
-            )
-            if fig_inv_count:
-                st.plotly_chart(fig_inv_count, use_container_width=True, key=f'{quarter}_inv_count')
-            
-            # Investment Value chart - dark brown
-            fig_inv_value = create_comparison_mini_chart(
-                'Investment Value',
-                jp_inv_value,
-                beacon_stats[quarter]['inv_value'],
-                METRIC_COLORS['inv_value'],
-                height=130
-            )
-            if fig_inv_value:
-                st.plotly_chart(fig_inv_value, use_container_width=True, key=f'{quarter}_inv_value')
-            
-            # Close the border container
-            st.markdown("</div>", unsafe_allow_html=True)
+            # Use a container to group all elements
+            with st.container():
+                # Opening border div that will wrap everything
+                st.markdown(f"""
+                <div style="border: 3px solid {border_color}; border-radius: 12px; padding: 20px 12px 15px 12px; background-color: #fafbfc; margin-bottom: 20px;">
+                    <h4 style="text-align: center; color: #333; margin: 0 0 20px 0; padding-bottom: 15px; border-bottom: 2px solid {border_color}; font-family: Arial, sans-serif;">{quarter} 2025</h4>
+                """, unsafe_allow_html=True)
+                
+                # JP Morgan data
+                jp_ma_count = {'Q1': 57, 'Q2': 43, 'Q3': 65}[quarter]
+                jp_ma_value = {'Q1': '$9.2B', 'Q2': '$2.1B', 'Q3': '$21.7B'}[quarter]
+                jp_inv_count = {'Q1': 117, 'Q2': 90, 'Q3': 67}[quarter]
+                jp_inv_value = {'Q1': '$3.7B', 'Q2': '$2.6B', 'Q3': '$2.9B'}[quarter]
+                
+                # M&A Deal Count chart - bright blue
+                fig_ma_count = create_comparison_mini_chart(
+                    'M&A Deal Count',
+                    jp_ma_count,
+                    beacon_stats[quarter]['ma_count'],
+                    METRIC_COLORS['ma_count'],
+                    height=130
+                )
+                if fig_ma_count:
+                    st.plotly_chart(fig_ma_count, use_container_width=True, key=f'{quarter}_ma_count', config={'displayModeBar': False})
+                
+                # M&A Deal Value chart - dark navy
+                fig_ma_value = create_comparison_mini_chart(
+                    'M&A Deal Value',
+                    jp_ma_value,
+                    beacon_stats[quarter]['ma_value'],
+                    METRIC_COLORS['ma_value'],
+                    height=130
+                )
+                if fig_ma_value:
+                    st.plotly_chart(fig_ma_value, use_container_width=True, key=f'{quarter}_ma_value', config={'displayModeBar': False})
+                
+                # Investment Count chart - bright tan
+                fig_inv_count = create_comparison_mini_chart(
+                    'Investment Count',
+                    jp_inv_count,
+                    beacon_stats[quarter]['inv_count'],
+                    METRIC_COLORS['inv_count'],
+                    height=130
+                )
+                if fig_inv_count:
+                    st.plotly_chart(fig_inv_count, use_container_width=True, key=f'{quarter}_inv_count', config={'displayModeBar': False})
+                
+                # Investment Value chart - dark brown
+                fig_inv_value = create_comparison_mini_chart(
+                    'Investment Value',
+                    jp_inv_value,
+                    beacon_stats[quarter]['inv_value'],
+                    METRIC_COLORS['inv_value'],
+                    height=130
+                )
+                if fig_inv_value:
+                    st.plotly_chart(fig_inv_value, use_container_width=True, key=f'{quarter}_inv_value', config={'displayModeBar': False})
+                
+                # Closing border div
+                st.markdown("</div>", unsafe_allow_html=True)
 
 
 def show_ipo_activity(ipo_df):
