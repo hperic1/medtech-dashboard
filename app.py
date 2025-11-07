@@ -1085,11 +1085,106 @@ def show_jp_morgan_summary(ma_df, inv_df):
         if fig_venture:
             st.plotly_chart(fig_venture, use_container_width=True)
     # Key trends
+    # ====== QUARTERLY COMPARISON TABLE - NOW ABOVE KEY TRENDS ======
+    st.markdown("---")
+    st.markdown("### Quarterly Comparison")
+    
+    # Helper function to color-code delta values
+    def format_delta(delta_str):
+        """Format delta with color based on significance and direction"""
+        if delta_str == '—' or delta_str == '':
+            return delta_str
+        
+        # Extract percentage value
+        import re
+        match = re.search(r'([↓↑])([\d.]+)%', delta_str)
+        if not match:
+            return delta_str
+        
+        direction = match.group(1)
+        value = float(match.group(2))
+        
+        # Determine color based on significance
+        # Significant = >20% change
+        if value >= 20:
+            if direction == '↑':
+                # Dark green for significant increase
+                return f'<span style="color: #00A86B; font-weight: bold;">{delta_str}</span>'
+            else:
+                # Dark red for significant decrease  
+                return f'<span style="color: #D85252; font-weight: bold;">{delta_str}</span>'
+        else:
+            # Moderate change (<20%) - lighter colors
+            if direction == '↑':
+                return f'<span style="color: #6B8E23;">{delta_str}</span>'
+            else:
+                return f'<span style="color: #CD5C5C;">{delta_str}</span>'
+    
+    # Create the comparison table with formatted HTML
+    table_html = """
+    <div style="display: flex; justify-content: center; margin: 20px 0 30px 0;">
+        <table style="border-collapse: collapse; width: 90%; max-width: 1100px; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <thead>
+                <tr style="background-color: #f0f2f5; border-bottom: 2px solid #dee2e6;">
+                    <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; font-weight: bold; color: #2c3e50;">Quarter</th>
+                    <th style="padding: 12px; text-align: right; border: 1px solid #dee2e6; font-weight: bold; color: #2c3e50;">Venture ($B)</th>
+                    <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6; font-weight: bold; color: #2c3e50;">V QoQ</th>
+                    <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6; font-weight: bold; color: #2c3e50;">V YoY</th>
+                    <th style="padding: 12px; text-align: right; border: 1px solid #dee2e6; font-weight: bold; color: #2c3e50;">M&A ($B)</th>
+                    <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6; font-weight: bold; color: #2c3e50;">M QoQ</th>
+                    <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6; font-weight: bold; color: #2c3e50;">M YoY</th>
+                </tr>
+            </thead>
+            <tbody>
+    """
+    
+    # Data rows
+    rows_data = [
+        ('Q1 2024', 5.5, '—', '—', 18.0, '—', '—'),
+        ('Q2 2024', 4.3, '↓21.8%', '—', 40.3, '↑124%', '—'),
+        ('Q3 2024', 5.1, '↑18.6%', '↑27%', 47.0, '↑16.6%', '—'),
+        ('Q4 2024', 3.0, '↓41.2%', '↑12%', 63.1, '↑34.3%', '↑34%'),
+        ('Q1 2025', 3.7, '↑23.3%', '↓32.7%', 9.2, '↓85.4%', '↓49%'),
+        ('Q2 2025', 2.6, '↓29.7%', '↓39.5%', 2.1, '↓77.2%', '↓94.8%'),
+        ('Q3 2025', 2.9, '↑11.5%', '↓43.1%', 21.7, '↑933%', '↓53.8%'),
+    ]
+    
+    for i, (quarter, v_val, v_qoq, v_yoy, ma_val, ma_qoq, ma_yoy) in enumerate(rows_data):
+        # Alternate row colors
+        bg_color = '#ffffff' if i % 2 == 0 else '#fafbfc'
+        
+        # Format delta strings with colors
+        v_qoq_formatted = format_delta(v_qoq)
+        v_yoy_formatted = format_delta(v_yoy)
+        ma_qoq_formatted = format_delta(ma_qoq)
+        ma_yoy_formatted = format_delta(ma_yoy)
+        
+        table_html += f"""
+                <tr style="background-color: {bg_color};">
+                    <td style="padding: 10px; border: 1px solid #dee2e6; font-weight: 500; color: #2c3e50;">{quarter}</td>
+                    <td style="padding: 10px; text-align: right; border: 1px solid #dee2e6; color: #2c3e50;">{v_val}</td>
+                    <td style="padding: 10px; text-align: center; border: 1px solid #dee2e6;">{v_qoq_formatted}</td>
+                    <td style="padding: 10px; text-align: center; border: 1px solid #dee2e6;">{v_yoy_formatted}</td>
+                    <td style="padding: 10px; text-align: right; border: 1px solid #dee2e6; color: #2c3e50;">{ma_val}</td>
+                    <td style="padding: 10px; text-align: center; border: 1px solid #dee2e6;">{ma_qoq_formatted}</td>
+                    <td style="padding: 10px; text-align: center; border: 1px solid #dee2e6;">{ma_yoy_formatted}</td>
+                </tr>
+        """
+    
+    table_html += """
+            </tbody>
+        </table>
+    </div>
+    """
+    
+    st.markdown(table_html, unsafe_allow_html=True)
+    
+    # ====== KEY MARKET TRENDS - NOW 2 COLUMNS (NO TABLE IN MIDDLE) ======
     st.markdown("---")
     st.subheader("Key Market Trends")
     
-    # Create three columns: M&A text | Table | Venture text
-    col1, col2, col3 = st.columns([3, 2, 3])
+    # Create TWO columns instead of three: M&A text | Venture text
+    col1, col2 = st.columns(2)
     
     with col1:
         st.markdown(create_metric_card("M&A Activity", "Strategic Consolidation", 'ma'), unsafe_allow_html=True)
@@ -1141,38 +1236,6 @@ def show_jp_morgan_summary(ma_df, inv_df):
         """, unsafe_allow_html=True)
     
     with col2:
-        st.markdown("### Quarterly Comparison")
-        
-        # Create the comparison table
-        comparison_data = {
-            'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025'],
-            'Venture ($B)': [5.5, 4.3, 5.1, 3.0, 3.7, 2.6, 2.9],
-            'V QoQ': ['—', '↓21.8%', '↑18.6%', '↓41.2%', '↑23.3%', '↓29.7%', '↑11.5%'],
-            'V YoY': ['—', '—', '↑27%', '↑12%', '↓32.7%', '↓39.5%', '↓43.1%'],
-            'M&A ($B)': [18.0, 40.3, 47.0, 63.1, 9.2, 2.1, 21.7],
-            'M QoQ': ['—', '↑124%', '↑16.6%', '↑34.3%', '↓85.4%', '↓77.2%', '↑933%'],
-            'M YoY': ['—', '—', '—', '↑34%', '↓49%', '↓94.8%', '↓53.8%']
-        }
-        
-        import pandas as pd
-        comparison_df = pd.DataFrame(comparison_data)
-        
-        st.dataframe(
-            comparison_df,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "Quarter": st.column_config.TextColumn("Quarter", width="small"),
-                "Venture ($B)": st.column_config.NumberColumn("Venture ($B)", format="%.1f"),
-                "V QoQ": st.column_config.TextColumn("V QoQ", width="small"),
-                "V YoY": st.column_config.TextColumn("V YoY", width="small"),
-                "M&A ($B)": st.column_config.NumberColumn("M&A ($B)", format="%.1f"),
-                "M QoQ": st.column_config.TextColumn("M QoQ", width="small"),
-                "M YoY": st.column_config.TextColumn("M YoY", width="small")
-            }
-        )
-        
-    with col3:
         st.markdown(create_metric_card("Venture Capital", "Selective Investment", 'venture'), unsafe_allow_html=True)
         st.markdown("""
         <div style="font-size: 14px; color: #000;">
