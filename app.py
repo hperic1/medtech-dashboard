@@ -175,6 +175,7 @@ def save_data(ma_df, inv_df, ipo_df=None):
             import shutil
             shutil.copy2(excel_path, backup_path)
             st.session_state.last_backup_time = pd.Timestamp.now()
+            st.session_state.backup_available = True
         
         # Save with correct sheet names
         with pd.ExcelWriter(excel_path, engine='openpyxl', mode='w') as writer:
@@ -189,6 +190,46 @@ def save_data(ma_df, inv_df, ipo_df=None):
         st.error(f"Error saving data: {str(e)}")
         st.warning("⚠️ Note: Streamlit Cloud has a read-only file system. Changes won't persist after app restarts.")
         return False
+
+def undo_last_upload():
+    """Restore data from the backup file"""
+    try:
+        possible_paths = [
+            'data/MedTech_YTD_Standardized.xlsx',
+            './data/MedTech_YTD_Standardized.xlsx',
+            'MedTech_YTD_Standardized.xlsx',
+            'MedTech_Deals.xlsx',
+            './MedTech_Deals.xlsx',
+            os.path.join(os.path.dirname(__file__), 'data', 'MedTech_YTD_Standardized.xlsx'),
+            os.path.join(os.path.dirname(__file__), 'MedTech_YTD_Standardized.xlsx')
+        ]
+        
+        excel_path = None
+        for path in possible_paths:
+            if os.path.exists(path):
+                excel_path = path
+                break
+        
+        if excel_path is None:
+            return False, "Could not find data file"
+        
+        backup_path = excel_path.replace('.xlsx', '_backup.xlsx')
+        
+        if not os.path.exists(backup_path):
+            return False, "No backup file found"
+        
+        # Restore from backup
+        import shutil
+        shutil.copy2(backup_path, excel_path)
+        
+        # Clear backup availability flag
+        st.session_state.backup_available = False
+        st.session_state.last_backup_time = None
+        
+        return True, "Successfully restored previous version"
+        
+    except Exception as e:
+        return False, f"Error restoring backup: {str(e)}"
 
 def create_filter_section(df, section_key, show_conference=True):
     """Create a unified filter section that returns filtered dataframe"""
@@ -1636,6 +1677,40 @@ def show_upload_dataset(ma_df, inv_df, ipo_df):
     if st.button("🔒 Lock Page", type="secondary"):
         st.session_state.upload_authenticated = False
         st.rerun()
+    
+    st.markdown("---")
+    
+    # Undo section
+    st.markdown("### ↩️ Undo Last Upload")
+    
+    # Initialize backup_available in session state if not exists
+    if 'backup_available' not in st.session_state:
+        st.session_state.backup_available = False
+    
+    if st.session_state.get('backup_available', False):
+        # Show backup info
+        last_backup = st.session_state.get('last_backup_time', None)
+        if last_backup:
+            st.info(f"📦 Backup available from: {last_backup.strftime('%Y-%m-%d %H:%M:%S')}")
+        else:
+            st.info("📦 Backup available")
+        
+        col1, col2 = st.columns([1, 4])
+        with col1:
+            if st.button("↩️ Undo", type="primary", help="Restore the previous version of the data"):
+                with st.spinner("Restoring backup..."):
+                    success, message = undo_last_upload()
+                    if success:
+                        st.success(f"✅ {message}")
+                        st.success("🔄 Please refresh the page to see the restored data")
+                        st.balloons()
+                    else:
+                        st.error(f"❌ {message}")
+        
+        with col2:
+            st.caption("This will restore the data to its state before the last upload.")
+    else:
+        st.info("ℹ️ No backup available. Upload a file to create a backup.")
     
     st.markdown("---")
     
