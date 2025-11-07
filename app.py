@@ -252,6 +252,15 @@ def create_metric_card(label, value, color_scheme='ma'):
 def create_comparison_mini_chart(metric_name, jp_value, beacon_value, color, height=150):
     """Create mini bar chart comparing JPMorgan vs BeaconOne data"""
     try:
+        # Convert hex to rgba with opacity for second bar
+        def hex_to_rgba(hex_color, opacity=0.8):
+            """Convert hex color to rgba with specified opacity"""
+            hex_color = hex_color.lstrip('#')
+            if len(hex_color) == 6:
+                r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
+                return f'rgba({r},{g},{b},{opacity})'
+            return hex_color
+        
         # Convert string values to numeric for comparison
         def parse_value(val):
             if isinstance(val, str):
@@ -271,11 +280,14 @@ def create_comparison_mini_chart(metric_name, jp_value, beacon_value, color, hei
         # Create figure
         fig = go.Figure()
         
-        # Add bars
+        # Add bars with proper color format
         fig.add_trace(go.Bar(
             x=['JPMorgan', 'BeaconOne'],
             y=[jp_numeric, beacon_numeric],
-            marker_color=[color, f"{color}CC"],  # Second bar slightly transparent
+            marker=dict(
+                color=[color, hex_to_rgba(color, 0.75)],  # Second bar with 75% opacity
+                line=dict(color='white', width=0)
+            ),
             text=[str(jp_value), str(beacon_value)],
             textposition='outside',
             textfont=dict(size=14, color='white', family='Arial Black, sans-serif'),
