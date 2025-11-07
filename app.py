@@ -322,7 +322,7 @@ def create_comparison_mini_chart(metric_name, jp_value, beacon_value, bar_color,
                 gridwidth=1,
                 showticklabels=False,
                 title=None,
-                range=[0, max(jp_numeric, beacon_numeric) * 1.35] if max(jp_numeric, beacon_numeric) > 0 else [0, 100],  # Space for labels
+                range=[0, max(jp_numeric, beacon_numeric) * 1.45] if max(jp_numeric, beacon_numeric) > 0 else [0, 100],  # Zoomed out more for better label visibility
                 showline=False,  # No axis line
                 zeroline=False
             ),
@@ -1118,10 +1118,10 @@ def show_jp_morgan_summary(ma_df, inv_df):
         with col:
             # Use a container to group all elements
             with st.container():
-                # Opening border div - SMALLER card with compact padding
+                # Opening border div - SMALLER header box
                 st.markdown(f"""
-                <div style="border: 3px solid {border_color}; border-radius: 12px; padding: 15px 12px 12px 12px; background-color: #fafbfc; margin-bottom: 20px;">
-                    <h3 style="text-align: center; color: #333; margin: 0 0 18px 0; font-family: Arial, sans-serif; font-size: 22px; font-weight: bold;">{quarter} 2025</h3>
+                <div style="border: 3px solid {border_color}; border-radius: 12px; padding: 15px 12px 15px 12px; background-color: #fafbfc; margin-bottom: 20px;">
+                    <h3 style="text-align: center; color: #333; margin: 0 0 22px 0; font-family: Arial, sans-serif; font-size: 20px; font-weight: bold;">{quarter} 2025</h3>
                 """, unsafe_allow_html=True)
                 
                 # JP Morgan data
@@ -1130,46 +1130,55 @@ def show_jp_morgan_summary(ma_df, inv_df):
                 jp_inv_count = {'Q1': 117, 'Q2': 90, 'Q3': 67}[quarter]
                 jp_inv_value = {'Q1': '$3.7B', 'Q2': '$2.6B', 'Q3': '$2.9B'}[quarter]
                 
-                # M&A Deal Count chart - smaller
+                # M&A Deal Count chart
                 fig_ma_count = create_comparison_mini_chart(
                     'M&A Deal Count',
                     jp_ma_count,
                     beacon_stats[quarter]['ma_count'],
                     METRIC_COLORS['ma_count'],
-                    height=145  # Reduced from 160
+                    height=140
                 )
                 if fig_ma_count:
                     st.plotly_chart(fig_ma_count, use_container_width=True, key=f'{quarter}_ma_count', config={'displayModeBar': False})
                 
-                # M&A Deal Value chart - smaller
+                # Add spacing between charts
+                st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
+                
+                # M&A Deal Value chart
                 fig_ma_value = create_comparison_mini_chart(
                     'M&A Deal Value',
                     jp_ma_value,
                     beacon_stats[quarter]['ma_value'],
                     METRIC_COLORS['ma_value'],
-                    height=145  # Reduced from 160
+                    height=140
                 )
                 if fig_ma_value:
                     st.plotly_chart(fig_ma_value, use_container_width=True, key=f'{quarter}_ma_value', config={'displayModeBar': False})
                 
-                # Investment Count chart - smaller
+                # Add spacing between charts
+                st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
+                
+                # Investment Count chart
                 fig_inv_count = create_comparison_mini_chart(
                     'Investment Count',
                     jp_inv_count,
                     beacon_stats[quarter]['inv_count'],
                     METRIC_COLORS['inv_count'],
-                    height=145  # Reduced from 160
+                    height=140
                 )
                 if fig_inv_count:
                     st.plotly_chart(fig_inv_count, use_container_width=True, key=f'{quarter}_inv_count', config={'displayModeBar': False})
                 
-                # Investment Value chart - smaller
+                # Add spacing between charts
+                st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
+                
+                # Investment Value chart
                 fig_inv_value = create_comparison_mini_chart(
                     'Investment Value',
                     jp_inv_value,
                     beacon_stats[quarter]['inv_value'],
                     METRIC_COLORS['inv_value'],
-                    height=145  # Reduced from 160
+                    height=140
                 )
                 if fig_inv_value:
                     st.plotly_chart(fig_inv_value, use_container_width=True, key=f'{quarter}_inv_value', config={'displayModeBar': False})
@@ -1180,12 +1189,12 @@ def show_jp_morgan_summary(ma_df, inv_df):
     # Add vertical divider lines in the separator columns
     with sep1:
         st.markdown("""
-        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 650px; margin: 0 auto;"></div>
+        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 680px; margin: 0 auto;"></div>
         """, unsafe_allow_html=True)
     
     with sep2:
         st.markdown("""
-        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 650px; margin: 0 auto;"></div>
+        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 680px; margin: 0 auto;"></div>
         """, unsafe_allow_html=True)
 
 
