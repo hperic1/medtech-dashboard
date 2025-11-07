@@ -280,7 +280,7 @@ def create_comparison_mini_chart(metric_name, jp_value, beacon_value, bar_color,
         # Create figure
         fig = go.Figure()
         
-        # Add bars with proper color format - THINNER bars, BIGGER and BOLDED data labels
+        # Add bars with proper color format - THINNER bars, READABLE data labels
         fig.add_trace(go.Bar(
             x=['JPMorgan', 'BeaconOne'],
             y=[jp_numeric, beacon_numeric],
@@ -291,16 +291,16 @@ def create_comparison_mini_chart(metric_name, jp_value, beacon_value, bar_color,
             width=0.25,  # Make bars much thinner (was 0.5, now about half size)
             text=[str(jp_value), str(beacon_value)],
             textposition='outside',
-            textfont=dict(size=24, color='#333', family='Arial, sans-serif', weight='bold'),  # 2x bigger (was 12, now 24) and bold
+            textfont=dict(size=18, color='#333', family='Arial, sans-serif', weight='bold'),  # Readable size (18px) and bold
             hovertemplate='<b>%{x}</b><br>%{text}<br><extra></extra>',
             showlegend=False
         ))
         
-        # Update layout - light background, dark text, NO GRIDLINES, BIGGER text everywhere
+        # Update layout - light background, dark text, NO GRIDLINES, COMPACT
         fig.update_layout(
             title=dict(
                 text=metric_name,
-                font=dict(size=16, color='#333', family='Arial, sans-serif', weight='bold'),  # Bigger title (was 13, now 16)
+                font=dict(size=15, color='#333', family='Arial, sans-serif', weight='bold'),  # Title size
                 x=0.5,
                 xanchor='center',
                 y=0.95,
@@ -311,7 +311,7 @@ def create_comparison_mini_chart(metric_name, jp_value, beacon_value, bar_color,
             xaxis=dict(
                 showgrid=False,  # No gridlines
                 showticklabels=True,
-                tickfont=dict(size=13, color='#666'),  # Bigger labels (was 10, now 13)
+                tickfont=dict(size=12, color='#666'),  # Axis labels
                 title=None,
                 showline=False,  # No axis line
                 zeroline=False
@@ -322,12 +322,12 @@ def create_comparison_mini_chart(metric_name, jp_value, beacon_value, bar_color,
                 gridwidth=1,
                 showticklabels=False,
                 title=None,
-                range=[0, max(jp_numeric, beacon_numeric) * 1.4] if max(jp_numeric, beacon_numeric) > 0 else [0, 100],  # More space for bigger labels
+                range=[0, max(jp_numeric, beacon_numeric) * 1.35] if max(jp_numeric, beacon_numeric) > 0 else [0, 100],  # Space for labels
                 showline=False,  # No axis line
                 zeroline=False
             ),
             height=height,
-            margin=dict(t=55, b=35, l=20, r=20),  # More top margin for bigger labels
+            margin=dict(t=50, b=32, l=18, r=18),  # Compact margins
             hovermode='x'
         )
         
@@ -1118,10 +1118,10 @@ def show_jp_morgan_summary(ma_df, inv_df):
         with col:
             # Use a container to group all elements
             with st.container():
-                # Opening border div - NO UNDERLINE, bigger text
+                # Opening border div - SMALLER card with compact padding
                 st.markdown(f"""
-                <div style="border: 3px solid {border_color}; border-radius: 12px; padding: 25px 15px 20px 15px; background-color: #fafbfc; margin-bottom: 20px;">
-                    <h3 style="text-align: center; color: #333; margin: 0 0 25px 0; font-family: Arial, sans-serif; font-size: 24px; font-weight: bold;">{quarter} 2025</h3>
+                <div style="border: 3px solid {border_color}; border-radius: 12px; padding: 15px 12px 12px 12px; background-color: #fafbfc; margin-bottom: 20px;">
+                    <h3 style="text-align: center; color: #333; margin: 0 0 18px 0; font-family: Arial, sans-serif; font-size: 22px; font-weight: bold;">{quarter} 2025</h3>
                 """, unsafe_allow_html=True)
                 
                 # JP Morgan data
@@ -1130,46 +1130,46 @@ def show_jp_morgan_summary(ma_df, inv_df):
                 jp_inv_count = {'Q1': 117, 'Q2': 90, 'Q3': 67}[quarter]
                 jp_inv_value = {'Q1': '$3.7B', 'Q2': '$2.6B', 'Q3': '$2.9B'}[quarter]
                 
-                # M&A Deal Count chart - bright blue, BIGGER
+                # M&A Deal Count chart - smaller
                 fig_ma_count = create_comparison_mini_chart(
                     'M&A Deal Count',
                     jp_ma_count,
                     beacon_stats[quarter]['ma_count'],
                     METRIC_COLORS['ma_count'],
-                    height=160  # Increased from 130
+                    height=145  # Reduced from 160
                 )
                 if fig_ma_count:
                     st.plotly_chart(fig_ma_count, use_container_width=True, key=f'{quarter}_ma_count', config={'displayModeBar': False})
                 
-                # M&A Deal Value chart - dark navy, BIGGER
+                # M&A Deal Value chart - smaller
                 fig_ma_value = create_comparison_mini_chart(
                     'M&A Deal Value',
                     jp_ma_value,
                     beacon_stats[quarter]['ma_value'],
                     METRIC_COLORS['ma_value'],
-                    height=160  # Increased from 130
+                    height=145  # Reduced from 160
                 )
                 if fig_ma_value:
                     st.plotly_chart(fig_ma_value, use_container_width=True, key=f'{quarter}_ma_value', config={'displayModeBar': False})
                 
-                # Investment Count chart - bright tan, BIGGER
+                # Investment Count chart - smaller
                 fig_inv_count = create_comparison_mini_chart(
                     'Investment Count',
                     jp_inv_count,
                     beacon_stats[quarter]['inv_count'],
                     METRIC_COLORS['inv_count'],
-                    height=160  # Increased from 130
+                    height=145  # Reduced from 160
                 )
                 if fig_inv_count:
                     st.plotly_chart(fig_inv_count, use_container_width=True, key=f'{quarter}_inv_count', config={'displayModeBar': False})
                 
-                # Investment Value chart - dark brown, BIGGER
+                # Investment Value chart - smaller
                 fig_inv_value = create_comparison_mini_chart(
                     'Investment Value',
                     jp_inv_value,
                     beacon_stats[quarter]['inv_value'],
                     METRIC_COLORS['inv_value'],
-                    height=160  # Increased from 130
+                    height=145  # Reduced from 160
                 )
                 if fig_inv_value:
                     st.plotly_chart(fig_inv_value, use_container_width=True, key=f'{quarter}_inv_value', config={'displayModeBar': False})
@@ -1180,12 +1180,12 @@ def show_jp_morgan_summary(ma_df, inv_df):
     # Add vertical divider lines in the separator columns
     with sep1:
         st.markdown("""
-        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 700px; margin: 0 auto;"></div>
+        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 650px; margin: 0 auto;"></div>
         """, unsafe_allow_html=True)
     
     with sep2:
         st.markdown("""
-        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 700px; margin: 0 auto;"></div>
+        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 650px; margin: 0 auto;"></div>
         """, unsafe_allow_html=True)
 
 
