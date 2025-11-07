@@ -239,10 +239,12 @@ def format_currency_abbreviated(value):
         return 'Undisclosed'
     try:
         value = float(str(value).replace('$', '').replace('B', '').replace('M', '').replace(',', ''))
-        if value >= 1000:
-            return f"${value/1000:.1f}B"
+        if value >= 1000000000:  # 1 billion or more
+            return f"${value/1000000000:.1f}B"
+        elif value >= 1000000:  # 1 million or more
+            return f"${value/1000000:.1f}M"
         elif value > 0:
-            return f"${value:.1f}M"
+            return f"${value:,.0f}"
         else:
             return 'Undisclosed'
     except:
