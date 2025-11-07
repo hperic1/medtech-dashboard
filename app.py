@@ -1065,25 +1065,45 @@ def show_jp_morgan_summary(ma_df, inv_df):
     with col1:
         st.markdown(create_metric_card("M&A Activity", "Strategic Consolidation", 'ma'), unsafe_allow_html=True)
         st.markdown("""
-        • **Q1 2025**: 57 medtech M&A deals were announced, totaling $9.2 billion
+        **Q1 2024**: 47 deals worth ~$18 B — a rebound driven by renewed strategic activity among large buyers; continued strength in digital health and diagnostics acquisitions pointed to normalization of post-COVID valuations
         
-        • **Q2 2025**: 43 medtech M&A deals were announced, totaling $2.1 billion
+        **Q2 2024**: 114 deals totaling $40.3 B — nearly matching all of 2023 within six months. Headline transactions included J&J / Shockwave ($13 B) and Boston Scientific / Silk Road ($1.2 B), solidifying H1 as the strongest since 2021
         
-        • **Q3 2025**: 65 medtech M&A deals were announced, totaling $21.7 billion in upfront cash and equity
+        **Q3 2024**: 195 deals worth $47 B through Q3, exceeding 2023 totals and positioning 2024 to rival 2021. Major transactions included J&J / V-Wave ($1.7 B) and Edwards Lifesciences / JenaValve ($1.6 B), marking a return to large-cap strategic acquisitions
         
-        **Overarching Trend**: Medtech M&A activity increased through Q3 2025, surpassing full-year 2024 numbers, with strategic consolidation driving large-scale transactions
+        **Q4 2024**: 305 transactions valued at $63.1 B for 2024 (up from 134 / $47 B in 2023), making it the second-highest year on record after 2021. Biggest deals included Novo Holdings / Catalent ($16.5 B) and J&J / Shockwave ($13.1 B) alongside Cardinal's acquisitions of GI Alliance and Advanced Diabetes Supply
+        
+        **EOY 2024 Summary**: M&A surged to 305 deals / $63.1 B (+34% YoY), driven by mega-deals and a resurgence of strategic buy-side confidence after two muted years
+        
+        **Q1 2025**: 57 deals totaling $9.2 B — fewer transactions but significantly higher value than Q4 2024, led by Stryker's $4.9 B acquisition of Inari Medical and Zimmer Biomet's $1.2 B purchase of Paragon 28; median upfronts rose to $250 M, signaling confidence in scaling revenue-stage assets
+        
+        **Q2 2025**: 43 deals worth $2.1 B, down from Q1's $9.2 B as elevated interest rates and valuation gaps slowed new bids. Notable activity included Merit Medical's purchase of Biolife Delaware, reflecting steady appetite for niche device integrations despite market caution
+        
+        **Q3 2025**: 65 transactions totaling $21.7 B — the most active quarter since 2022 and second-highest value in three years. The surge was led by Waters Corp's $17.5 B merger with BD's Biosciences & Diagnostics Solutions unit, alongside Terumo/OrganOx ($1.5 B) and ArchiMed/ZimVie ($730 M), underscoring renewed large-cap consolidation momentum
+        
+        **2025 YTD Summary**: M&A volumes remained historically strong at 165+ deals totaling ~$33 B, highlighting strategic expansion by industry leaders into adjacent diagnostic and therapeutic markets despite lingering macro headwinds
         """)
         
     with col2:
         st.markdown(create_metric_card("Venture Capital", "Selective Investment", 'venture'), unsafe_allow_html=True)
         st.markdown("""
-        • **Q1 2025**: Medtech venture investment activity continued to see larger rounds into fewer companies to post a higher dollar total for Q1 2025, exceeding Q1 2024
+        **Q1 2024**: ~$5.5 B invested across 182 rounds as early signs of recovery emerged after a weak 2023. Most checks were < $50 M, but multiple $100 M+ raises (e.g., Element Biosciences and Lila Sciences) signaled returning investor confidence in AI-driven diagnostics and platform plays
         
-        • **Q2 2025**: The medtech venture landscape continues to show resilience, with total venture funding reaching $6.8 billion in the first half of 2025, positioning the sector to potentially exceed 2024's $12.7 billion full-year total
+        **Q2 2024**: $4.3 B raised across 167 rounds (H1 total $9.7 B / 341 rounds). The quarter saw a modest expansion led by Amber Therapeutics' $100 M Series A and early-stage capital revival ($2.4 B in Seed and Series A funding). Momentum reflected growing appetite for device and neuro-stimulation platforms
         
-        • **Q3 2025**: Medtech venture funding started the year strong yet had a weaker Q2 and Q3 in a challenging venture funding environment across all of healthcare and life sciences
+        **Q3 2024**: $5.1 B across 154 rounds (YTD $16.1 B / 554). Most rounds remained below $50 M (383 of 486 disclosed), though a cluster of large deals — including Element Biosciences ($277 M) and Flo Health ($200 M) — helped drive a 27% YoY growth trajectory
         
-        **Overarching Trend**: Late-stage venture rounds continue to dominate at $7.9B YTD, while early-stage funding remains selective as investors focus on companies with proven traction
+        **Q4 2024**: $3.0 B across 125 rounds (2024 total $19.1 B / 691 rounds). While the number of rounds fell 5% YoY, the dollar total rose 12%. Selective confidence in high-value plays continued, highlighted by Impress ($117 M) and Nusano ($115 M) later-stage raises amid tight funding conditions
+        
+        **EOY 2024 Summary**: Medtech venture funding rebounded to $19.1 B (+12% YoY) despite fewer rounds, as capital flowed selectively toward platform and AI-linked technologies
+        
+        **Q1 2025**: $3.7 B invested across 117 rounds (+9% YoY), driven by fewer but larger financings. Mega-rounds like Lila Sciences ($200 M) and OrganOx ($142 M) marked investor preference for AI-enabled diagnostics and advanced therapeutic devices amid slower seed formation and consolidation around later-stage bets
+        
+        **Q2 2025**: $2.6 B across 90 rounds (H1 total $6.8 B/194 rounds), sustaining a "flight to quality." Large financings like Neuralink ($650 M Series E) and Biolinq ($100 M Series C) dominated, while early-stage participation fell as investors favored proven clinical and regulatory traction
+        
+        **Q3 2025**: $2.9 B across 67 rounds (YTD $9.5 B/259 rounds) — a sequential uptick from Q2 but still below 2024 levels. Late-stage deals like Lila Sciences ($235 M Series A), Supira Medical ($120 M Series E), and SetPoint Medical ($115 M Series D) drove totals while early-stage rounds lagged amid macro pressure
+        
+        **2025 YTD Summary**: Medtech venture capital reached $9.5 B across 259 rounds (through Q3), with capital increasingly concentrated in AI-driven platform and neuro-tech devices
         """)
 
     # Add comparison section
@@ -1189,12 +1209,12 @@ def show_jp_morgan_summary(ma_df, inv_df):
     # Add vertical divider lines in the separator columns
     with sep1:
         st.markdown("""
-        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 680px; margin: 0 auto;"></div>
+        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 720px; margin: 0 auto;"></div>
         """, unsafe_allow_html=True)
     
     with sep2:
         st.markdown("""
-        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 680px; margin: 0 auto;"></div>
+        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 720px; margin: 0 auto;"></div>
         """, unsafe_allow_html=True)
 
 
