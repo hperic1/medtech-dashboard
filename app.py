@@ -999,17 +999,23 @@ def show_home():
         line-height: 1.6 !important;
     }
     
-    /* Remove top margin/padding from header */
+    /* Dark navy blue header */
     section.main > div.block-container > div:first-child > div:first-child h1 {
         margin-top: 0 !important;
         padding-top: 0 !important;
         margin-bottom: 12px !important;
+        color: #1e3a5f !important;
     }
     
     /* Section headers */
     section.main > div.block-container > div:first-child > div:first-child h3 {
         margin-top: 18px !important;
         margin-bottom: 10px !important;
+    }
+    
+    /* Indent bullets under tab titles */
+    .indent-bullet {
+        margin-left: 20px !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -1021,29 +1027,39 @@ def show_home():
     st.markdown("### Dashboard Overview")
     
     st.markdown("**📊 Deal Activity Tab**")
+    st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
     st.write("**M&A Activity:** Track mergers, acquisitions, and strategic transactions")
     st.write("• Filter by date range, deal type, acquirer, target, and therapeutic area")
     st.write("• View deal values, transaction structures, and key deal metrics")
     st.write("• Interactive charts showing quarterly trends and deal volume")
+    st.markdown('</div>', unsafe_allow_html=True)
     
+    st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
     st.write("**Investment Activity:** Monitor venture capital, private equity, and growth financing")
     st.write("• Filter by investment type, company, investors, and funding stage")
     st.write("• Track amounts raised and investor participation")
     st.write("• Visualize funding trends across quarters and years")
+    st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown("**📈 JP Morgan Industry Report Tab**")
+    st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
     st.write("**Market Intelligence:** Access comprehensive quarterly analysis from JP Morgan's MedTech Industry Reports")
     st.write("• Compare M&A and Venture activity across quarters (Q1 2024 - Q3 2025)")
     st.write("• View quarter-over-quarter (QoQ) and year-over-year (YoY) trend analysis")
     st.write("• Review detailed quarterly summaries highlighting key deals and market themes")
     st.write("• Data Comparison: See how deal tracking compares to JP Morgan's industry-wide reporting")
+    st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown("**🏢 IPO Activity Tab**")
+    st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
     st.write("• Track initial public offerings and public market entries")
     st.write("• Monitor IPO valuations and timing")
+    st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown("**🎤 Conferences Tab**")
+    st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
     st.write("• Download an excel summary that shows companies that will be in attendance at conferences")
+    st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown("### How to Use This Dashboard")
     st.write("1. Refer to the JP Morgan Report Tab to get a high-level market overview and understand current trends")
