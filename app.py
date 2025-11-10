@@ -1050,7 +1050,18 @@ def show_home():
     st.markdown("# Welcome to the MedTech M&A & Venture Dashboard")
     st.write("This dashboard allows you to explore and track MedTech deal activity, including M&A, venture capital, and IPOs. Use the Deal Activity tab to filter and analyze transactions, the JP Morgan Report tab for quarterly market trends, and the Conferences tab to download summaries of companies attending major events.")
     st.write("See below for a short video walkthrough on how to use the dashboard.")
-    st.markdown("")
+    
+    # Video walkthrough
+    st.markdown("---")
+    try:
+        # Try to load video from assets folder
+        video_file = open('assets/dashboard_walkthrough.webm', 'rb')
+        video_bytes = video_file.read()
+        st.video(video_bytes)
+    except FileNotFoundError:
+        st.info("📹 Video walkthrough coming soon!")
+    
+    st.markdown("---")
     st.markdown("**Sources:** Desk Research and [JP Morgan Biopharma & MedTech Deal Reports](https://www.jpmorgan.com/insights/markets-and-economy/outlook/biopharma-medtech-deal-reports)", unsafe_allow_html=True)
 
 def show_deal_activity(ma_df, inv_df):
