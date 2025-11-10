@@ -987,47 +987,52 @@ def show_home():
     st.markdown("---")
     st.subheader("Dashboard Overview")
     
-    # Full width layout with custom CSS for tighter spacing
+    # Deal Activity Card
     st.markdown("""
-    <style>
-    .tight-spacing p {
-        margin-bottom: 2px !important;
-        line-height: 1.3 !important;
-    }
-    </style>
+    <div style="border: 1px solid #d0d0d0; border-radius: 8px; padding: 15px; background-color: #f9f9f9; margin-bottom: 15px;">
+        <h4 style="color: #2c3e50; margin-top: 0; margin-bottom: 10px;">📊 Deal Activity Tab</h4>
+        <p style="margin: 5px 0; line-height: 1.4;"><b>M&A Activity:</b> Track mergers, acquisitions, and strategic transactions</p>
+        <p style="margin: 5px 0; line-height: 1.4;">• Filter by date range, deal type, acquirer, target, and therapeutic area</p>
+        <p style="margin: 5px 0; line-height: 1.4;">• View deal values, transaction structures, and key deal metrics</p>
+        <p style="margin: 5px 0; line-height: 1.4;">• Interactive charts showing quarterly trends and deal volume</p>
+        <p style="margin: 10px 0 5px 0; line-height: 1.4;"><b>Investment Activity:</b> Monitor venture capital, private equity, and growth financing</p>
+        <p style="margin: 5px 0; line-height: 1.4;">• Filter by investment type, company, investors, and funding stage</p>
+        <p style="margin: 5px 0; line-height: 1.4;">• Track amounts raised and investor participation</p>
+        <p style="margin: 5px 0; line-height: 1.4;">• Visualize funding trends across quarters and years</p>
+    </div>
     """, unsafe_allow_html=True)
     
-    st.markdown('<div class="tight-spacing">', unsafe_allow_html=True)
+    # JP Morgan Card
+    st.markdown("""
+    <div style="border: 1px solid #d0d0d0; border-radius: 8px; padding: 15px; background-color: #f9f9f9; margin-bottom: 15px;">
+        <h4 style="color: #2c3e50; margin-top: 0; margin-bottom: 10px;">📈 JP Morgan Industry Report Tab</h4>
+        <p style="margin: 5px 0; line-height: 1.4;"><b>Market Intelligence:</b> Access comprehensive quarterly analysis from JP Morgan's MedTech Industry Reports</p>
+        <p style="margin: 5px 0; line-height: 1.4;">• Compare M&A and Venture activity across quarters (Q1 2024 - Q3 2025)</p>
+        <p style="margin: 5px 0; line-height: 1.4;">• View quarter-over-quarter (QoQ) and year-over-year (YoY) trend analysis</p>
+        <p style="margin: 5px 0; line-height: 1.4;">• Review detailed quarterly summaries highlighting key deals and market themes</p>
+        <p style="margin: 5px 0; line-height: 1.4;">• <b>Data Comparison:</b> See how deal tracking compares to JP Morgan's industry-wide reporting</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    st.markdown("**📊 Deal Activity Tab**")
-    st.write("**M&A Activity:** Track mergers, acquisitions, and strategic transactions")
-    st.write("• Filter by date range, deal type, acquirer, target, and therapeutic area")
-    st.write("• View deal values, transaction structures, and key deal metrics")
-    st.write("• Interactive charts showing quarterly trends and deal volume")
-    st.write("")
-    st.write("**Investment Activity:** Monitor venture capital, private equity, and growth financing")
-    st.write("• Filter by investment type, company, investors, and funding stage")
-    st.write("• Track amounts raised and investor participation")
-    st.write("• Visualize funding trends across quarters and years")
+    # Two column layout for IPO and Conferences
+    col1, col2 = st.columns(2)
     
-    st.markdown("")
-    st.markdown("**📈 JP Morgan Industry Report Tab**")
-    st.write("**Market Intelligence:** Access comprehensive quarterly analysis from JP Morgan's MedTech Industry Reports")
-    st.write("• Compare M&A and Venture activity across quarters (Q1 2024 - Q3 2025)")
-    st.write("• View quarter-over-quarter (QoQ) and year-over-year (YoY) trend analysis")
-    st.write("• Review detailed quarterly summaries highlighting key deals and market themes")
-    st.write("• **Data Comparison:** See how deal tracking compares to JP Morgan's industry-wide reporting")
+    with col1:
+        st.markdown("""
+        <div style="border: 1px solid #d0d0d0; border-radius: 8px; padding: 15px; background-color: #f9f9f9; margin-bottom: 15px;">
+            <h4 style="color: #2c3e50; margin-top: 0; margin-bottom: 10px;">🏢 IPO Activity Tab</h4>
+            <p style="margin: 5px 0; line-height: 1.4;">• Track initial public offerings and public market entries</p>
+            <p style="margin: 5px 0; line-height: 1.4;">• Monitor IPO valuations and timing</p>
+        </div>
+        """, unsafe_allow_html=True)
     
-    st.markdown("")
-    st.markdown("**🏢 IPO Activity Tab**")
-    st.write("• Track initial public offerings and public market entries")
-    st.write("• Monitor IPO valuations and timing")
-    
-    st.markdown("")
-    st.markdown("**🎤 Conferences Tab**")
-    st.write("• Download an excel summary that shows companies that will be in attendance at conferences")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+    with col2:
+        st.markdown("""
+        <div style="border: 1px solid #d0d0d0; border-radius: 8px; padding: 15px; background-color: #f9f9f9; margin-bottom: 15px;">
+            <h4 style="color: #2c3e50; margin-top: 0; margin-bottom: 10px;">🎤 Conferences Tab</h4>
+            <p style="margin: 5px 0; line-height: 1.4;">• Download an excel summary that shows companies that will be in attendance at conferences</p>
+        </div>
+        """, unsafe_allow_html=True)
     
     st.markdown("---")
     st.subheader("How to Use This Dashboard")
@@ -1049,6 +1054,9 @@ def show_home():
     with col2:
         st.subheader("Data Updates")
         st.write("The dashboard is regularly updated with new deal data as transactions are announced and closed. For data upload and management, authorized users can access the **📤 Upload New Dataset** tab (password protected).")
+    
+    st.markdown("---")
+    st.caption("Source Attribution: Data sourced from Desk Research and JP Morgan Biopharma & MedTech Deal Reports")
     
     st.markdown("---")
     st.caption("Source Attribution: Data sourced from Desk Research and JP Morgan Biopharma & MedTech Deal Reports")
