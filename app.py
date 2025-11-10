@@ -1010,7 +1010,7 @@ def show_home():
         <p style="margin: 5px 0; line-height: 1.4;">• Compare M&A and Venture activity across quarters (Q1 2024 - Q3 2025)</p>
         <p style="margin: 5px 0; line-height: 1.4;">• View quarter-over-quarter (QoQ) and year-over-year (YoY) trend analysis</p>
         <p style="margin: 5px 0; line-height: 1.4;">• Review detailed quarterly summaries highlighting key deals and market themes</p>
-        <p style="margin: 5px 0; line-height: 1.4;">• <b>Data Comparison:</b> See how deal tracking compares to JP Morgan's industry-wide reporting</p>
+        <p style="margin: 5px 0; line-height: 1.4;">• Data Comparison: See how deal tracking compares to JP Morgan's industry-wide reporting</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -1019,7 +1019,7 @@ def show_home():
     
     with col1:
         st.markdown("""
-        <div style="border: 1px solid #d0d0d0; border-radius: 8px; padding: 15px; background-color: #f9f9f9; margin-bottom: 15px;">
+        <div style="border: 1px solid #d0d0d0; border-radius: 8px; padding: 15px; background-color: #f9f9f9; margin-bottom: 15px; min-height: 110px;">
             <h4 style="color: #2c3e50; margin-top: 0; margin-bottom: 10px;">🏢 IPO Activity Tab</h4>
             <p style="margin: 5px 0; line-height: 1.4;">• Track initial public offerings and public market entries</p>
             <p style="margin: 5px 0; line-height: 1.4;">• Monitor IPO valuations and timing</p>
@@ -1028,7 +1028,7 @@ def show_home():
     
     with col2:
         st.markdown("""
-        <div style="border: 1px solid #d0d0d0; border-radius: 8px; padding: 15px; background-color: #f9f9f9; margin-bottom: 15px;">
+        <div style="border: 1px solid #d0d0d0; border-radius: 8px; padding: 15px; background-color: #f9f9f9; margin-bottom: 15px; min-height: 110px;">
             <h4 style="color: #2c3e50; margin-top: 0; margin-bottom: 10px;">🎤 Conferences Tab</h4>
             <p style="margin: 5px 0; line-height: 1.4;">• Download an excel summary that shows companies that will be in attendance at conferences</p>
         </div>
@@ -1042,21 +1042,9 @@ def show_home():
     
     st.markdown("---")
     
-    # Two column layout for sources and updates
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.subheader("Data Sources")
-        st.write("**Desk Research:** Primary source for individual deal tracking and detailed transaction data")
-        st.write("")
-        st.write("**JP Morgan Industry Reports:** Quarterly market analysis and industry-wide deal statistics")
-    
-    with col2:
-        st.subheader("Data Updates")
-        st.write("The dashboard is regularly updated with new deal data as transactions are announced and closed. For data upload and management, authorized users can access the **📤 Upload New Dataset** tab (password protected).")
-    
-    st.markdown("---")
-    st.caption("Source Attribution: Data sourced from Desk Research and JP Morgan Biopharma & MedTech Deal Reports")
+    # Data Updates section (full width)
+    st.subheader("Data Updates")
+    st.write("The dashboard is regularly updated with new deal data as transactions are announced and closed. For data upload and management, authorized users can access the **📤 Upload New Dataset** tab (password protected).")
     
     st.markdown("---")
     st.caption("Source Attribution: Data sourced from Desk Research and JP Morgan Biopharma & MedTech Deal Reports")
