@@ -582,10 +582,11 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
             marker=dict(size=10, color=line_color),
             text=[f"<b>{c}</b>" for c in quarterly_data['Deal_Count']],  # Bold numbers
             textposition='top center',
-            textfont=dict(size=14),  # Larger text
+            textfont=dict(size=13, color=line_color),  # Slightly smaller and colored to match line
             yaxis='y2',
             hovertemplate='<b>%{x}</b><br>Deal Count: %{y}<br><extra></extra>',
-            connectgaps=True
+            connectgaps=True,
+            cliponaxis=False  # Allow labels to extend beyond plot area
         ))
         
         # Update layout
@@ -600,7 +601,7 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
                 title=dict(text='Total Deal Value (USD)', font=dict(size=16)),  # Modern syntax
                 side='left',
                 showgrid=False,
-                range=[0, max(quarterly_data['Total_Value']) * 1.35] if len(quarterly_data) > 0 else [0, 1000],  # Increased from 1.2 to 1.35 for label space
+                range=[0, max(quarterly_data['Total_Value']) * 1.45] if len(quarterly_data) > 0 else [0, 1000],  # Increased for more label space
                 tickfont=dict(size=13)  # Larger tick labels
             ),
             yaxis2=dict(
@@ -608,7 +609,7 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
                 overlaying='y',
                 side='right',
                 showgrid=False,
-                range=[0, max(quarterly_data['Deal_Count']) * 1.5] if len(quarterly_data) > 0 else [0, 10],  # Increased from 1.3 to 1.5 for label space
+                range=[0, max(quarterly_data['Deal_Count']) * 1.6] if len(quarterly_data) > 0 else [0, 10],  # Increased for more label space
                 tickfont=dict(size=13)  # Larger tick labels
             ),
             hovermode='x unified',
@@ -681,10 +682,11 @@ def create_jp_morgan_chart_by_category(category, color):
             marker=dict(size=10, color=COLORS['count_line']),
             text=[f"<b>{str(c)}</b>" if c > 0 else '' for c in counts],  # Bold numbers
             textposition='top center',
-            textfont=dict(size=14),  # Larger text
+            textfont=dict(size=13, color=COLORS['count_line']),  # Slightly smaller and colored
             yaxis='y2',
             hovertemplate='<b>%{x}</b><br>Deal Count: %{y}<br><extra></extra>',
-            connectgaps=True
+            connectgaps=True,
+            cliponaxis=False  # Allow labels to extend beyond plot area
         ))
         
         # Update layout with dual y-axes
@@ -699,7 +701,7 @@ def create_jp_morgan_chart_by_category(category, color):
                 title=dict(text='Deal Value (Billions USD)', font=dict(size=16)),  # Changed to Billions
                 side='left',
                 showgrid=False,
-                range=[0, max([v/1000 for v in values]) * 1.35],  # Increased for label space, using billions
+                range=[0, max([v/1000 for v in values]) * 1.45],  # Increased for more label space
                 tickfont=dict(size=13)
             ),
             yaxis2=dict(
@@ -707,7 +709,7 @@ def create_jp_morgan_chart_by_category(category, color):
                 overlaying='y',
                 side='right',
                 showgrid=False,
-                range=[0, max(counts) * 1.5] if max(counts) > 0 else [0, 100],  # Increased for label space
+                range=[0, max(counts) * 1.6] if max(counts) > 0 else [0, 100],  # Increased for more label space
                 tickfont=dict(size=13)
             ),
             hovermode='x unified',
@@ -1723,10 +1725,11 @@ def create_ipo_chart(df):
             marker=dict(size=10, color=COLORS['count_line']),
             text=[f"<b>{c}</b>" for c in quarterly_data['IPO_Count']],
             textposition='top center',
-            textfont=dict(size=14),
+            textfont=dict(size=13, color=COLORS['count_line']),  # Slightly smaller and colored
             yaxis='y2',
             hovertemplate='<b>%{x}</b><br>IPO Count: %{y}<br><extra></extra>',
-            connectgaps=True
+            connectgaps=True,
+            cliponaxis=False  # Allow labels to extend beyond plot area
         ))
         
         # Update layout
@@ -1741,7 +1744,7 @@ def create_ipo_chart(df):
                 title=dict(text='Total IPO Value (USD)', font=dict(size=16)),  # Modern syntax
                 side='left',
                 showgrid=False,
-                range=[0, max(quarterly_data['Total_Amount']) * 1.35] if len(quarterly_data) > 0 else [0, 1000],  # Increased for label space
+                range=[0, max(quarterly_data['Total_Amount']) * 1.45] if len(quarterly_data) > 0 else [0, 1000],  # Increased for more label space
                 tickfont=dict(size=13)
             ),
             yaxis2=dict(
@@ -1749,7 +1752,7 @@ def create_ipo_chart(df):
                 overlaying='y',
                 side='right',
                 showgrid=False,
-                range=[0, max(quarterly_data['IPO_Count']) * 1.5] if len(quarterly_data) > 0 else [0, 10],  # Increased for label space
+                range=[0, max(quarterly_data['IPO_Count']) * 1.6] if len(quarterly_data) > 0 else [0, 10],  # Increased for more label space
                 tickfont=dict(size=13)
             ),
             hovermode='x unified',
@@ -1908,7 +1911,7 @@ def show_conferences(ma_df, inv_df):
         tech = row.get('Technology/Description', 'N/A')
         
         if category != 'Undisclosed':
-            companies[company]['categories'].add(f"M&A: {category}")
+            companies[company]['categories'].add(category)
         
         # Format deal text
         if deal_type == "Merger":
@@ -1949,7 +1952,7 @@ def show_conferences(ma_df, inv_df):
         tech = row.get('Technology/Description', 'N/A')
         
         if category != 'Undisclosed':
-            companies[company]['categories'].add(f"Venture: {category}")
+            companies[company]['categories'].add(category)
         
         # Format deal text
         if amount != 'Undisclosed':
