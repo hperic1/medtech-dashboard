@@ -1014,7 +1014,7 @@ def show_home():
         margin-top: 0 !important;
         padding-top: 0 !important;
         margin-bottom: 8px !important;
-        color: #1e3a5f !important;
+        color: #5B7FA8 !important;
         font-family: 'Georgia', serif !important;
     }
     
