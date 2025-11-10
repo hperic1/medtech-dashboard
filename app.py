@@ -655,47 +655,56 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
         st.error(f"Details: {traceback.format_exc()}")
         return None
 
-def create_jp_morgan_chart_by_category(category, color, year_filter='2025'):
+def create_jp_morgan_chart_by_category(category, color, selected_quarters, selected_years):
     """Create JP Morgan chart for a specific category with deal count overlay"""
     try:
         # Complete data from JP Morgan reports (2024 and 2025)
         all_data = {
             'M&A': {
                 '2024': {
-                    'quarters': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024'],
-                    'values': [18000, 40300, 47000, 63100],  # In millions
-                    'counts': [47, 114, 195, 305]
+                    'Q1': {'value': 18000, 'count': 47},
+                    'Q2': {'value': 40300, 'count': 114},
+                    'Q3': {'value': 47000, 'count': 195},
+                    'Q4': {'value': 63100, 'count': 305}
                 },
                 '2025': {
-                    'quarters': ['Q1 2025', 'Q2 2025', 'Q3 2025'],
-                    'values': [9200, 2100, 21700],  # In millions
-                    'counts': [57, 43, 65]
+                    'Q1': {'value': 9200, 'count': 57},
+                    'Q2': {'value': 2100, 'count': 43},
+                    'Q3': {'value': 21700, 'count': 65}
                 }
             },
             'Venture': {
                 '2024': {
-                    'quarters': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024'],
-                    'values': [5500, 4300, 5100, 3000],  # In millions
-                    'counts': [182, 167, 154, 125]
+                    'Q1': {'value': 5500, 'count': 182},
+                    'Q2': {'value': 4300, 'count': 167},
+                    'Q3': {'value': 5100, 'count': 154},
+                    'Q4': {'value': 3000, 'count': 125}
                 },
                 '2025': {
-                    'quarters': ['Q1 2025', 'Q2 2025', 'Q3 2025'],
-                    'values': [3700, 2600, 2900],  # In millions
-                    'counts': [117, 90, 67]
+                    'Q1': {'value': 3700, 'count': 117},
+                    'Q2': {'value': 2600, 'count': 90},
+                    'Q3': {'value': 2900, 'count': 67}
                 }
             }
         }
         
-        # Get data based on year filter
-        if year_filter == 'All':
-            # Combine 2024 and 2025 data
-            quarters = all_data[category]['2024']['quarters'] + all_data[category]['2025']['quarters']
-            values = all_data[category]['2024']['values'] + all_data[category]['2025']['values']
-            counts = all_data[category]['2024']['counts'] + all_data[category]['2025']['counts']
-        else:
-            quarters = all_data[category][year_filter]['quarters']
-            values = all_data[category][year_filter]['values']
-            counts = all_data[category][year_filter]['counts']
+        # Build filtered data based on selected quarters and years
+        quarters = []
+        values = []
+        counts = []
+        
+        for year in selected_years:
+            for quarter in selected_quarters:
+                # Check if this quarter exists for this year
+                if year in all_data[category] and quarter in all_data[category][year]:
+                    quarter_label = f"{quarter} {year}"
+                    quarters.append(quarter_label)
+                    values.append(all_data[category][year][quarter]['value'])
+                    counts.append(all_data[category][year][quarter]['count'])
+        
+        if not quarters:
+            st.info(f"No data available for selected quarters and years")
+            return None
         
         fig = go.Figure()
         
@@ -1361,28 +1370,42 @@ def show_jp_morgan_summary(ma_df, inv_df):
         }
     
     
-    # Year filter for JP Morgan charts
+    # Quarter and Year filters for JP Morgan charts
     st.markdown("### Activity by Category")
-    year_filter = st.radio(
-        "Select Year",
-        ["2024", "2025", "All"],
-        index=1,  # Default to 2025
-        horizontal=True,
-        key='jp_year_filter'
-    )
     
-    # Create 1x2 grid for charts
-    col1, col2 = st.columns(2)
+    filter_col1, filter_col2 = st.columns(2)
     
-    with col1:
-        fig_ma = create_jp_morgan_chart_by_category('M&A', COLORS['ma_primary'], year_filter)
-        if fig_ma:
-            st.plotly_chart(fig_ma, use_container_width=True)
+    with filter_col1:
+        selected_quarters = st.multiselect(
+            "Select Quarters",
+            ["Q1", "Q2", "Q3", "Q4"],
+            default=["Q1", "Q2", "Q3"],
+            key='jp_quarter_filter'
+        )
     
-    with col2:
-        fig_venture = create_jp_morgan_chart_by_category('Venture', COLORS['venture_primary'], year_filter)
-        if fig_venture:
-            st.plotly_chart(fig_venture, use_container_width=True)
+    with filter_col2:
+        selected_years = st.multiselect(
+            "Select Years",
+            ["2024", "2025"],
+            default=["2025"],
+            key='jp_year_filter'
+        )
+    
+    if not selected_quarters or not selected_years:
+        st.warning("Please select at least one quarter and one year to display data.")
+    else:
+        # Create 1x2 grid for charts
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            fig_ma = create_jp_morgan_chart_by_category('M&A', COLORS['ma_primary'], selected_quarters, selected_years)
+            if fig_ma:
+                st.plotly_chart(fig_ma, use_container_width=True)
+        
+        with col2:
+            fig_venture = create_jp_morgan_chart_by_category('Venture', COLORS['venture_primary'], selected_quarters, selected_years)
+            if fig_venture:
+                st.plotly_chart(fig_venture, use_container_width=True)
     # Key trends
     # ====== QUARTERLY COMPARISON TABLE - NOW ABOVE KEY TRENDS ======
     st.markdown("---")
@@ -1910,7 +1933,7 @@ def create_ipo_chart(df):
             x=quarterly_data['Quarter'].astype(str),
             y=quarterly_data['Total_Amount'],
             name='IPO Value',
-            marker_color='#9B59B6',  # Purple for IPO
+            marker_color='#FFA857',  # Light orange for IPO
             text=[f"<b>{format_currency_abbreviated(v)}</b>" for v in quarterly_data['Total_Amount']],
             textposition='outside',
             textfont=dict(size=14),
