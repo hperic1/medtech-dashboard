@@ -315,31 +315,41 @@ def create_inline_comparison_bars(jp_value, beacon_value, color, is_value=False,
     """
     return html
 
-def create_filter_section(df, section_key, show_conference=True):
+def create_filter_section(df, section_key, show_conference=True, show_month=True):
     """Create a unified filter section that returns filtered dataframe"""
     with st.container():
         st.markdown('<div class="filter-container">', unsafe_allow_html=True)
         
-        # Create columns for filters
+        # Create columns for filters - adjust based on what we're showing
+        num_cols = 2  # Start with quarter and category
+        if show_month:
+            num_cols += 1
         if show_conference:
-            col1, col2, col3, col4 = st.columns(4)
-        else:
-            col1, col2, col3 = st.columns(3)
+            num_cols += 1
         
-        with col1:
+        cols = st.columns(num_cols)
+        col_idx = 0
+        
+        with cols[col_idx]:
             quarters = ['All'] + sorted([q for q in df['Quarter'].unique() if q != 'Undisclosed'])
             selected_quarter = st.selectbox("Quarter", quarters, key=f'quarter_{section_key}')
+        col_idx += 1
         
-        with col2:
-            months = ['All'] + sorted([m for m in df['Month'].unique() if m != 'Undisclosed'])
-            selected_month = st.selectbox("Month", months, key=f'month_{section_key}')
+        if show_month:
+            with cols[col_idx]:
+                months = ['All'] + sorted([m for m in df['Month'].unique() if m != 'Undisclosed'])
+                selected_month = st.selectbox("Month", months, key=f'month_{section_key}')
+            col_idx += 1
+        else:
+            selected_month = 'All'  # Default to All if not shown
         
-        with col3:
+        with cols[col_idx]:
             categories = ['All'] + sorted([s for s in df['Category'].unique() if s != 'Undisclosed'])
             selected_category = st.selectbox("Category", categories, key=f'category_{section_key}')
+        col_idx += 1
         
         if show_conference:
-            with col4:
+            with cols[col_idx]:
                 conferences = ['All'] + sorted([c for c in df['Conference'].unique() if c not in ['Undisclosed', '--']])
                 selected_conference = st.selectbox("Conference", conferences, key=f'conference_{section_key}')
         
@@ -1014,18 +1024,16 @@ def show_home():
         margin-bottom: 10px !important;
     }
     
-    /* Tab boxes with navy outline */
-    .tab-box {
-        border: 2px solid #4a5f7f;
-        border-radius: 8px;
-        padding: 12px 15px;
-        margin: 15px 0;
-        background-color: #f5f8fa;
-    }
-    
     /* Indent bullets more */
     .indent-bullet {
         margin-left: 30px !important;
+    }
+    
+    /* Section divider */
+    .section-divider {
+        border-top: 2px solid #4a5f7f;
+        margin: 20px 0 15px 0;
+        padding-top: 15px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -1036,8 +1044,8 @@ def show_home():
     
     st.markdown("### Dashboard Overview")
     
-    # Deal Activity Tab with box
-    st.markdown('<div class="tab-box">', unsafe_allow_html=True)
+    # Deal Activity Tab
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     st.markdown("**📊 Deal Activity Tab**")
     st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
     st.write("**M&A Activity:** Track mergers, acquisitions, and strategic transactions")
@@ -1050,10 +1058,9 @@ def show_home():
     st.write("• Track amounts raised and investor participation")
     st.write("• Visualize funding trends across quarters and years")
     st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
     
-    # JP Morgan Tab with box
-    st.markdown('<div class="tab-box">', unsafe_allow_html=True)
+    # JP Morgan Tab
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     st.markdown("**📈 JP Morgan Industry Report Tab**")
     st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
     st.write("**Market Intelligence:** Access comprehensive quarterly analysis from JP Morgan's MedTech Industry Reports")
@@ -1062,23 +1069,20 @@ def show_home():
     st.write("• Review detailed quarterly summaries highlighting key deals and market themes")
     st.write("• Data Comparison: See how deal tracking compares to JP Morgan's industry-wide reporting")
     st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
     
-    # IPO Activity Tab with box
-    st.markdown('<div class="tab-box">', unsafe_allow_html=True)
+    # IPO Activity Tab
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     st.markdown("**🏢 IPO Activity Tab**")
     st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
     st.write("• Track initial public offerings and public market entries")
     st.write("• Monitor IPO valuations and timing")
     st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
     
-    # Conferences Tab with box
-    st.markdown('<div class="tab-box">', unsafe_allow_html=True)
+    # Conferences Tab
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     st.markdown("**🎤 Conferences Tab**")
     st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
     st.write("• Download an excel summary that shows companies that will be in attendance at conferences")
-    st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown("### How to Use This Dashboard")
@@ -1431,7 +1435,7 @@ def show_deal_activity(ma_df, inv_df):
     
     with tab3:
         st.markdown("#### Chart Filters")
-        filtered_inv_chart = create_filter_section(inv_df, 'inv_chart', show_conference=True)
+        filtered_inv_chart = create_filter_section(inv_df, 'inv_chart', show_conference=True, show_month=False)
         
         fig = create_quarterly_chart(filtered_inv_chart, 'Amount Raised', 'Venture Investment by Quarter', 'venture')
         if fig:
