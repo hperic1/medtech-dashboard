@@ -251,7 +251,7 @@ def undo_last_upload():
     except Exception as e:
         return False, f"Error restoring backup: {str(e)}"
 
-def create_inline_comparison_bars(jp_value, beacon_value, color, is_value=False):
+def create_inline_comparison_bars(jp_value, beacon_value, color, is_value=False, max_value=None):
     """Create inline horizontal comparison bars for table display"""
     # Parse values to get numeric comparison
     def parse_value(val):
@@ -272,7 +272,12 @@ def create_inline_comparison_bars(jp_value, beacon_value, color, is_value=False)
     beacon_numeric = parse_value(beacon_value)
     
     # Calculate percentages for bar widths
-    max_val = max(jp_numeric, beacon_numeric)
+    # If max_value provided, use it for calibration; otherwise use local max
+    if max_value is not None and max_value > 0:
+        max_val = max_value
+    else:
+        max_val = max(jp_numeric, beacon_numeric)
+    
     if max_val > 0:
         jp_pct = (jp_numeric / max_val) * 100
         beacon_pct = (beacon_numeric / max_val) * 100
@@ -1353,7 +1358,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
         st.markdown("#### Key Overall Trends")
         st.markdown("""
         <div style="font-size: 13px; color: #000; line-height: 1.6;">
-        <b>🔸 2025 YTD Summary</b><br>
+        <b>2025 YTD Summary</b><br>
         <b>M&A:</b> Volumes remained historically strong at 165+ deals totaling ~$33B, highlighting strategic expansion by industry leaders into adjacent diagnostic and therapeutic markets despite lingering macro headwinds.<br><br>
         <b>Venture:</b> Capital reached $9.5B across 259 rounds (through Q3), with capital increasingly concentrated in AI-driven platform and neuro-tech devices.
         </div>
@@ -1369,78 +1374,70 @@ def show_jp_morgan_summary(ma_df, inv_df):
     with col1:
         st.markdown(create_metric_card("M&A Activity", "Key Theme of 2025: Strategic Consolidation", 'ma'), unsafe_allow_html=True)
         st.markdown("""
-        <div style="font-size: 14px; color: #000;">
-        <b>Q1 2024</b><br>
-        47 deals worth ~$18 B, a rebound driven by renewed strategic activity among large buyers. Continued strength in digital health and diagnostics acquisitions pointed to normalization of post-COVID valuations.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q2 2024</b><br>
-        114 deals totaling $40.3 B, nearly matching all of 2023 within six months. Headline transactions included J&J / Shockwave ($13 B) and Boston Scientific / Silk Road ($1.2 B), solidifying H1 as the strongest since 2021.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q3 2024</b><br>
-        195 deals worth $47 B through Q3, exceeding 2023 totals and positioning 2024 to rival 2021. Major transactions included J&J / V-Wave ($1.7 B) and Edwards Lifesciences / JenaValve ($1.6 B), marking a return to large-cap strategic acquisitions.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q4 2024</b><br>
-        305 transactions valued at $63.1 B for 2024 (up from 134 / $47 B in 2023), making it the second-highest year on record after 2021. Biggest deals included Novo Holdings / Catalent ($16.5 B) and J&J / Shockwave ($13.1 B) alongside Cardinal's acquisitions of GI Alliance and Advanced Diabetes Supply.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q1 2025</b><br>
-        57 deals totaling $9.2 B, fewer transactions but significantly higher value than Q4 2024, led by Stryker's $4.9 B acquisition of Inari Medical and Zimmer Biomet's $1.2 B purchase of Paragon 28. Median upfronts rose to $250 M, signaling confidence in scaling revenue-stage assets.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q2 2025</b><br>
-        43 deals worth $2.1 B, down from Q1's $9.2 B as elevated interest rates and valuation gaps slowed new bids. Notable activity included Merit Medical's purchase of Biolife Delaware, reflecting steady appetite for niche device integrations despite market caution.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q3 2025</b><br>
-        65 transactions totaling $21.7 B, the most active quarter since 2022 and second-highest value in three years. The surge was led by Waters Corp's $17.5 B merger with BD's Biosciences & Diagnostics Solutions unit, alongside Terumo/OrganOx ($1.5 B) and ArchiMed/ZimVie ($730 M), underscoring renewed large-cap consolidation momentum.
+        <div style="border: 2px solid #5B9BD5; border-radius: 12px; padding: 16px; background-color: #f8fafb; margin-top: 10px;">
+            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                <b>Q1 2024</b><br>
+                47 deals worth ~$18 B, a rebound driven by renewed strategic activity among large buyers. Continued strength in digital health and diagnostics acquisitions pointed to normalization of post-COVID valuations.
+            </div>
+            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                <b>Q2 2024</b><br>
+                114 deals totaling $40.3 B, nearly matching all of 2023 within six months. Headline transactions included J&J / Shockwave ($13 B) and Boston Scientific / Silk Road ($1.2 B), solidifying H1 as the strongest since 2021.
+            </div>
+            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                <b>Q3 2024</b><br>
+                195 deals worth $47 B through Q3, exceeding 2023 totals and positioning 2024 to rival 2021. Major transactions included J&J / V-Wave ($1.7 B) and Edwards Lifesciences / JenaValve ($1.6 B), marking a return to large-cap strategic acquisitions.
+            </div>
+            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                <b>Q4 2024</b><br>
+                305 transactions valued at $63.1 B for 2024 (up from 134 / $47 B in 2023), making it the second-highest year on record after 2021. Biggest deals included Novo Holdings / Catalent ($16.5 B) and J&J / Shockwave ($13.1 B) alongside Cardinal's acquisitions of GI Alliance and Advanced Diabetes Supply.
+            </div>
+            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                <b>Q1 2025</b><br>
+                57 deals totaling $9.2 B, fewer transactions but significantly higher value than Q4 2024, led by Stryker's $4.9 B acquisition of Inari Medical and Zimmer Biomet's $1.2 B purchase of Paragon 28. Median upfronts rose to $250 M, signaling confidence in scaling revenue-stage assets.
+            </div>
+            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                <b>Q2 2025</b><br>
+                43 deals worth $2.1 B, down from Q1's $9.2 B as elevated interest rates and valuation gaps slowed new bids. Notable activity included Merit Medical's purchase of Biolife Delaware, reflecting steady appetite for niche device integrations despite market caution.
+            </div>
+            <div style="font-size: 13px; color: #000; line-height: 1.5;">
+                <b>Q3 2025</b><br>
+                65 transactions totaling $21.7 B, the most active quarter since 2022 and second-highest value in three years. The surge was led by Waters Corp's $17.5 B merger with BD's Biosciences & Diagnostics Solutions unit, alongside Terumo/OrganOx ($1.5 B) and ArchiMed/ZimVie ($730 M), underscoring renewed large-cap consolidation momentum.
+            </div>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
         st.markdown(create_metric_card("Venture Capital", "Key Theme of 2025: Selective Investment", 'venture'), unsafe_allow_html=True)
         st.markdown("""
-        <div style="font-size: 14px; color: #000;">
-        <b>Q1 2024</b><br>
-        ~$5.5 B invested across 182 rounds as early signs of recovery emerged after a weak 2023. Most checks were under $50 M, but multiple $100 M+ raises (e.g., Element Biosciences and Lila Sciences) signaled returning investor confidence in AI-driven diagnostics and platform plays.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q2 2024</b><br>
-        $4.3 B raised across 167 rounds (H1 total $9.7 B / 341 rounds). The quarter saw a modest expansion led by Amber Therapeutics' $100 M Series A and early-stage capital revival ($2.4 B in Seed and Series A funding). Momentum reflected growing appetite for device and neuro-stimulation platforms.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q3 2024</b><br>
-        $5.1 B across 154 rounds (YTD $16.1 B / 554). Most rounds remained below $50 M (383 of 486 disclosed), though a cluster of large deals including Element Biosciences ($277 M) and Flo Health ($200 M) helped drive a 27% YoY growth trajectory.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q4 2024</b><br>
-        $3.0 B across 125 rounds (2024 total $19.1 B / 691 rounds). While the number of rounds fell 5% YoY, the dollar total rose 12%. Selective confidence in high-value plays continued, highlighted by Impress ($117 M) and Nusano ($115 M) later-stage raises amid tight funding conditions.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q1 2025</b><br>
-        $3.7 B invested across 117 rounds (+9% YoY), driven by fewer but larger financings. Mega-rounds like Lila Sciences ($200 M) and OganOx ($142 M) marked investor preference for AI-enabled diagnostics and advanced therapeutic devices amid slower seed formation and consolidation around later-stage bets.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q2 2025</b><br>
-        $2.6 B across 90 rounds (H1 total $6.8 B/194 rounds), sustaining a "flight to quality." Large financings like Neuralink ($650 M Series E) and Biolinq ($100 M Series C) dominated, while early-stage participation fell as investors favored proven clinical and regulatory traction.
-        </div>
-        <br>
-        <div style="font-size: 14px; color: #000;">
-        <b>Q3 2025</b><br>
-        $2.9 B across 67 rounds (YTD $9.5 B/259 rounds), a sequential uptick from Q2 but still below 2024 levels. Late-stage deals like Lila Sciences ($235 M Series A), Supira Medical ($120 M Series E), and SetPoint Medical ($115 M Series D) drove totals while early-stage rounds lagged amid macro pressure.
+        <div style="border: 2px solid #D4A574; border-radius: 12px; padding: 16px; background-color: #fdfbf8; margin-top: 10px;">
+            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                <b>Q1 2024</b><br>
+                ~$5.5 B invested across 182 rounds as early signs of recovery emerged after a weak 2023. Most checks were under $50 M, but multiple $100 M+ raises (e.g., Element Biosciences and Lila Sciences) signaled returning investor confidence in AI-driven diagnostics and platform plays.
+            </div>
+            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                <b>Q2 2024</b><br>
+                $4.3 B raised across 167 rounds (H1 total $9.7 B / 341 rounds). The quarter saw a modest expansion led by Amber Therapeutics' $100 M Series A and early-stage capital revival ($2.4 B in Seed and Series A funding). Momentum reflected growing appetite for device and neuro-stimulation platforms.
+            </div>
+            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                <b>Q3 2024</b><br>
+                $5.1 B across 154 rounds (YTD $16.1 B / 554). Most rounds remained below $50 M (383 of 486 disclosed), though a cluster of large deals including Element Biosciences ($277 M) and Flo Health ($200 M) helped drive a 27% YoY growth trajectory.
+            </div>
+            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                <b>Q4 2024</b><br>
+                $3.0 B across 125 rounds (2024 total $19.1 B / 691 rounds). While the number of rounds fell 5% YoY, the dollar total rose 12%. Selective confidence in high-value plays continued, highlighted by Impress ($117 M) and Nusano ($115 M) later-stage raises amid tight funding conditions.
+            </div>
+            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                <b>Q1 2025</b><br>
+                $3.7 B invested across 117 rounds (+9% YoY), driven by fewer but larger financings. Mega-rounds like Lila Sciences ($200 M) and OganOx ($142 M) marked investor preference for AI-enabled diagnostics and advanced therapeutic devices amid slower seed formation and consolidation around later-stage bets.
+            </div>
+            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                <b>Q2 2025</b><br>
+                $2.6 B across 90 rounds (H1 total $6.8 B/194 rounds), sustaining a "flight to quality." Large financings like Neuralink ($650 M Series E) and Biolinq ($100 M Series C) dominated, while early-stage participation fell as investors favored proven clinical and regulatory traction.
+            </div>
+            <div style="font-size: 13px; color: #000; line-height: 1.5;">
+                <b>Q3 2025</b><br>
+                $2.9 B across 67 rounds (YTD $9.5 B/259 rounds), a sequential uptick from Q2 but still below 2024 levels. Late-stage deals like Lila Sciences ($235 M Series A), Supira Medical ($120 M Series E), and SetPoint Medical ($115 M Series D) drove totals while early-stage rounds lagged amid macro pressure.
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -1462,6 +1459,28 @@ def show_jp_morgan_summary(ma_df, inv_df):
         'Q2': {'ma_count': 43, 'ma_value': '$2.1B', 'inv_count': 90, 'inv_value': '$2.6B'},
         'Q3': {'ma_count': 65, 'ma_value': '$21.7B', 'inv_count': 67, 'inv_value': '$2.9B'}
     }
+    
+    # Helper function to parse values for max calculation
+    def parse_for_max(val):
+        if isinstance(val, str):
+            val_str = str(val).replace('$', '').replace(',', '').strip()
+            if 'B' in val_str:
+                return float(val_str.replace('B', '')) * 1000
+            elif 'M' in val_str:
+                return float(val_str.replace('M', ''))
+        return float(val) if val else 0
+    
+    # Calculate global maximums for each metric type across all quarters
+    max_ma_count = 0
+    max_ma_value = 0
+    max_inv_count = 0
+    max_inv_value = 0
+    
+    for q in ['Q1', 'Q2', 'Q3']:
+        max_ma_count = max(max_ma_count, jp_data[q]['ma_count'], beacon_stats[q]['ma_count'])
+        max_ma_value = max(max_ma_value, parse_for_max(jp_data[q]['ma_value']), parse_for_max(beacon_stats[q]['ma_value']))
+        max_inv_count = max(max_inv_count, jp_data[q]['inv_count'], beacon_stats[q]['inv_count'])
+        max_inv_value = max(max_inv_value, parse_for_max(jp_data[q]['inv_value']), parse_for_max(beacon_stats[q]['inv_value']))
     
     # Build table HTML
     table_html = """
@@ -1524,7 +1543,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
     for q in ['Q1', 'Q2', 'Q3']:
         jp_val = jp_data[q]['ma_count']
         beacon_val = beacon_stats[q]['ma_count']
-        table_html += f'<td>{create_inline_comparison_bars(jp_val, beacon_val, METRIC_COLORS["ma_count"])}</td>'
+        table_html += f'<td>{create_inline_comparison_bars(jp_val, beacon_val, METRIC_COLORS["ma_count"], max_value=max_ma_count)}</td>'
     table_html += '</tr>'
     
     # Add M&A Deal Value row
@@ -1532,7 +1551,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
     for q in ['Q1', 'Q2', 'Q3']:
         jp_val = jp_data[q]['ma_value']
         beacon_val = beacon_stats[q]['ma_value']
-        table_html += f'<td>{create_inline_comparison_bars(jp_val, beacon_val, METRIC_COLORS["ma_value"], is_value=True)}</td>'
+        table_html += f'<td>{create_inline_comparison_bars(jp_val, beacon_val, METRIC_COLORS["ma_value"], is_value=True, max_value=max_ma_value)}</td>'
     table_html += '</tr>'
     
     # Add Investment Count row
@@ -1540,7 +1559,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
     for q in ['Q1', 'Q2', 'Q3']:
         jp_val = jp_data[q]['inv_count']
         beacon_val = beacon_stats[q]['inv_count']
-        table_html += f'<td>{create_inline_comparison_bars(jp_val, beacon_val, METRIC_COLORS["inv_count"])}</td>'
+        table_html += f'<td>{create_inline_comparison_bars(jp_val, beacon_val, METRIC_COLORS["inv_count"], max_value=max_inv_count)}</td>'
     table_html += '</tr>'
     
     # Add Investment Value row
@@ -1548,7 +1567,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
     for q in ['Q1', 'Q2', 'Q3']:
         jp_val = jp_data[q]['inv_value']
         beacon_val = beacon_stats[q]['inv_value']
-        table_html += f'<td>{create_inline_comparison_bars(jp_val, beacon_val, METRIC_COLORS["inv_value"], is_value=True)}</td>'
+        table_html += f'<td>{create_inline_comparison_bars(jp_val, beacon_val, METRIC_COLORS["inv_value"], is_value=True, max_value=max_inv_value)}</td>'
     table_html += '</tr>'
     
     table_html += """
