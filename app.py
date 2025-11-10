@@ -1733,6 +1733,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
             # M&A Key Trends
             st.markdown("#### Key Market Trends")
             st.markdown(create_metric_card("M&A Activity", "Key Theme of 2025: Strategic Consolidation", 'ma'), unsafe_allow_html=True)
+            st.markdown("##### Quarterly Trends and Deal Summary")
             st.markdown("""
             <div style="border: 2px solid #5B9BD5; border-radius: 12px; padding: 16px; background-color: #f8fafb; margin-top: 10px;">
                 <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
@@ -1856,6 +1857,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
             # Venture Key Trends
             st.markdown("#### Key Market Trends")
             st.markdown(create_metric_card("Venture Capital", "Key Theme of 2025: Selective Investment", 'venture'), unsafe_allow_html=True)
+            st.markdown("##### Quarterly Trends and Deal Summary")
             st.markdown("""
             <div style="border: 2px solid #D4A574; border-radius: 12px; padding: 16px; background-color: #fdfbf8; margin-top: 10px;">
                 <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
