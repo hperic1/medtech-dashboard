@@ -1401,7 +1401,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
         # Function to add bold separator line between 2024 and 2025 (no bold text)
         def highlight_year_separator(row):
             if row.name == 3:  # Q4 2024
-                return ['border-bottom: 4px solid #000000;'] * len(row)  # Removed font-weight: bold
+                return ['border-bottom: 6px solid #000000 !important;'] * len(row)  # Thicker and !important
             return [''] * len(row)
         
         # Apply styling to M&A dataframe
@@ -1417,10 +1417,10 @@ def show_jp_morgan_summary(ma_df, inv_df):
         ).set_properties(**{
             'text-align': 'center'  # Center all columns
         }).set_properties(**{
-            'font-size': '16px'  # Increased from 12px to 16px
+            'font-size': '18px'  # Increased from 16px to 18px
         }).set_table_styles([
-            {'selector': 'th', 'props': [('background-color', '#e8f1f8'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '8px'), ('font-size', '16px')]},  # Increased to 16px and centered
-            {'selector': 'td', 'props': [('padding', '7px'), ('border', '1px solid #e0e0e0'), ('font-size', '16px')]},  # Increased to 16px
+            {'selector': 'th', 'props': [('background-color', '#e8f1f8'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '10px'), ('font-size', '18px')]},  # Increased to 18px
+            {'selector': 'td', 'props': [('padding', '10px'), ('border', '1px solid #e0e0e0'), ('font-size', '18px'), ('text-align', 'center')]},  # Increased to 18px and explicitly centered
             {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
         ])
         
@@ -1463,10 +1463,10 @@ def show_jp_morgan_summary(ma_df, inv_df):
         ).set_properties(**{
             'text-align': 'center'  # Center all columns
         }).set_properties(**{
-            'font-size': '16px'  # Increased from 12px to 16px
+            'font-size': '18px'  # Increased from 16px to 18px
         }).set_table_styles([
-            {'selector': 'th', 'props': [('background-color', '#faf6f0'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '8px'), ('font-size', '16px')]},  # Increased to 16px and centered
-            {'selector': 'td', 'props': [('padding', '7px'), ('border', '1px solid #e0e0e0'), ('font-size', '16px')]},  # Increased to 16px
+            {'selector': 'th', 'props': [('background-color', '#faf6f0'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '10px'), ('font-size', '18px')]},  # Increased to 18px
+            {'selector': 'td', 'props': [('padding', '10px'), ('border', '1px solid #e0e0e0'), ('font-size', '18px'), ('text-align', 'center')]},  # Increased to 18px and explicitly centered
             {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
         ])
         
