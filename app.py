@@ -1500,8 +1500,6 @@ def show_jp_morgan_summary(ma_df, inv_df):
     
     
     # Quarter and Year filters for JP Morgan charts
-    st.markdown("### Activity by Category")
-    
     # Create a clean filter section with select all options
     st.markdown("**Filters**")
     
@@ -1564,6 +1562,72 @@ def show_jp_morgan_summary(ma_df, inv_df):
     if not selected_quarters or not selected_years:
         st.warning("Please select at least one quarter and one year to display data.")
     else:
+        # Calculate totals from JP Morgan data for 2025 YTD (Q1-Q3)
+        jp_ma_total_count = jp_data['Q1']['ma_count'] + jp_data['Q2']['ma_count'] + jp_data['Q3']['ma_count']
+        jp_inv_total_count = jp_data['Q1']['inv_count'] + jp_data['Q2']['inv_count'] + jp_data['Q3']['inv_count']
+        
+        # Parse and sum values for total value calculations
+        def parse_value(val):
+            if isinstance(val, str):
+                val_str = val.replace('$', '').replace(',', '').strip()
+                if 'B' in val_str:
+                    return float(val_str.replace('B', ''))
+                elif 'M' in val_str:
+                    return float(val_str.replace('M', '')) / 1000
+            return 0
+        
+        jp_ma_total_value_num = parse_value(jp_data['Q1']['ma_value']) + parse_value(jp_data['Q2']['ma_value']) + parse_value(jp_data['Q3']['ma_value'])
+        jp_inv_total_value_num = parse_value(jp_data['Q1']['inv_value']) + parse_value(jp_data['Q2']['inv_value']) + parse_value(jp_data['Q3']['inv_value'])
+        
+        jp_ma_total_value = f"${jp_ma_total_value_num:.1f}B"
+        jp_inv_total_value = f"${jp_inv_total_value_num:.1f}B"
+        
+        # Display metric cards in a 4-column layout
+        st.markdown("### YTD 2025 Overview (JP Morgan Data)")
+        metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
+        
+        with metric_col1:
+            st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #e8f1f8 0%, #b8d4e8 100%); 
+                            padding: 15px; border-radius: 10px; border-left: 4px solid #7FA8C9; 
+                            margin: 10px 0;">
+                    <div style="font-size: 11px; color: #555; font-weight: 500; margin-bottom: 5px;">Total M&A Deal Value</div>
+                    <div style="font-size: 24px; font-weight: bold; color: #2c3e50;">{jp_ma_total_value}</div>
+                </div>
+            """, unsafe_allow_html=True)
+        
+        with metric_col2:
+            st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #e8f1f8 0%, #b8d4e8 100%); 
+                            padding: 15px; border-radius: 10px; border-left: 4px solid #7FA8C9; 
+                            margin: 10px 0;">
+                    <div style="font-size: 11px; color: #555; font-weight: 500; margin-bottom: 5px;">Total M&A Deal Count</div>
+                    <div style="font-size: 24px; font-weight: bold; color: #2c3e50;">{jp_ma_total_count}</div>
+                </div>
+            """, unsafe_allow_html=True)
+        
+        with metric_col3:
+            st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #faf6f0 0%, #e8dcc8 100%); 
+                            padding: 15px; border-radius: 10px; border-left: 4px solid #C9A77F; 
+                            margin: 10px 0;">
+                    <div style="font-size: 11px; color: #555; font-weight: 500; margin-bottom: 5px;">Total Investment Value</div>
+                    <div style="font-size: 24px; font-weight: bold; color: #2c3e50;">{jp_inv_total_value}</div>
+                </div>
+            """, unsafe_allow_html=True)
+        
+        with metric_col4:
+            st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #faf6f0 0%, #e8dcc8 100%); 
+                            padding: 15px; border-radius: 10px; border-left: 4px solid #C9A77F; 
+                            margin: 10px 0;">
+                    <div style="font-size: 11px; color: #555; font-weight: 500; margin-bottom: 5px;">Total Investment Deal Count</div>
+                    <div style="font-size: 24px; font-weight: bold; color: #2c3e50;">{jp_inv_total_count}</div>
+                </div>
+            """, unsafe_allow_html=True)
+        
+        st.markdown("")
+        
         # Create 1x2 grid for complete vertical stacks (chart, table, trends)
         col1, col2 = st.columns(2)
         
