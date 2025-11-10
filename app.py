@@ -998,30 +998,30 @@ def show_home():
     section.main > div.block-container > div:first-child > div:first-child {
         border: 2px solid #4a5f7f !important;
         border-radius: 10px !important;
-        padding: 15px 25px 25px 25px !important;
+        padding: 15px 25px 20px 25px !important;
         background-color: #e8eef5 !important;
         margin: 0 !important;
     }
     
     /* Increase line spacing for home page */
     section.main > div.block-container > div:first-child > div:first-child p {
-        margin-bottom: 6px !important;
-        line-height: 1.6 !important;
+        margin-bottom: 3px !important;
+        line-height: 1.4 !important;
     }
     
     /* Dark navy blue header with different font */
     section.main > div.block-container > div:first-child > div:first-child h1 {
         margin-top: 0 !important;
         padding-top: 0 !important;
-        margin-bottom: 12px !important;
+        margin-bottom: 8px !important;
         color: #1e3a5f !important;
         font-family: 'Georgia', serif !important;
     }
     
     /* Section headers */
     section.main > div.block-container > div:first-child > div:first-child h3 {
-        margin-top: 18px !important;
-        margin-bottom: 10px !important;
+        margin-top: 12px !important;
+        margin-bottom: 6px !important;
     }
     
     /* Indent bullets more */
@@ -1032,15 +1032,15 @@ def show_home():
     /* Section divider */
     .section-divider {
         border-top: 2px solid #4a5f7f;
-        margin: 20px 0 15px 0;
-        padding-top: 15px;
+        margin: 12px 0 8px 0;
+        padding-top: 8px;
     }
     </style>
     """, unsafe_allow_html=True)
     
     # Content without any marker div
     st.markdown("# Welcome to the MedTech M&A & Venture Dashboard")
-    st.write("This interactive dashboard provides comprehensive tracking and analysis of MedTech deal activity, including mergers & acquisitions, venture capital investments, and IPO activity.")
+    st.write("This interactive dashboard provides tracking and analysis of MedTech deal activity, including mergers & acquisitions, venture capital investments, and IPO activity.")
     
     st.markdown("### Dashboard Overview")
     
@@ -1063,7 +1063,7 @@ def show_home():
     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     st.markdown("**📈 JP Morgan Industry Report Tab**")
     st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
-    st.write("**Market Intelligence:** Access comprehensive quarterly analysis from JP Morgan's MedTech Industry Reports")
+    st.write("**Market Intelligence:** Access quarterly analysis from JP Morgan's MedTech Industry Reports")
     st.write("• Compare M&A and Venture activity across quarters (Q1 2024 - Q3 2025)")
     st.write("• View quarter-over-quarter (QoQ) and year-over-year (YoY) trend analysis")
     st.write("• Review detailed quarterly summaries highlighting key deals and market themes")
