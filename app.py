@@ -1358,13 +1358,11 @@ def show_jp_morgan_summary(ma_df, inv_df):
     st.markdown("---")
     st.markdown("### Quarterly Comparison")
     
-    # Create layout with table on left and key trends on right (adjusted widths)
-    table_col, trends_col = st.columns([2.5, 2])
+    # M&A Section with table on left, text on right
+    st.markdown("#### M&A Activity")
+    ma_table_col, ma_text_col = st.columns([1.5, 2])
     
-    with table_col:
-        # M&A Section
-        st.markdown("**M&A Activity**")
-        
+    with ma_table_col:
         # Create M&A dataframe
         ma_comparison_data = {
             'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025'],
@@ -1433,13 +1431,23 @@ def show_jp_morgan_summary(ma_df, inv_df):
             {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
         ])
         
-        st.dataframe(styled_ma_df, use_container_width=True, hide_index=True)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # Venture Section
-        st.markdown("**Venture Investment**")
-        
+        st.dataframe(styled_ma_df, hide_index=True)
+    
+    with ma_text_col:
+        st.markdown("""
+        <div style="font-size: 24px; color: #000; line-height: 1.5; padding: 20px;">
+        <b style="font-size: 26px;">2025 YTD Summary</b><br><br>
+        M&A volumes have rebounded sharply in 2025, with fewer but larger transactions, underscoring renewed strategic consolidation after two years of muted activity, and highlighting strategic expansion by industry leaders despite lingering macro headwinds.
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Venture Section with table on left, text on right
+    st.markdown("#### Venture Investment")
+    venture_table_col, venture_text_col = st.columns([1.5, 2])
+    
+    with venture_table_col:
         # Create Venture dataframe
         venture_comparison_data = {
             'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025'],
@@ -1476,15 +1484,13 @@ def show_jp_morgan_summary(ma_df, inv_df):
             {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
         ])
         
-        st.dataframe(styled_venture_df, use_container_width=True, hide_index=True)
+        st.dataframe(styled_venture_df, hide_index=True)
     
-    with trends_col:
-        st.markdown("#### Key Overall Trends")
+    with venture_text_col:
         st.markdown("""
-        <div style="font-size: 12px; color: #000; line-height: 1.7;">
-        <b>2025 YTD Summary</b><br><br>
-        <b>M&A:</b> M&A volumes have rebounded sharply in 2025, with fewer but larger transactions, underscoring renewed strategic consolidation after two years of muted activity, and highlighting strategic expansion by industry leaders despite lingering macro headwinds.<br><br>
-        <b>Venture:</b> Venture financing remained resilient but increasingly selective, totaling $9.5 B across 259 rounds YTD (through Q3 2025), concentrated in fewer, later-stage deals ($100 M+) as investors show a sustained appetite for clinically validated medtech platforms.
+        <div style="font-size: 24px; color: #000; line-height: 1.5; padding: 20px;">
+        <b style="font-size: 26px;">2025 YTD Summary</b><br><br>
+        Venture financing remained resilient but increasingly selective, totaling $9.5 B across 259 rounds YTD (through Q3 2025), concentrated in fewer, later-stage deals ($100 M+) as investors show a sustained appetite for clinically validated medtech platforms.
         </div>
         """, unsafe_allow_html=True)
     
