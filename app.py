@@ -1719,8 +1719,8 @@ def show_jp_morgan_summary(ma_df, inv_df):
             
             with ma_summary_col:
                 st.markdown("""
-                <div style="font-size: 12px; color: #000; line-height: 1.5; padding: 20px;">
-                <b style="font-size: 14px;">2025 YTD Summary</b><br><br>
+                <div style="font-size: 16px; color: #000; line-height: 1.5; padding: 20px;">
+                <b style="font-size: 18px;">2025 YTD Summary</b><br><br>
                 M&A volumes have rebounded sharply in 2025, with fewer but larger transactions, underscoring renewed strategic consolidation after two years of muted activity, and highlighting strategic expansion by industry leaders despite lingering macro headwinds.
                 </div>
                 """, unsafe_allow_html=True)
@@ -1842,8 +1842,8 @@ def show_jp_morgan_summary(ma_df, inv_df):
             
             with venture_summary_col:
                 st.markdown("""
-                <div style="font-size: 12px; color: #000; line-height: 1.5; padding: 20px;">
-                <b style="font-size: 14px;">2025 YTD Summary</b><br><br>
+                <div style="font-size: 16px; color: #000; line-height: 1.5; padding: 20px;">
+                <b style="font-size: 18px;">2025 YTD Summary</b><br><br>
                 Venture financing remained resilient but increasingly selective, totaling $9.5 B across 259 rounds YTD (through Q3 2025), concentrated in fewer, later-stage deals ($100 M+) as investors show a sustained appetite for clinically validated medtech platforms.
                 </div>
                 """, unsafe_allow_html=True)
