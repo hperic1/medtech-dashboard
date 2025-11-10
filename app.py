@@ -245,6 +245,65 @@ def undo_last_upload():
     except Exception as e:
         return False, f"Error restoring backup: {str(e)}"
 
+def create_inline_comparison_bars(jp_value, beacon_value, color, is_value=False):
+    """Create inline horizontal comparison bars for table display"""
+    # Parse values to get numeric comparison
+    def parse_value(val):
+        if isinstance(val, str):
+            val_str = str(val).replace('$', '').replace(',', '').strip()
+            if 'B' in val_str:
+                return float(val_str.replace('B', '')) * 1000
+            elif 'M' in val_str:
+                return float(val_str.replace('M', ''))
+            else:
+                try:
+                    return float(val_str)
+                except:
+                    return 0
+        return float(val) if val else 0
+    
+    jp_numeric = parse_value(jp_value)
+    beacon_numeric = parse_value(beacon_value)
+    
+    # Calculate percentages for bar widths
+    max_val = max(jp_numeric, beacon_numeric)
+    if max_val > 0:
+        jp_pct = (jp_numeric / max_val) * 100
+        beacon_pct = (beacon_numeric / max_val) * 100
+    else:
+        jp_pct = 0
+        beacon_pct = 0
+    
+    # Lighter version of color for BeaconOne
+    def hex_to_rgba(hex_color, opacity=0.6):
+        hex_color = hex_color.lstrip('#')
+        if len(hex_color) == 6:
+            r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
+            return f'rgba({r},{g},{b},{opacity})'
+        return hex_color
+    
+    beacon_color = hex_to_rgba(color, 0.5)
+    
+    html = f"""
+    <div style="padding: 8px 0;">
+        <div style="margin-bottom: 6px; display: flex; align-items: center;">
+            <span style="font-size: 11px; color: #666; width: 80px; font-weight: 500;">JPMorgan:</span>
+            <div style="flex: 1; background-color: #f0f0f0; height: 20px; border-radius: 3px; position: relative; margin-right: 8px;">
+                <div style="background-color: {color}; height: 100%; width: {jp_pct}%; border-radius: 3px;"></div>
+            </div>
+            <span style="font-size: 12px; font-weight: bold; color: #333; min-width: 50px; text-align: right;">{jp_value}</span>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <span style="font-size: 11px; color: #666; width: 80px; font-weight: 500;">BeaconOne:</span>
+            <div style="flex: 1; background-color: #f0f0f0; height: 20px; border-radius: 3px; position: relative; margin-right: 8px;">
+                <div style="background-color: {beacon_color}; height: 100%; width: {beacon_pct}%; border-radius: 3px;"></div>
+            </div>
+            <span style="font-size: 12px; font-weight: bold; color: #333; min-width: 50px; text-align: right;">{beacon_value}</span>
+        </div>
+    </div>
+    """
+    return html
+
 def create_filter_section(df, section_key, show_conference=True):
     """Create a unified filter section that returns filtered dataframe"""
     with st.container():
@@ -1383,7 +1442,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
     st.markdown("---")
     st.markdown("### JPMorgan vs BeaconOne Data - Quarterly Comparison")
     
-    # Define MORE DISTINCT colors for each metric across all quarters
+    # Define colors for each metric
     METRIC_COLORS = {
         'ma_count': '#5B9BD5',      # Bright blue for M&A count
         'ma_value': '#2E5C8A',      # Dark navy for M&A value
@@ -1391,104 +1450,107 @@ def show_jp_morgan_summary(ma_df, inv_df):
         'inv_value': '#8B6F47'      # Dark brown for Investment value
     }
     
-    # Different border color for EACH quarter
-    QUARTER_COLORS = {
-        'Q1': '#7FA8C9',   # Muted blue
-        'Q2': '#C9A77F',   # Muted tan
-        'Q3': '#9B8BA8'    # Muted purple
+    # JP Morgan data
+    jp_data = {
+        'Q1': {'ma_count': 57, 'ma_value': '$9.2B', 'inv_count': 117, 'inv_value': '$3.7B'},
+        'Q2': {'ma_count': 43, 'ma_value': '$2.1B', 'inv_count': 90, 'inv_value': '$2.6B'},
+        'Q3': {'ma_count': 65, 'ma_value': '$21.7B', 'inv_count': 67, 'inv_value': '$2.9B'}
     }
     
-    # Create columns with separators: Q1 | separator | Q2 | separator | Q3
-    q1_col, sep1, q2_col, sep2, q3_col = st.columns([10, 0.5, 10, 0.5, 10])
+    # Build table HTML
+    table_html = """
+    <style>
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-family: Arial, sans-serif;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .comparison-table th {
+            background-color: #f0f2f5;
+            color: #2c3e50;
+            font-weight: bold;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            font-size: 14px;
+        }
+        .comparison-table td {
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            vertical-align: middle;
+        }
+        .comparison-table .metric-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 13px;
+            background-color: #fafbfc;
+            white-space: nowrap;
+        }
+        .comparison-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .quarter-header {
+            font-size: 15px;
+            font-weight: bold;
+        }
+        .q1-header { color: #7FA8C9; }
+        .q2-header { color: #C9A77F; }
+        .q3-header { color: #9B8BA8; }
+    </style>
     
-    quarters_data = [
-        (q1_col, 'Q1', QUARTER_COLORS['Q1']),
-        (q2_col, 'Q2', QUARTER_COLORS['Q2']),
-        (q3_col, 'Q3', QUARTER_COLORS['Q3'])
-    ]
+    <table class="comparison-table">
+        <thead>
+            <tr>
+                <th style="width: 15%;">Metric</th>
+                <th style="width: 28.3%;" class="quarter-header q1-header">Q1 2025</th>
+                <th style="width: 28.3%;" class="quarter-header q2-header">Q2 2025</th>
+                <th style="width: 28.3%;" class="quarter-header q3-header">Q3 2025</th>
+            </tr>
+        </thead>
+        <tbody>
+    """
     
-    for col, quarter, border_color in quarters_data:
-        with col:
-            # Use a container to group all elements
-            with st.container():
-                # Opening border div - SMALLER header box
-                st.markdown(f"""
-                <div style="border: 3px solid {border_color}; border-radius: 12px; padding: 15px 12px 15px 12px; background-color: #fafbfc; margin-bottom: 20px;">
-                    <h3 style="text-align: center; color: #333; margin: 0 0 22px 0; font-family: Arial, sans-serif; font-size: 20px; font-weight: bold;">{quarter} 2025</h3>
-                """, unsafe_allow_html=True)
-                
-                # JP Morgan data
-                jp_ma_count = {'Q1': 57, 'Q2': 43, 'Q3': 65}[quarter]
-                jp_ma_value = {'Q1': '$9.2B', 'Q2': '$2.1B', 'Q3': '$21.7B'}[quarter]
-                jp_inv_count = {'Q1': 117, 'Q2': 90, 'Q3': 67}[quarter]
-                jp_inv_value = {'Q1': '$3.7B', 'Q2': '$2.6B', 'Q3': '$2.9B'}[quarter]
-                
-                # M&A Deal Count chart
-                fig_ma_count = create_comparison_mini_chart(
-                    'M&A Deal Count',
-                    jp_ma_count,
-                    beacon_stats[quarter]['ma_count'],
-                    METRIC_COLORS['ma_count'],
-                    height=140
-                )
-                if fig_ma_count:
-                    st.plotly_chart(fig_ma_count, use_container_width=True, key=f'{quarter}_ma_count', config={'displayModeBar': False})
-                
-                # Add spacing between charts
-                st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
-                
-                # M&A Deal Value chart
-                fig_ma_value = create_comparison_mini_chart(
-                    'M&A Deal Value',
-                    jp_ma_value,
-                    beacon_stats[quarter]['ma_value'],
-                    METRIC_COLORS['ma_value'],
-                    height=140
-                )
-                if fig_ma_value:
-                    st.plotly_chart(fig_ma_value, use_container_width=True, key=f'{quarter}_ma_value', config={'displayModeBar': False})
-                
-                # Add spacing between charts
-                st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
-                
-                # Investment Count chart
-                fig_inv_count = create_comparison_mini_chart(
-                    'Investment Count',
-                    jp_inv_count,
-                    beacon_stats[quarter]['inv_count'],
-                    METRIC_COLORS['inv_count'],
-                    height=140
-                )
-                if fig_inv_count:
-                    st.plotly_chart(fig_inv_count, use_container_width=True, key=f'{quarter}_inv_count', config={'displayModeBar': False})
-                
-                # Add spacing between charts
-                st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
-                
-                # Investment Value chart
-                fig_inv_value = create_comparison_mini_chart(
-                    'Investment Value',
-                    jp_inv_value,
-                    beacon_stats[quarter]['inv_value'],
-                    METRIC_COLORS['inv_value'],
-                    height=140
-                )
-                if fig_inv_value:
-                    st.plotly_chart(fig_inv_value, use_container_width=True, key=f'{quarter}_inv_value', config={'displayModeBar': False})
-                
-                # Closing border div
-                st.markdown("</div>", unsafe_allow_html=True)
+    # Add M&A Deal Count row
+    table_html += '<tr><td class="metric-label">M&A Deal Count</td>'
+    for q in ['Q1', 'Q2', 'Q3']:
+        jp_val = jp_data[q]['ma_count']
+        beacon_val = beacon_stats[q]['ma_count']
+        table_html += f'<td>{create_inline_comparison_bars(jp_val, beacon_val, METRIC_COLORS["ma_count"])}</td>'
+    table_html += '</tr>'
     
-    # Add vertical divider lines in the separator columns
-    with sep1:
-        st.markdown("""
-        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 720px; margin: 0 auto;"></div>
-        """, unsafe_allow_html=True)
+    # Add M&A Deal Value row
+    table_html += '<tr><td class="metric-label">M&A Deal Value</td>'
+    for q in ['Q1', 'Q2', 'Q3']:
+        jp_val = jp_data[q]['ma_value']
+        beacon_val = beacon_stats[q]['ma_value']
+        table_html += f'<td>{create_inline_comparison_bars(jp_val, beacon_val, METRIC_COLORS["ma_value"], is_value=True)}</td>'
+    table_html += '</tr>'
     
-    with sep2:
-        st.markdown("""
-        <div style="border-left: 2px solid #d0d0d0; height: 100%; min-height: 720px; margin: 0 auto;"></div>
-        """, unsafe_allow_html=True)
+    # Add Investment Count row
+    table_html += '<tr><td class="metric-label">Investment Count</td>'
+    for q in ['Q1', 'Q2', 'Q3']:
+        jp_val = jp_data[q]['inv_count']
+        beacon_val = beacon_stats[q]['inv_count']
+        table_html += f'<td>{create_inline_comparison_bars(jp_val, beacon_val, METRIC_COLORS["inv_count"])}</td>'
+    table_html += '</tr>'
+    
+    # Add Investment Value row
+    table_html += '<tr><td class="metric-label">Investment Value</td>'
+    for q in ['Q1', 'Q2', 'Q3']:
+        jp_val = jp_data[q]['inv_value']
+        beacon_val = beacon_stats[q]['inv_value']
+        table_html += f'<td>{create_inline_comparison_bars(jp_val, beacon_val, METRIC_COLORS["inv_value"], is_value=True)}</td>'
+    table_html += '</tr>'
+    
+    table_html += """
+        </tbody>
+    </table>
+    """
+    
+    st.markdown(table_html, unsafe_allow_html=True)
     
     # Add source link at the bottom
     st.markdown("---")
