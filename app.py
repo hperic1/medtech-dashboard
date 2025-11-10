@@ -981,38 +981,43 @@ def main():
 def show_home():
     """Display the Home: Start Here page with user guide"""
     
-    # Use container with inline styling
     st.markdown("""
-    <div style="border: 2px solid #4a5f7f; border-radius: 10px; padding: 20px; background-color: #e8eef5; margin: 10px 0;">
+    <div style="border: 2px solid #4a5f7f; border-radius: 10px; padding: 25px; background-color: #e8eef5; margin: 20px 0; line-height: 1.5;">
+        <h1 style="color: #2c3e50; margin-top: 0; margin-bottom: 15px; font-size: 32px;">Welcome to the MedTech M&A & Venture Dashboard</h1>
+        <p style="color: #000; margin-bottom: 18px;">This interactive dashboard provides comprehensive tracking and analysis of MedTech deal activity, including mergers & acquisitions, venture capital investments, and IPO activity.</p>
+        
+        <h3 style="color: #2c3e50; margin-bottom: 10px; margin-top: 18px;">Dashboard Overview</h3>
+        
+        <p style="color: #000; margin: 8px 0 4px 0;"><strong>📊 Deal Activity Tab</strong></p>
+        <p style="color: #000; margin: 4px 0;"><strong>M&A Activity:</strong> Track mergers, acquisitions, and strategic transactions<br>
+        • Filter by date range, deal type, acquirer, target, and therapeutic area<br>
+        • View deal values, transaction structures, and key deal metrics<br>
+        • Interactive charts showing quarterly trends and deal volume</p>
+        
+        <p style="color: #000; margin: 4px 0;"><strong>Investment Activity:</strong> Monitor venture capital, private equity, and growth financing<br>
+        • Filter by investment type, company, investors, and funding stage<br>
+        • Track amounts raised and investor participation<br>
+        • Visualize funding trends across quarters and years</p>
+        
+        <p style="color: #000; margin: 12px 0 4px 0;"><strong>📈 JP Morgan Industry Report Tab</strong></p>
+        <p style="color: #000; margin: 4px 0;"><strong>Market Intelligence:</strong> Access comprehensive quarterly analysis from JP Morgan's MedTech Industry Reports<br>
+        • Compare M&A and Venture activity across quarters (Q1 2024 - Q3 2025)<br>
+        • View quarter-over-quarter (QoQ) and year-over-year (YoY) trend analysis<br>
+        • Review detailed quarterly summaries highlighting key deals and market themes<br>
+        • Data Comparison: See how deal tracking compares to JP Morgan's industry-wide reporting</p>
+        
+        <p style="color: #000; margin: 12px 0 4px 0;"><strong>🏢 IPO Activity Tab</strong></p>
+        <p style="color: #000; margin: 4px 0;">• Track initial public offerings and public market entries<br>
+        • Monitor IPO valuations and timing</p>
+        
+        <p style="color: #000; margin: 12px 0 4px 0;"><strong>🎤 Conferences Tab</strong></p>
+        <p style="color: #000; margin: 4px 0;">• Download an excel summary that shows companies that will be in attendance at conferences</p>
+        
+        <h3 style="color: #2c3e50; margin-bottom: 10px; margin-top: 20px;">How to Use This Dashboard</h3>
+        <p style="color: #000; margin: 4px 0;">1. Refer to the JP Morgan Report Tab to get a high-level market overview and understand current trends<br>
+        2. Dive into Deal Activity to explore specific transactions, filter by areas of interest, and analyze detailed deal metrics</p>
+    </div>
     """, unsafe_allow_html=True)
-    
-    st.markdown("## Welcome to the MedTech M&A & Venture Dashboard")
-    st.write("Comprehensive MedTech deal tracking: M&A, venture investments, and IPOs.")
-    
-    st.markdown("### Dashboard Overview")
-    
-    st.markdown("**📊 Deal Activity Tab**")
-    st.write("**M&A Activity:** Track mergers, acquisitions, and strategic transactions • Filter by date, deal type, acquirer, target, therapeutic area • View deal values and metrics • Interactive quarterly charts")
-    st.write("**Investment Activity:** Monitor VC, PE, and growth financing • Filter by type, company, investors, stage • Track amounts raised and participation • Visualize quarterly trends")
-    
-    st.markdown("**📈 JP Morgan Industry Report Tab**")
-    st.write("**Market Intelligence:** Quarterly analysis from JP Morgan MedTech Industry Reports • Compare M&A and Venture activity (Q1 2024 - Q3 2025) • QoQ and YoY trend analysis • Quarterly summaries with key deals • Data comparison with industry reporting")
-    
-    st.markdown("**🏢 IPO Activity Tab**")
-    st.write("Track public offerings • Monitor valuations and timing")
-    
-    st.markdown("**🎤 Conferences Tab**")
-    st.write("Download company attendance summaries")
-    
-    st.markdown("### How to Use")
-    st.write("1. Check JP Morgan Report for market overview  \n2. Explore Deal Activity for detailed transactions  \n3. Export data for analysis")
-    
-    st.markdown("### Data Updates")
-    st.write("Regularly updated with new deals. Authorized users: access **📤 Upload New Dataset** tab (password protected).")
-    
-    st.caption("Source: Desk Research and JP Morgan Biopharma & MedTech Deal Reports")
-    
-    st.markdown("</div>", unsafe_allow_html=True)
 
 def show_deal_activity(ma_df, inv_df):
     """Display deal activity dashboard"""
