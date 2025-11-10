@@ -871,7 +871,7 @@ def main():
     # Horizontal navigation with emojis
     page = st.radio(
         "Navigation",
-        ["📊 Deal Activity", "📈 JP Morgan Summary", "🏢 IPO Activity", "📤 Upload New Dataset"],
+        ["📊 Deal Activity", "📈 JP Morgan Summary", "🏢 IPO Activity", "🎤 Conferences", "📤 Upload New Dataset"],
         horizontal=True,
         label_visibility="collapsed"
     )
@@ -887,6 +887,8 @@ def main():
         show_jp_morgan_summary(ma_df, inv_df)
     elif page == "🏢 IPO Activity":
         show_ipo_activity(ipo_df)
+    elif page == "🎤 Conferences":
+        show_conferences(ma_df, inv_df)
     elif page == "📤 Upload New Dataset":
         show_upload_dataset(ma_df, inv_df, ipo_df)
 
@@ -1773,6 +1775,438 @@ def create_ipo_chart(df):
         import traceback
         st.error(f"Details: {traceback.format_exc()}")
         return None
+
+def show_conferences(ma_df, inv_df):
+    """Display conferences tab with company deal summaries and export options"""
+    st.header("🎤 Conference Deal Briefs")
+    st.markdown("Generate exportable lists of companies with recent deal activity for specific conferences.")
+    
+    st.markdown("---")
+    
+    # Get all unique non-blank conferences from both datasets
+    ma_conferences = set(ma_df[ma_df['Conference'] != '--']['Conference'].unique())
+    inv_conferences = set(inv_df[inv_df['Conference'] != '--']['Conference'].unique())
+    all_conferences = sorted(list(ma_conferences.union(inv_conferences)))
+    
+    if not all_conferences:
+        st.info("No conference data available in the dataset.")
+        return
+    
+    # === FILTERS ===
+    st.markdown("### Filters")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("**Conference**")
+        include_all = st.checkbox("All Conferences", value=False, key='conf_all')
+        if include_all:
+            selected_conferences = all_conferences
+        else:
+            selected_conferences = st.multiselect(
+                "Select conferences",
+                all_conferences,
+                default=[all_conferences[0]] if all_conferences else [],
+                key='conf_select',
+                label_visibility="collapsed"
+            )
+    
+    with col2:
+        st.markdown("**Time Window**")
+        time_window = st.selectbox(
+            "Time window",
+            ["YTD", "Last Quarter", "Last 2 Quarters", "Last 3 Quarters", "Last 4 Quarters"],
+            key='conf_time',
+            label_visibility="collapsed"
+        )
+    
+    with col3:
+        st.markdown("**Category (Optional)**")
+        all_categories_ma = set(ma_df['Category'].unique())
+        all_categories_inv = set(inv_df['Category'].unique())
+        all_categories = sorted(list(all_categories_ma.union(all_categories_inv) - {'Undisclosed'}))
+        
+        include_all_cats = st.checkbox("All Categories", value=True, key='conf_cat_all')
+        if include_all_cats:
+            selected_categories = all_categories
+        else:
+            selected_categories = st.multiselect(
+                "Select categories",
+                all_categories,
+                default=all_categories,
+                key='conf_cat_select',
+                label_visibility="collapsed"
+            )
+    
+    if not selected_conferences:
+        st.warning("Please select at least one conference.")
+        return
+    
+    st.markdown("---")
+    
+    # === FILTER DATA BY TIME WINDOW ===
+    def filter_by_time_window(df, time_window):
+        """Filter dataframe by time window based on Quarter"""
+        if time_window == "YTD":
+            # Include all 2025 quarters
+            return df[df['Quarter'].str.contains('2025', na=False)]
+        elif time_window == "Last Quarter":
+            # Q3 2025 (most recent)
+            return df[df['Quarter'] == 'Q3 2025']
+        elif time_window == "Last 2 Quarters":
+            # Q2 and Q3 2025
+            return df[df['Quarter'].isin(['Q2 2025', 'Q3 2025'])]
+        elif time_window == "Last 3 Quarters":
+            # Q1, Q2, Q3 2025
+            return df[df['Quarter'].isin(['Q1 2025', 'Q2 2025', 'Q3 2025'])]
+        elif time_window == "Last 4 Quarters":
+            # Q4 2024, Q1-Q3 2025
+            return df[df['Quarter'].isin(['Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025'])]
+        return df
+    
+    # Filter M&A data
+    filtered_ma = ma_df[ma_df['Conference'].isin(selected_conferences)].copy()
+    filtered_ma = filter_by_time_window(filtered_ma, time_window)
+    if selected_categories:
+        filtered_ma = filtered_ma[filtered_ma['Category'].isin(selected_categories)]
+    
+    # Filter Venture data
+    filtered_inv = inv_df[inv_df['Conference'].isin(selected_conferences)].copy()
+    filtered_inv = filter_by_time_window(filtered_inv, time_window)
+    if selected_categories:
+        filtered_inv = filtered_inv[filtered_inv['Category'].isin(selected_categories)]
+    
+    # === AGGREGATE BY COMPANY ===
+    def parse_value_for_sorting(val):
+        """Parse deal value to numeric for sorting"""
+        if val == 'Undisclosed' or pd.isna(val):
+            return 0
+        val_str = str(val).replace('$', '').replace('B', '').replace('M', '').replace(',', '').strip()
+        try:
+            return float(val_str)
+        except:
+            return 0
+    
+    # Build company-level aggregation
+    companies = {}
+    
+    # Process M&A deals
+    for idx, row in filtered_ma.iterrows():
+        company = row['Company']
+        if company not in companies:
+            companies[company] = {
+                'ma_deals': [],
+                'venture_deals': [],
+                'categories': set()
+            }
+        
+        deal_type = row['Deal Type (Merger / Acquisition)']
+        acquirer = row['Acquirer']
+        value = row['Deal Value']
+        quarter = row['Quarter']
+        category = row['Category']
+        tech = row.get('Technology/Description', 'N/A')
+        
+        if category != 'Undisclosed':
+            companies[company]['categories'].add(f"M&A: {category}")
+        
+        # Format deal text
+        if deal_type == "Merger":
+            deal_text = f"Merged with {acquirer}"
+        else:
+            deal_text = f"Acquired by {acquirer}"
+        
+        if value != 'Undisclosed':
+            deal_text += f" (${parse_value_for_sorting(value):,.0f}, {quarter})"
+        else:
+            deal_text += f" (Undisclosed, {quarter})"
+        
+        companies[company]['ma_deals'].append({
+            'text': deal_text,
+            'value': parse_value_for_sorting(value),
+            'quarter': quarter,
+            'acquirer': acquirer,
+            'deal_type': deal_type,
+            'tech': tech,
+            'raw_value': value
+        })
+    
+    # Process Venture deals
+    for idx, row in filtered_inv.iterrows():
+        company = row['Company']
+        if company not in companies:
+            companies[company] = {
+                'ma_deals': [],
+                'venture_deals': [],
+                'categories': set()
+            }
+        
+        amount = row['Amount Raised']
+        funding_type = row['Funding type (VC / PE)']
+        lead_investors = row.get('Lead Investors', 'N/A')
+        quarter = row['Quarter']
+        category = row['Category']
+        tech = row.get('Technology/Description', 'N/A')
+        
+        if category != 'Undisclosed':
+            companies[company]['categories'].add(f"Venture: {category}")
+        
+        # Format deal text
+        if amount != 'Undisclosed':
+            deal_text = f"${parse_value_for_sorting(amount):,.0f} {funding_type}"
+        else:
+            deal_text = f"Undisclosed {funding_type}"
+        
+        if lead_investors != 'N/A' and lead_investors != 'Undisclosed':
+            deal_text += f", Lead: {lead_investors}"
+        
+        deal_text += f" ({quarter})"
+        
+        companies[company]['venture_deals'].append({
+            'text': deal_text,
+            'value': parse_value_for_sorting(amount),
+            'quarter': quarter,
+            'funding_type': funding_type,
+            'lead_investors': lead_investors,
+            'tech': tech,
+            'raw_value': amount
+        })
+    
+    if not companies:
+        st.info(f"No companies found with deal activity for the selected filters.")
+        return
+    
+    # === PREPARE DISPLAY TABLE ===
+    company_rows = []
+    for company, data in companies.items():
+        # Sort deals by value descending
+        ma_sorted = sorted(data['ma_deals'], key=lambda x: x['value'], reverse=True)
+        venture_sorted = sorted(data['venture_deals'], key=lambda x: x['value'], reverse=True)
+        
+        # Format M&A summary (show top 2)
+        if ma_sorted:
+            ma_display = []
+            for i, deal in enumerate(ma_sorted[:2]):
+                ma_display.append(deal['text'])
+            if len(ma_sorted) > 2:
+                ma_display.append(f"+{len(ma_sorted)-2} more")
+            ma_text = " | ".join(ma_display)
+        else:
+            ma_text = "—"
+        
+        # Format Venture summary (show top 2)
+        if venture_sorted:
+            venture_display = []
+            for i, deal in enumerate(venture_sorted[:2]):
+                venture_display.append(deal['text'])
+            if len(venture_sorted) > 2:
+                venture_display.append(f"+{len(venture_sorted)-2} more")
+            venture_text = " | ".join(venture_display)
+        else:
+            venture_text = "—"
+        
+        # Format categories
+        categories_text = " | ".join(sorted(data['categories'])) if data['categories'] else "—"
+        
+        # Calculate max value for sorting
+        max_value = max(
+            [d['value'] for d in ma_sorted] + [d['value'] for d in venture_sorted] + [0]
+        )
+        
+        company_rows.append({
+            'Company': company,
+            'Recent M&A': ma_text,
+            'Recent Venture': venture_text,
+            'Category': categories_text,
+            '_max_value': max_value,
+            '_ma_deals': ma_sorted,
+            '_venture_deals': venture_sorted
+        })
+    
+    # Sort by max value descending
+    company_rows = sorted(company_rows, key=lambda x: x['_max_value'], reverse=True)
+    
+    # === DISPLAY METRICS ===
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Total Companies", len(companies))
+    with col2:
+        total_ma = sum(len(c['ma_deals']) for c in companies.values())
+        st.metric("M&A Deals", total_ma)
+    with col3:
+        total_venture = sum(len(c['venture_deals']) for c in companies.values())
+        st.metric("Venture Deals", total_venture)
+    
+    st.markdown("---")
+    
+    # === DISPLAY TABLE WITH EXPANDERS ===
+    st.markdown("### Companies with Recent Deal Activity")
+    
+    for row in company_rows:
+        with st.expander(f"**{row['Company']}** — {row['Category']}"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("##### M&A Activity")
+                if row['_ma_deals']:
+                    for deal in row['_ma_deals']:
+                        st.markdown(f"**{deal['quarter']}** — {deal['text']}")
+                        if deal['tech'] != 'N/A':
+                            st.caption(f"Technology: {deal['tech']}")
+                else:
+                    st.markdown("*No M&A activity*")
+            
+            with col2:
+                st.markdown("##### Venture Activity")
+                if row['_venture_deals']:
+                    for deal in row['_venture_deals']:
+                        st.markdown(f"**{deal['quarter']}** — {deal['text']}")
+                        if deal['tech'] != 'N/A':
+                            st.caption(f"Technology: {deal['tech']}")
+                else:
+                    st.markdown("*No venture activity*")
+            
+            # Copy summary button
+            summary_text = f"{row['Company']}\n"
+            summary_text += f"M&A: {row['Recent M&A']}\n"
+            summary_text += f"Venture: {row['Recent Venture']}\n"
+            summary_text += f"Category: {row['Category']}"
+            
+            if st.button("📋 Copy Summary", key=f"copy_{row['Company']}", help="Copy to clipboard"):
+                st.code(summary_text, language=None)
+    
+    st.markdown("---")
+    
+    # === EXPORT BUTTONS ===
+    st.markdown("### Export Options")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # CSV Export
+        if st.button("📥 Export to CSV", type="primary", use_container_width=True):
+            # Create main summary CSV
+            summary_data = []
+            for row in company_rows:
+                summary_data.append({
+                    'Company': row['Company'],
+                    'Recent M&A': row['Recent M&A'],
+                    'Recent Venture': row['Recent Venture'],
+                    'Category': row['Category']
+                })
+            
+            summary_df = pd.DataFrame(summary_data)
+            csv = summary_df.to_csv(index=False)
+            
+            st.download_button(
+                label="Download CSV",
+                data=csv,
+                file_name=f"conference_deals_{'-'.join(selected_conferences[:2])}_{time_window.replace(' ', '_')}.csv",
+                mime="text/csv"
+            )
+    
+    with col2:
+        # PDF Export
+        if st.button("📄 Export to PDF", type="secondary", use_container_width=True):
+            st.info("PDF export functionality ready! Click 'Generate PDF' below to download.")
+            
+            # Generate PDF using reportlab
+            try:
+                from io import BytesIO
+                from reportlab.lib.pagesizes import letter
+                from reportlab.lib import colors
+                from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+                from reportlab.lib.units import inch
+                from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
+                from reportlab.lib.enums import TA_LEFT, TA_CENTER
+                from datetime import datetime
+                
+                buffer = BytesIO()
+                doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+                story = []
+                styles = getSampleStyleSheet()
+                
+                # Custom styles
+                title_style = ParagraphStyle(
+                    'CustomTitle',
+                    parent=styles['Heading1'],
+                    fontSize=18,
+                    textColor=colors.HexColor('#2E5C8A'),
+                    spaceAfter=12,
+                    alignment=TA_CENTER
+                )
+                
+                subtitle_style = ParagraphStyle(
+                    'CustomSubtitle',
+                    parent=styles['Normal'],
+                    fontSize=10,
+                    textColor=colors.grey,
+                    spaceAfter=20,
+                    alignment=TA_CENTER
+                )
+                
+                # Title
+                conf_names = ', '.join(selected_conferences[:3])
+                if len(selected_conferences) > 3:
+                    conf_names += f" (+{len(selected_conferences)-3} more)"
+                
+                story.append(Paragraph(f"Conference Deal Brief — {conf_names}", title_style))
+                
+                # Metadata
+                meta_text = f"Generated: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}<br/>"
+                meta_text += f"Time Window: {time_window}<br/>"
+                meta_text += f"Total Companies: {len(companies)}"
+                story.append(Paragraph(meta_text, subtitle_style))
+                story.append(Spacer(1, 0.2*inch))
+                
+                # Company cards
+                for row in company_rows:
+                    # Company name
+                    company_style = ParagraphStyle(
+                        'Company',
+                        parent=styles['Heading2'],
+                        fontSize=12,
+                        textColor=colors.HexColor('#333333'),
+                        spaceAfter=6
+                    )
+                    story.append(Paragraph(row['Company'], company_style))
+                    
+                    # Details table
+                    data = [
+                        ['M&A:', Paragraph(row['Recent M&A'], styles['Normal'])],
+                        ['Venture:', Paragraph(row['Recent Venture'], styles['Normal'])],
+                        ['Category:', Paragraph(row['Category'], styles['Normal'])]
+                    ]
+                    
+                    t = Table(data, colWidths=[1*inch, 5.5*inch])
+                    t.setStyle(TableStyle([
+                        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, -1), 9),
+                        ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#666666')),
+                        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+                        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+                        ('TOPPADDING', (0, 0), (-1, -1), 2),
+                        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+                    ]))
+                    story.append(t)
+                    story.append(Spacer(1, 0.15*inch))
+                
+                # Build PDF
+                doc.build(story)
+                pdf_bytes = buffer.getvalue()
+                buffer.close()
+                
+                st.download_button(
+                    label="Download PDF",
+                    data=pdf_bytes,
+                    file_name=f"conference_deals_{'-'.join(selected_conferences[:2])}_{time_window.replace(' ', '_')}.pdf",
+                    mime="application/pdf"
+                )
+            except ImportError:
+                st.error("PDF export requires the reportlab library. The functionality is ready but the library needs to be installed.")
+            except Exception as e:
+                st.error(f"Error generating PDF: {str(e)}")
 
 def show_upload_dataset(ma_df, inv_df, ipo_df):
     """Password-protected data upload page"""
