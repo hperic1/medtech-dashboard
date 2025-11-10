@@ -1372,19 +1372,19 @@ def show_jp_morgan_summary(ma_df, inv_df):
         }
         ma_comparison_df = pd.DataFrame(ma_comparison_data)
         
-        # Function to color-code cells
+        # Function to color-code cells (now 40% threshold)
         def color_delta_cells(val):
             if val == 'None' or pd.isna(val):
                 return 'color: #000000'
             if '↑' in str(val):
                 pct = float(str(val).replace('↑', '').replace('%', ''))
-                if pct >= 50:
+                if pct >= 40:  # Changed from 50 to 40
                     return 'color: #00A86B; font-weight: bold'
                 else:
                     return 'color: #000000'
             elif '↓' in str(val):
                 pct = float(str(val).replace('↓', '').replace('%', ''))
-                if pct >= 50:
+                if pct >= 40:  # Changed from 50 to 40
                     return 'color: #D85252; font-weight: bold'
                 else:
                     return 'color: #000000'
@@ -1398,10 +1398,10 @@ def show_jp_morgan_summary(ma_df, inv_df):
             except:
                 return str(val)
         
-        # Function to add bold separator line between 2024 and 2025
+        # Function to add bold separator line between 2024 and 2025 (no bold text)
         def highlight_year_separator(row):
             if row.name == 3:  # Q4 2024
-                return ['border-bottom: 4px solid #000000; font-weight: bold;'] * len(row)
+                return ['border-bottom: 4px solid #000000;'] * len(row)  # Removed font-weight: bold
             return [''] * len(row)
         
         # Apply styling to M&A dataframe
@@ -1415,19 +1415,12 @@ def show_jp_morgan_summary(ma_df, inv_df):
             highlight_year_separator, 
             axis=1
         ).set_properties(**{
-            'text-align': 'center'
-        }, subset=['QoQ Change', 'YoY Change']
-        ).set_properties(**{
-            'text-align': 'right'
-        }, subset=['Value ($B)']
-        ).set_properties(**{
-            'text-align': 'left'
-        }, subset=['Quarter']
-        ).set_properties(**{
-            'font-size': '12px'
+            'text-align': 'center'  # Center all columns
+        }).set_properties(**{
+            'font-size': '16px'  # Increased from 12px to 16px
         }).set_table_styles([
-            {'selector': 'th', 'props': [('background-color', '#e8f1f8'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '6px'), ('font-size', '12px')]},
-            {'selector': 'td', 'props': [('padding', '5px'), ('border', '1px solid #e0e0e0'), ('font-size', '12px')]},
+            {'selector': 'th', 'props': [('background-color', '#e8f1f8'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '8px'), ('font-size', '16px')]},  # Increased to 16px and centered
+            {'selector': 'td', 'props': [('padding', '7px'), ('border', '1px solid #e0e0e0'), ('font-size', '16px')]},  # Increased to 16px
             {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
         ])
         
@@ -1435,8 +1428,8 @@ def show_jp_morgan_summary(ma_df, inv_df):
     
     with ma_text_col:
         st.markdown("""
-        <div style="font-size: 24px; color: #000; line-height: 1.5; padding: 20px;">
-        <b style="font-size: 26px;">2025 YTD Summary</b><br><br>
+        <div style="font-size: 20px; color: #000; line-height: 1.5; padding: 20px;">
+        <b style="font-size: 22px;">2025 YTD Summary</b><br><br>
         M&A volumes have rebounded sharply in 2025, with fewer but larger transactions, underscoring renewed strategic consolidation after two years of muted activity, and highlighting strategic expansion by industry leaders despite lingering macro headwinds.
         </div>
         """, unsafe_allow_html=True)
@@ -1468,19 +1461,12 @@ def show_jp_morgan_summary(ma_df, inv_df):
             highlight_year_separator, 
             axis=1
         ).set_properties(**{
-            'text-align': 'center'
-        }, subset=['QoQ Change', 'YoY Change']
-        ).set_properties(**{
-            'text-align': 'right'
-        }, subset=['Value ($B)']
-        ).set_properties(**{
-            'text-align': 'left'
-        }, subset=['Quarter']
-        ).set_properties(**{
-            'font-size': '12px'
+            'text-align': 'center'  # Center all columns
+        }).set_properties(**{
+            'font-size': '16px'  # Increased from 12px to 16px
         }).set_table_styles([
-            {'selector': 'th', 'props': [('background-color', '#faf6f0'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '6px'), ('font-size', '12px')]},
-            {'selector': 'td', 'props': [('padding', '5px'), ('border', '1px solid #e0e0e0'), ('font-size', '12px')]},
+            {'selector': 'th', 'props': [('background-color', '#faf6f0'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '8px'), ('font-size', '16px')]},  # Increased to 16px and centered
+            {'selector': 'td', 'props': [('padding', '7px'), ('border', '1px solid #e0e0e0'), ('font-size', '16px')]},  # Increased to 16px
             {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
         ])
         
@@ -1488,8 +1474,8 @@ def show_jp_morgan_summary(ma_df, inv_df):
     
     with venture_text_col:
         st.markdown("""
-        <div style="font-size: 24px; color: #000; line-height: 1.5; padding: 20px;">
-        <b style="font-size: 26px;">2025 YTD Summary</b><br><br>
+        <div style="font-size: 20px; color: #000; line-height: 1.5; padding: 20px;">
+        <b style="font-size: 22px;">2025 YTD Summary</b><br><br>
         Venture financing remained resilient but increasingly selective, totaling $9.5 B across 259 rounds YTD (through Q3 2025), concentrated in fewer, later-stage deals ($100 M+) as investors show a sustained appetite for clinically validated medtech platforms.
         </div>
         """, unsafe_allow_html=True)
