@@ -1498,6 +1498,13 @@ def show_jp_morgan_summary(ma_df, inv_df):
             'inv_value': inv_value
         }
     
+    # JP Morgan data - defined early so it's available for metric cards
+    jp_data = {
+        'Q1': {'ma_count': 57, 'ma_value': '$9.2B', 'inv_count': 117, 'inv_value': '$3.7B'},
+        'Q2': {'ma_count': 43, 'ma_value': '$2.1B', 'inv_count': 90, 'inv_value': '$2.6B'},
+        'Q3': {'ma_count': 65, 'ma_value': '$21.7B', 'inv_count': 67, 'inv_value': '$2.9B'}
+    }
+    
     
     # Quarter and Year filters for JP Morgan charts
     # Create a clean filter section with select all options
@@ -1887,13 +1894,6 @@ def show_jp_morgan_summary(ma_df, inv_df):
         'ma_value': '#2E5C8A',      # Dark navy for M&A value
         'inv_count': '#D4A574',     # Bright tan for Investment count
         'inv_value': '#8B6F47'      # Dark brown for Investment value
-    }
-    
-    # JP Morgan data
-    jp_data = {
-        'Q1': {'ma_count': 57, 'ma_value': '$9.2B', 'inv_count': 117, 'inv_value': '$3.7B'},
-        'Q2': {'ma_count': 43, 'ma_value': '$2.1B', 'inv_count': 90, 'inv_value': '$2.6B'},
-        'Q3': {'ma_count': 65, 'ma_value': '$21.7B', 'inv_count': 67, 'inv_value': '$2.9B'}
     }
     
     # Helper function to parse values for max calculation
