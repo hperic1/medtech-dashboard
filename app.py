@@ -1048,53 +1048,9 @@ def show_home():
     
     # Content without any marker div
     st.markdown("# Welcome to the MedTech M&A & Venture Dashboard")
-    st.write("This interactive dashboard provides tracking and analysis of MedTech deal activity, including mergers & acquisitions, venture capital investments, and IPO activity.")
-    
-    st.markdown("### Dashboard Overview")
-    
-    # Deal Activity Tab
-    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
-    st.markdown("**📊 Deal Activity Tab**")
-    st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
-    st.write("**M&A Activity:** Track mergers, acquisitions, and strategic transactions")
-    st.write("• Filter by date range, deal type, acquirer, target, and therapeutic area")
-    st.write("• View deal values, and technology descriptions")
-    st.write("• Interactive charts showing quarterly trends and deal volume")
-    st.write("**Investment Activity:** Monitor venture capital and private equity financing")
-    st.write("• Filter by investment type, company, date")
-    st.write("• Track amounts raised and investor participation")
-    st.write("• Visualize funding trends across quarters and years")
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # JP Morgan Tab
-    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
-    st.markdown("**📈 JP Morgan Industry Report Tab**")
-    st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
-    st.write("**Market Intelligence:** Access quarterly analysis from JP Morgan's MedTech Industry Reports")
-    st.write("• Compare M&A and Venture activity across quarters (Q1 2024 - Q3 2025)")
-    st.write("• View quarter-over-quarter (QoQ) and year-over-year (YoY) trend analysis")
-    st.write("• Review detailed quarterly summaries highlighting key deals and market themes")
-    st.write("• Data Comparison: See how deal tracking compares to JP Morgan's industry-wide reporting")
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # IPO Activity Tab
-    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
-    st.markdown("**🏢 IPO Activity Tab**")
-    st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
-    st.write("• Track initial public offerings and public market entries")
-    st.write("• Monitor IPO valuations and timing")
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Conferences Tab
-    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
-    st.markdown("**🎤 Conferences Tab**")
-    st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
-    st.write("• Download an excel summary that shows companies that will be in attendance at conferences")
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.markdown("### How to Use This Dashboard")
-    st.write("1. Refer to the JP Morgan Report Tab to get a high-level market overview and understand current trends")
-    st.write("2. Dive into Deal Activity to explore specific transactions, filter by areas of interest, and analyze detailed deal metrics")
+    st.write("This dashboard allows you to explore and track MedTech deal activity, including M&A, venture capital, and IPOs. Use the Deal Activity tab to filter and analyze transactions, the JP Morgan Report tab for quarterly market trends, and the Conferences tab to download summaries of companies attending major events.")
+    st.write("See below for a short video walkthrough on how to use the dashboard.")
+    st.markdown("")
     st.markdown("**Sources:** Desk Research and [JP Morgan Biopharma & MedTech Deal Reports](https://www.jpmorgan.com/insights/markets-and-economy/outlook/biopharma-medtech-deal-reports)", unsafe_allow_html=True)
 
 def show_deal_activity(ma_df, inv_df):
