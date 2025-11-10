@@ -2124,6 +2124,7 @@ def show_conferences(ma_df, inv_df):
     
     # === DISPLAY TABLE ===
     st.markdown("### Companies with Recent Deal Activity")
+    st.markdown(f"*Showing {len(display_rows)} deals from {len(companies)} companies*")
     
     # Create display dataframe
     display_data = []
@@ -2138,11 +2139,23 @@ def show_conferences(ma_df, inv_df):
     
     display_df = pd.DataFrame(display_data)
     
-    # Display table
+    # Check if there's data to display
+    if display_df.empty:
+        st.info("No deal data to display for the selected filters.")
+        return
+    
+    # Display table with column configuration
     st.dataframe(
         display_df,
         use_container_width=True,
-        hide_index=True
+        hide_index=True,
+        column_config={
+            "Company": st.column_config.TextColumn("Company", width="medium"),
+            "Deal Type": st.column_config.TextColumn("Deal Type", width="large"),
+            "Deal Amount": st.column_config.TextColumn("Deal Amount", width="medium"),
+            "Technology / Company Description": st.column_config.TextColumn("Technology / Company Description", width="large"),
+            "Category": st.column_config.TextColumn("Category", width="medium")
+        }
     )
     
     st.markdown("---")
