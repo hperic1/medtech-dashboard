@@ -2038,27 +2038,23 @@ def show_conferences(ma_df, inv_df):
         ma_sorted = sorted(data['ma_deals'], key=lambda x: x['value'], reverse=True)
         venture_sorted = sorted(data['venture_deals'], key=lambda x: x['value'], reverse=True)
         
-        # Format M&A summary (show top 2)
-        if ma_sorted:
-            ma_display = []
-            for i, deal in enumerate(ma_sorted[:2]):
-                ma_display.append(deal['text'])
-            if len(ma_sorted) > 2:
-                ma_display.append(f"+{len(ma_sorted)-2} more")
-            ma_text = " | ".join(ma_display)
-        else:
-            ma_text = ""
+        # Combine all deals with prefixes
+        combined_deals = []
         
-        # Format Venture summary (show top 2)
-        if venture_sorted:
-            venture_display = []
-            for i, deal in enumerate(venture_sorted[:2]):
-                venture_display.append(deal['text'])
-            if len(venture_sorted) > 2:
-                venture_display.append(f"+{len(venture_sorted)-2} more")
-            venture_text = " | ".join(venture_display)
-        else:
-            venture_text = ""
+        # Add M&A deals with "M&A:" prefix (show top 2)
+        for i, deal in enumerate(ma_sorted[:2]):
+            combined_deals.append(f"M&A: {deal['text']}")
+        if len(ma_sorted) > 2:
+            combined_deals.append(f"M&A: +{len(ma_sorted)-2} more")
+        
+        # Add Venture deals with "Venture:" prefix (show top 2)
+        for i, deal in enumerate(venture_sorted[:2]):
+            combined_deals.append(f"Venture: {deal['text']}")
+        if len(venture_sorted) > 2:
+            combined_deals.append(f"Venture: +{len(venture_sorted)-2} more")
+        
+        # Join all deals with separator
+        deals_text = " | ".join(combined_deals) if combined_deals else ""
         
         # Format categories
         categories_text = " | ".join(sorted(data['categories'])) if data['categories'] else ""
@@ -2070,8 +2066,7 @@ def show_conferences(ma_df, inv_df):
         
         company_rows.append({
             'Company': company,
-            'Recent M&A': ma_text,
-            'Recent Venture': venture_text,
+            'Recent Deals': deals_text,
             'Category': categories_text,
             '_max_value': max_value,
             '_ma_deals': ma_sorted,
@@ -2102,8 +2097,7 @@ def show_conferences(ma_df, inv_df):
     for row in company_rows:
         display_data.append({
             'Company': row['Company'],
-            'Recent M&A': row['Recent M&A'],
-            'Recent Venture': row['Recent Venture'],
+            'Recent Deals': row['Recent Deals'],
             'Category': row['Category']
         })
     
