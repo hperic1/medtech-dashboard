@@ -1951,7 +1951,7 @@ def create_ipo_chart(df):
             x=quarterly_data['Quarter'].astype(str),
             y=quarterly_data['Total_Amount'],
             name='IPO Value',
-            marker_color='#FFA857',  # Light orange for IPO
+            marker_color='#A8D5BA',  # Very muted light green for IPO
             text=[f"<b>{format_currency_abbreviated(v)}</b>" for v in quarterly_data['Total_Amount']],
             textposition='outside',
             textfont=dict(size=14),
