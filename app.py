@@ -141,6 +141,12 @@ def load_data():
         if not ipo_df.empty:
             ipo_df = ipo_df.loc[:, ~ipo_df.columns.str.contains('^Unnamed')]
         
+        # Rename Sector to Category for display
+        if 'Sector' in ma_df.columns:
+            ma_df = ma_df.rename(columns={'Sector': 'Category'})
+        if 'Sector' in inv_df.columns:
+            inv_df = inv_df.rename(columns={'Sector': 'Category'})
+        
         # Keep year in Quarter column for context (e.g., "Q1 2025" stays as "Q1 2025")
         # This ensures quarters display with year throughout the app
         if 'Quarter' in ma_df.columns:
@@ -324,8 +330,8 @@ def create_filter_section(df, section_key, show_conference=True):
             selected_month = st.selectbox("Month", months, key=f'month_{section_key}')
         
         with col3:
-            sectors = ['All'] + sorted([s for s in df['Sector'].unique() if s != 'Undisclosed'])
-            selected_sector = st.selectbox("Sector", sectors, key=f'sector_{section_key}')
+            categories = ['All'] + sorted([s for s in df['Category'].unique() if s != 'Undisclosed'])
+            selected_category = st.selectbox("Category", categories, key=f'category_{section_key}')
         
         if show_conference:
             with col4:
@@ -340,8 +346,8 @@ def create_filter_section(df, section_key, show_conference=True):
         filtered_df = filtered_df[filtered_df['Quarter'] == selected_quarter]
     if selected_month != 'All':
         filtered_df = filtered_df[filtered_df['Month'] == selected_month]
-    if selected_sector != 'All':
-        filtered_df = filtered_df[filtered_df['Sector'] == selected_sector]
+    if selected_category != 'All':
+        filtered_df = filtered_df[filtered_df['Category'] == selected_category]
     if show_conference and selected_conference != 'All':
         filtered_df = filtered_df[filtered_df['Conference'] == selected_conference]
     
@@ -726,14 +732,14 @@ def create_jp_morgan_chart_by_category(category, color):
         st.error(f"Error creating {category} chart: {str(e)}")
         return None
 
-def create_sunburst_chart(df, value_col, deal_type, sector_col='Sector'):
-    """Create sunburst chart showing deal values by sector with top deals in hover"""
+def create_sunburst_chart(df, value_col, deal_type, category_col='Category'):
+    """Create sunburst chart showing deal values by category with top deals in hover"""
     try:
-        # Filter out 'Undisclosed' sectors
-        df_filtered = df[df[sector_col] != 'Undisclosed'].copy()
+        # Filter out 'Undisclosed' categories
+        df_filtered = df[df[category_col] != 'Undisclosed'].copy()
         
         if len(df_filtered) == 0:
-            st.info(f"No sector data available for {deal_type}")
+            st.info(f"No category data available for {deal_type}")
             return None
         
         # Parse values to numeric
@@ -749,14 +755,14 @@ def create_sunburst_chart(df, value_col, deal_type, sector_col='Sector'):
         # Add numeric value column for sorting
         df_filtered['_numeric_value'] = df_filtered[value_col].apply(parse_value)
         
-        # Group by sector and get stats + top deals
-        sector_stats = []
-        for sector in df_filtered[sector_col].unique():
-            sector_df = df_filtered[df_filtered[sector_col] == sector]
-            total_value = sector_df['_numeric_value'].sum()
+        # Group by category and get stats + top deals
+        category_stats = []
+        for category in df_filtered[category_col].unique():
+            category_df = df_filtered[df_filtered[category_col] == category]
+            total_value = category_df['_numeric_value'].sum()
             
-            # Get top 3 deals for this sector
-            top_deals = sector_df.nlargest(3, '_numeric_value')
+            # Get top 3 deals for this category
+            top_deals = category_df.nlargest(3, '_numeric_value')
             deal_list = []
             for idx, deal in top_deals.iterrows():
                 company = deal['Company']
@@ -770,23 +776,23 @@ def create_sunburst_chart(df, value_col, deal_type, sector_col='Sector'):
                         val_str = f"${value:,.0f}"
                     deal_list.append(f"{company} ({val_str})")
             
-            sector_stats.append({
-                'Sector': sector,
+            category_stats.append({
+                'Category': category,
                 'Total_Value': total_value,
                 'Top_Deals': '<br>  • '.join(deal_list) if deal_list else 'No deals'
             })
         
-        sector_data = pd.DataFrame(sector_stats)
+        category_data = pd.DataFrame(category_stats)
         
-        # Remove sectors with zero value
-        sector_data = sector_data[sector_data['Total_Value'] > 0]
+        # Remove categories with zero value
+        category_data = category_data[category_data['Total_Value'] > 0]
         
-        if len(sector_data) == 0:
-            st.info(f"No deal value data available for {deal_type} sectors")
+        if len(category_data) == 0:
+            st.info(f"No deal value data available for {deal_type} categories")
             return None
         
         # Sort by value descending
-        sector_data = sector_data.sort_values('Total_Value', ascending=False)
+        category_data = category_data.sort_values('Total_Value', ascending=False)
         
         # Create complementary muted color palette
         if deal_type == 'M&A':
@@ -801,7 +807,7 @@ def create_sunburst_chart(df, value_col, deal_type, sector_col='Sector'):
             ]
         
         # Assign colors
-        colors = [color_palette[i % len(color_palette)] for i in range(len(sector_data))]
+        colors = [color_palette[i % len(color_palette)] for i in range(len(category_data))]
         
         # Format values for display
         def format_value_display(val):
@@ -812,16 +818,16 @@ def create_sunburst_chart(df, value_col, deal_type, sector_col='Sector'):
             else:
                 return f"${val:,.0f}"
         
-        sector_data['Value_Display'] = sector_data['Total_Value'].apply(format_value_display)
+        category_data['Value_Display'] = category_data['Total_Value'].apply(format_value_display)
         
         # Calculate percentages
-        total = sector_data['Total_Value'].sum()
-        sector_data['Percentage'] = (sector_data['Total_Value'] / total * 100).round(1)
+        total = category_data['Total_Value'].sum()
+        category_data['Percentage'] = (category_data['Total_Value'] / total * 100).round(1)
         
         # Create custom hover text with top deals
         hover_text = []
-        for idx, row in sector_data.iterrows():
-            hover = f"<b>{row['Sector']}</b><br>"
+        for idx, row in category_data.iterrows():
+            hover = f"<b>{row['Category']}</b><br>"
             hover += f"<b>Total Value:</b> {row['Value_Display']}<br>"
             hover += f"<b>Percentage:</b> {row['Percentage']}%<br>"
             hover += f"<b>Top Deals:</b><br>  • {row['Top_Deals']}"
@@ -829,10 +835,10 @@ def create_sunburst_chart(df, value_col, deal_type, sector_col='Sector'):
         
         # Create sunburst chart
         fig = go.Figure(go.Sunburst(
-            labels=sector_data['Sector'],
-            parents=[''] * len(sector_data),
-            values=sector_data['Total_Value'],
-            text=sector_data['Value_Display'],
+            labels=category_data['Category'],
+            parents=[''] * len(category_data),
+            values=category_data['Total_Value'],
+            text=category_data['Value_Display'],
             textinfo='label+text',
             textfont=dict(size=14, family='Arial, sans-serif'),  # Larger text
             marker=dict(colors=colors, line=dict(color='white', width=2)),
@@ -919,7 +925,7 @@ def show_deal_activity(ma_df, inv_df):
         st.markdown(create_metric_card("Total M&A Deal Count", total_ma_deals, 'ma'), unsafe_allow_html=True)
         
         # M&A Sunburst Chart
-        st.markdown("#### M&A Deals by Sector")
+        st.markdown("#### M&A Deals by Category")
         
         # Independent quarter filter for M&A sunburst
         quarters_ma_sun = ['All'] + sorted([q for q in ma_df['Quarter'].unique() if q != 'Undisclosed'])
@@ -929,7 +935,7 @@ def show_deal_activity(ma_df, inv_df):
         if selected_quarter_ma_sun != 'All':
             filtered_ma_sun = filtered_ma_sun[filtered_ma_sun['Quarter'] == selected_quarter_ma_sun]
         
-        fig_ma_sunburst = create_sunburst_chart(filtered_ma_sun, 'Deal Value', 'M&A', 'Sector')
+        fig_ma_sunburst = create_sunburst_chart(filtered_ma_sun, 'Deal Value', 'M&A', 'Category')
         if fig_ma_sunburst:
             st.plotly_chart(fig_ma_sunburst, use_container_width=True)
     
@@ -951,7 +957,7 @@ def show_deal_activity(ma_df, inv_df):
         st.markdown(create_metric_card("Total Investment Deal Count", total_inv_deals, 'venture'), unsafe_allow_html=True)
         
         # Venture Sunburst Chart
-        st.markdown("#### Venture Deals by Sector")
+        st.markdown("#### Venture Deals by Category")
         
         # Independent quarter filter for Venture sunburst
         quarters_inv_sun = ['All'] + sorted([q for q in inv_df['Quarter'].unique() if q != 'Undisclosed'])
@@ -961,7 +967,7 @@ def show_deal_activity(ma_df, inv_df):
         if selected_quarter_inv_sun != 'All':
             filtered_inv_sun = filtered_inv_sun[filtered_inv_sun['Quarter'] == selected_quarter_inv_sun]
         
-        fig_inv_sunburst = create_sunburst_chart(filtered_inv_sun, 'Amount Raised', 'Venture', 'Sector')
+        fig_inv_sunburst = create_sunburst_chart(filtered_inv_sun, 'Amount Raised', 'Venture', 'Category')
         if fig_inv_sunburst:
             st.plotly_chart(fig_inv_sunburst, use_container_width=True)
     
@@ -1052,10 +1058,10 @@ def show_deal_activity(ma_df, inv_df):
             st.markdown(f"<p style='font-size: 12px; color: #666; margin-top: 5px;'><b>Technology:</b> {tech_desc}</p>", unsafe_allow_html=True)
             
             # Add deal details
-            sector = str(row['Sector']) if row['Sector'] != 'Undisclosed' else 'N/A'
+            category = str(row['Category']) if row['Category'] != 'Undisclosed' else 'N/A'
             quarter = str(row['Quarter']) if row['Quarter'] != 'Undisclosed' else 'N/A'
             month = str(row['Month']) if row['Month'] != 'Undisclosed' else 'N/A'
-            st.markdown(f"<p style='font-size: 11px; color: #888;'><b>Sector:</b> {sector} | <b>Quarter:</b> {quarter} | <b>Month:</b> {month}</p>", unsafe_allow_html=True)
+            st.markdown(f"<p style='font-size: 11px; color: #888;'><b>Category:</b> {category} | <b>Quarter:</b> {quarter} | <b>Month:</b> {month}</p>", unsafe_allow_html=True)
             
             st.markdown("---")
     
@@ -1154,10 +1160,10 @@ def show_deal_activity(ma_df, inv_df):
             
             # Add deal details
             funding_type = str(row['Funding type (VC / PE)']) if row['Funding type (VC / PE)'] != 'Undisclosed' else 'N/A'
-            sector = str(row['Sector']) if row['Sector'] != 'Undisclosed' else 'N/A'
+            category = str(row['Category']) if row['Category'] != 'Undisclosed' else 'N/A'
             lead_investors = str(row['Lead Investors']) if row['Lead Investors'] != 'Undisclosed' else 'N/A'
             quarter = str(row['Quarter']) if row['Quarter'] != 'Undisclosed' else 'N/A'
-            st.markdown(f"<p style='font-size: 11px; color: #888;'><b>Type:</b> {funding_type} | <b>Sector:</b> {sector} | <b>Quarter:</b> {quarter}</p>", unsafe_allow_html=True)
+            st.markdown(f"<p style='font-size: 11px; color: #888;'><b>Type:</b> {funding_type} | <b>Category:</b> {category} | <b>Quarter:</b> {quarter}</p>", unsafe_allow_html=True)
             st.markdown(f"<p style='font-size: 11px; color: #888;'><b>Lead Investors:</b> {lead_investors}</p>", unsafe_allow_html=True)
             
             st.markdown("---")
@@ -1343,10 +1349,6 @@ def show_jp_morgan_summary(ma_df, inv_df):
         st.markdown("#### Key Overall Trends")
         st.markdown("""
         <div style="font-size: 13px; color: #000; line-height: 1.6;">
-        <b>🔸 EOY 2024 Summary</b><br>
-        <b>M&A:</b> Surged to 305 deals / $63.1B (+34% YoY), driven by mega-deals and a resurgence of strategic buy-side confidence after two muted years.<br><br>
-        <b>Venture:</b> Rebounded to $19.1B (+12% YoY) despite fewer rounds, as capital flowed selectively toward platform and AI-linked technologies.
-        <br><br>
         <b>🔸 2025 YTD Summary</b><br>
         <b>M&A:</b> Volumes remained historically strong at 165+ deals totaling ~$33B, highlighting strategic expansion by industry leaders into adjacent diagnostic and therapeutic markets despite lingering macro headwinds.<br><br>
         <b>Venture:</b> Capital reached $9.5B across 259 rounds (through Q3), with capital increasingly concentrated in AI-driven platform and neuro-tech devices.
@@ -1918,6 +1920,12 @@ def show_upload_dataset(ma_df, inv_df, ipo_df):
                         new_inv = new_inv.loc[:, ~new_inv.columns.str.contains('^Unnamed')]
                         if not new_ipo.empty:
                             new_ipo = new_ipo.loc[:, ~new_ipo.columns.str.contains('^Unnamed')]
+                        
+                        # Rename Sector to Category for display
+                        if 'Sector' in new_ma.columns:
+                            new_ma = new_ma.rename(columns={'Sector': 'Category'})
+                        if 'Sector' in new_inv.columns:
+                            new_inv = new_inv.rename(columns={'Sector': 'Category'})
                         
                         # Keep year in Quarter column for context
                         if 'Quarter' in new_ma.columns:
