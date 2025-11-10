@@ -19,7 +19,7 @@ COLORS = {
     'ma_secondary': '#A8C9D1',    # Lighter muted blue
     'venture_primary': '#C9A77F',  # Muted orange/tan for Venture
     'venture_secondary': '#D9C9A8', # Lighter muted tan
-    'count_line': '#999999',       # Light gray for count lines
+    'count_line': '#CCCCCC',       # Very light gray for count lines
     'accent': '#B8A690'            # Neutral accent
 }
 
@@ -582,17 +582,31 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
             x=quarterly_data['Quarter'].astype(str),
             y=quarterly_data['Deal_Count'],
             name='Deal Count',
-            mode='lines+markers+text',
+            mode='lines+markers',
             line=dict(color=line_color, width=3),
-            marker=dict(size=10, color=line_color),
-            text=[f"<b>{c}</b>" for c in quarterly_data['Deal_Count']],  # Bold numbers
-            textposition='top center',
-            textfont=dict(size=13, color=line_color),  # Slightly smaller and colored to match line
+            marker=dict(size=10, color=line_color, line=dict(color='white', width=2)),
             yaxis='y2',
             hovertemplate='<b>%{x}</b><br>Deal Count: %{y}<br><extra></extra>',
             connectgaps=True,
-            cliponaxis=False  # Allow labels to extend beyond plot area
+            cliponaxis=False
         ))
+        
+        # Add annotations with white background for deal count labels
+        annotations = []
+        for i, row in quarterly_data.iterrows():
+            annotations.append(
+                dict(
+                    x=str(row['Quarter']),
+                    y=row['Deal_Count'],
+                    text=str(int(row['Deal_Count'])),
+                    showarrow=False,
+                    yref='y2',
+                    font=dict(size=13, color='#000000'),
+                    bgcolor='white',
+                    borderpad=4,
+                    yshift=10
+                )
+            )
         
         # Update layout
         fig.update_layout(
@@ -631,7 +645,8 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
             margin=dict(t=100, b=50, l=50, r=50),
             plot_bgcolor='white',
             paper_bgcolor='white',
-            font=dict(size=13, family='Arial, sans-serif')  # Base font larger
+            font=dict(size=13, family='Arial, sans-serif'),  # Base font larger
+            annotations=annotations  # Add the annotations with white backgrounds
         )
         
         return fig
@@ -682,17 +697,32 @@ def create_jp_morgan_chart_by_category(category, color):
             x=quarters,
             y=counts,
             name='Deal Count',
-            mode='lines+markers+text',
+            mode='lines+markers',
             line=dict(color=COLORS['count_line'], width=3),
-            marker=dict(size=10, color=COLORS['count_line']),
-            text=[f"<b>{str(c)}</b>" if c > 0 else '' for c in counts],  # Bold numbers
-            textposition='top center',
-            textfont=dict(size=13, color=COLORS['count_line']),  # Slightly smaller and colored
+            marker=dict(size=10, color=COLORS['count_line'], line=dict(color='white', width=2)),
             yaxis='y2',
             hovertemplate='<b>%{x}</b><br>Deal Count: %{y}<br><extra></extra>',
             connectgaps=True,
-            cliponaxis=False  # Allow labels to extend beyond plot area
+            cliponaxis=False
         ))
+        
+        # Add annotations with white background for deal count labels
+        annotations = []
+        for i, (quarter, count) in enumerate(zip(quarters, counts)):
+            if count > 0:
+                annotations.append(
+                    dict(
+                        x=quarter,
+                        y=count,
+                        text=str(count),
+                        showarrow=False,
+                        yref='y2',
+                        font=dict(size=13, color='#000000'),
+                        bgcolor='white',
+                        borderpad=4,
+                        yshift=10
+                    )
+                )
         
         # Update layout with dual y-axes
         fig.update_layout(
@@ -731,7 +761,8 @@ def create_jp_morgan_chart_by_category(category, color):
             margin=dict(t=80, b=50, l=50, r=50),
             plot_bgcolor='white',
             paper_bgcolor='white',
-            font=dict(size=13, family='Arial, sans-serif')
+            font=dict(size=13, family='Arial, sans-serif'),
+            annotations=annotations  # Add the annotations with white backgrounds
         )
         
         return fig
