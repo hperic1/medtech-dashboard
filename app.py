@@ -1453,254 +1453,205 @@ def show_jp_morgan_summary(ma_df, inv_df):
     if not selected_quarters or not selected_years:
         st.warning("Please select at least one quarter and one year to display data.")
     else:
-        # Create 1x2 grid for charts
+        # Create 1x2 grid for complete vertical stacks (chart, table, trends)
         col1, col2 = st.columns(2)
         
+        # ========== LEFT COLUMN: M&A ==========
         with col1:
+            st.markdown("### M&A Activity")
+            
+            # M&A Chart
             fig_ma = create_jp_morgan_chart_by_category('M&A', COLORS['ma_primary'], selected_quarters, selected_years)
             if fig_ma:
                 st.plotly_chart(fig_ma, use_container_width=True)
+            
+            # M&A Quarterly Comparison Table
+            st.markdown("#### Quarterly Comparison")
+            
+            # Function to color-code cells (now 40% threshold)
+            def color_delta_cells(val):
+                if val == 'None' or pd.isna(val):
+                    return 'color: #000000'
+                if '↑' in str(val):
+                    pct = float(str(val).replace('↑', '').replace('%', ''))
+                    if pct >= 40:
+                        return 'color: #00A86B; font-weight: bold'
+                    else:
+                        return 'color: #000000'
+                elif '↓' in str(val):
+                    pct = float(str(val).replace('↓', '').replace('%', ''))
+                    if pct >= 40:
+                        return 'color: #D85252; font-weight: bold'
+                    else:
+                        return 'color: #000000'
+                return 'color: #000000'
+            
+            # Function to format dollar values
+            def format_dollar_value(val):
+                try:
+                    rounded_val = round(float(val), 1)
+                    return f"${rounded_val:.1f}B"
+                except:
+                    return str(val)
+            
+            # Function to highlight 2025 rows with light grey background
+            def highlight_2025_rows(row):
+                if '2025' in str(row['Quarter']):
+                    return ['background-color: #f0f0f0'] * len(row)
+                return [''] * len(row)
+            
+            # Create combined M&A dataframe
+            ma_comparison_data = {
+                'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025'],
+                'Value (USD $B)': [18.0, 40.3, 47.0, 63.1, 9.2, 2.1, 21.7],
+                'QoQ Change': ['None', '↑124%', '↑16.6%', '↑34.3%', '↓85.4%', '↓77.2%', '↑933%'],
+                'YoY Change': ['None', 'None', 'None', '↑34%', '↓49%', '↓94.8%', '↓53.8%']
+            }
+            ma_comparison_df = pd.DataFrame(ma_comparison_data)
+            
+            # Apply styling to M&A dataframe
+            styled_ma_df = ma_comparison_df.style.applymap(
+                color_delta_cells,
+                subset=['QoQ Change', 'YoY Change']
+            ).format(
+                format_dollar_value,
+                subset=['Value (USD $B)']
+            ).apply(
+                highlight_2025_rows, 
+                axis=1
+            ).set_properties(**{
+                'text-align': 'center'
+            }).set_properties(**{
+                'font-size': '18px'
+            }).set_table_styles([
+                {'selector': 'th', 'props': [('background-color', '#e8f1f8'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '10px'), ('font-size', '18px')]},
+                {'selector': 'td', 'props': [('padding', '10px'), ('border', '1px solid #e0e0e0'), ('font-size', '18px'), ('text-align', 'center')]},
+                {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
+            ])
+            
+            st.dataframe(styled_ma_df, hide_index=True, use_container_width=True)
+            
+            # M&A Key Trends
+            st.markdown("#### Key Market Trends")
+            st.markdown(create_metric_card("M&A Activity", "Key Theme of 2025: Strategic Consolidation", 'ma'), unsafe_allow_html=True)
+            st.markdown("""
+            <div style="border: 2px solid #5B9BD5; border-radius: 12px; padding: 16px; background-color: #f8fafb; margin-top: 10px;">
+                <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                    <b>Q1 2024</b><br>
+                    47 deals worth ~$18 B, a rebound driven by renewed strategic activity among large buyers. Continued strength in digital health and diagnostics acquisitions pointed to normalization of post-COVID valuations.
+                </div>
+                <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                    <b>Q2 2024</b><br>
+                    114 deals totaling $40.3 B, nearly matching all of 2023 within six months. Headline transactions included J&J / Shockwave ($13 B) and Boston Scientific / Silk Road ($1.2 B), solidifying H1 as the strongest since 2021.
+                </div>
+                <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                    <b>Q3 2024</b><br>
+                    195 deals worth $47 B through Q3, exceeding 2023 totals and positioning 2024 to rival 2021. Major transactions included J&J / V-Wave ($1.7 B) and Edwards Lifesciences / JenaValve ($1.6 B), marking a return to large-cap strategic acquisitions.
+                </div>
+                <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                    <b>Q4 2024</b><br>
+                    305 transactions valued at $63.1 B for 2024 (up from 134 / $47 B in 2023), making it the second-highest year on record after 2021. Biggest deals included Novo Holdings / Catalent ($16.5 B) and J&J / Shockwave ($13.1 B) alongside Cardinal's acquisitions of GI Alliance and Advanced Diabetes Supply.
+                </div>
+                <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                    <b>Q1 2025</b><br>
+                    57 deals totaling $9.2 B, fewer transactions but significantly higher value than Q4 2024, led by Stryker's $4.9 B acquisition of Inari Medical and Zimmer Biomet's $1.2 B purchase of Paragon 28. Median upfronts rose to $250 M, signaling confidence in scaling revenue-stage assets.
+                </div>
+                <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                    <b>Q2 2025</b><br>
+                    43 deals worth $2.1 B, down from Q1's $9.2 B as elevated interest rates and valuation gaps slowed new bids. Notable activity included Merit Medical's purchase of Biolife Delaware, reflecting steady appetite for niche device integrations despite market caution.
+                </div>
+                <div style="font-size: 13px; color: #000; line-height: 1.5;">
+                    <b>Q3 2025</b><br>
+                    65 transactions totaling $21.7 B, the most active quarter since 2022 and second-highest value in three years. The surge was led by Waters Corp's $17.5 B merger with BD's Biosciences & Diagnostics Solutions unit, alongside Terumo/OrganOx ($1.5 B) and ArchiMed/ZimVie ($730 M), underscoring renewed large-cap consolidation momentum.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
         
+        # ========== RIGHT COLUMN: VENTURE ==========
         with col2:
+            st.markdown("### Venture Investment")
+            
+            # Venture Chart
             fig_venture = create_jp_morgan_chart_by_category('Venture', COLORS['venture_primary'], selected_quarters, selected_years)
             if fig_venture:
                 st.plotly_chart(fig_venture, use_container_width=True)
-    # Key trends
-    # ====== QUARTERLY COMPARISON TABLE - NOW ABOVE KEY TRENDS ======
-    st.markdown("---")
-    st.markdown("### Quarterly Comparison")
+            
+            # Venture Quarterly Comparison Table
+            st.markdown("#### Quarterly Comparison")
+            
+            # Function to highlight 2025 rows with light grey background
+            def highlight_2025_rows(row):
+                if '2025' in str(row['Quarter']):
+                    return ['background-color: #f0f0f0'] * len(row)
+                return [''] * len(row)
+            
+            # Create combined Venture dataframe
+            venture_comparison_data = {
+                'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025'],
+                'Value (USD $B)': [5.5, 4.3, 5.1, 3.0, 3.7, 2.6, 2.9],
+                'QoQ Change': ['None', '↓21.8%', '↑18.6%', '↓41.2%', '↑23.3%', '↓29.7%', '↑11.5%'],
+                'YoY Change': ['None', 'None', '↑27%', '↑12%', '↓32.7%', '↓39.5%', '↓43.1%']
+            }
+            venture_comparison_df = pd.DataFrame(venture_comparison_data)
+            
+            # Apply styling to Venture dataframe
+            styled_venture_df = venture_comparison_df.style.applymap(
+                color_delta_cells,
+                subset=['QoQ Change', 'YoY Change']
+            ).format(
+                format_dollar_value,
+                subset=['Value (USD $B)']
+            ).apply(
+                highlight_2025_rows, 
+                axis=1
+            ).set_properties(**{
+                'text-align': 'center'
+            }).set_properties(**{
+                'font-size': '18px'
+            }).set_table_styles([
+                {'selector': 'th', 'props': [('background-color', '#faf6f0'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '10px'), ('font-size', '18px')]},
+                {'selector': 'td', 'props': [('padding', '10px'), ('border', '1px solid #e0e0e0'), ('font-size', '18px'), ('text-align', 'center')]},
+                {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
+            ])
+            
+            st.dataframe(styled_venture_df, hide_index=True, use_container_width=True)
+            
+            # Venture Key Trends
+            st.markdown("#### Key Market Trends")
+            st.markdown(create_metric_card("Venture Capital", "Key Theme of 2025: Selective Investment", 'venture'), unsafe_allow_html=True)
+            st.markdown("""
+            <div style="border: 2px solid #D4A574; border-radius: 12px; padding: 16px; background-color: #fdfbf8; margin-top: 10px;">
+                <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                    <b>Q1 2024</b><br>
+                    ~$5.5 B invested across 182 rounds as early signs of recovery emerged after a weak 2023. Most checks were under $50 M, but multiple $100 M+ raises (e.g., Element Biosciences and Lila Sciences) signaled returning investor confidence in AI-driven diagnostics and platform plays.
+                </div>
+                <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                    <b>Q2 2024</b><br>
+                    $4.3 B raised across 167 rounds (H1 total $9.7 B / 341 rounds). The quarter saw a modest expansion led by Amber Therapeutics' $100 M Series A and early-stage capital revival ($2.4 B in Seed and Series A funding). Momentum reflected growing appetite for device and neuro-stimulation platforms.
+                </div>
+                <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                    <b>Q3 2024</b><br>
+                    $5.1 B across 154 rounds (YTD $16.1 B / 554). Most rounds remained below $50 M (383 of 486 disclosed), though a cluster of large deals including Element Biosciences ($277 M) and Flo Health ($200 M) helped drive a 27% YoY growth trajectory.
+                </div>
+                <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                    <b>Q4 2024</b><br>
+                    $3.0 B across 125 rounds (2024 total $19.1 B / 691 rounds). While the number of rounds fell 5% YoY, the dollar total rose 12%. Selective confidence in high-value plays continued, highlighted by Impress ($117 M) and Nusano ($115 M) later-stage raises amid tight funding conditions.
+                </div>
+                <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                    <b>Q1 2025</b><br>
+                    $3.7 B invested across 117 rounds (+9% YoY), driven by fewer but larger financings. Mega-rounds like Lila Sciences ($200 M) and OganOx ($142 M) marked investor preference for AI-enabled diagnostics and advanced therapeutic devices amid slower seed formation and consolidation around later-stage bets.
+                </div>
+                <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                    <b>Q2 2025</b><br>
+                    $2.6 B across 90 rounds (H1 total $6.8 B/194 rounds), sustaining a "flight to quality." Large financings like Neuralink ($650 M Series E) and Biolinq ($100 M Series C) dominated, while early-stage participation fell as investors favored proven clinical and regulatory traction.
+                </div>
+                <div style="font-size: 13px; color: #000; line-height: 1.5;">
+                    <b>Q3 2025</b><br>
+                    $2.9 B across 67 rounds (YTD $9.5 B/259 rounds), a sequential uptick from Q2 but still below 2024 levels. Late-stage deals like Lila Sciences ($235 M Series A), Supira Medical ($120 M Series E), and SetPoint Medical ($115 M Series D) drove totals while early-stage rounds lagged amid macro pressure.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
     
-    # M&A Section with table on left, text on right
-    st.markdown("#### M&A Activity")
-    ma_table_col, ma_text_col = st.columns([1.5, 2])
-    
-    with ma_table_col:
-        # Function to color-code cells (now 40% threshold)
-        def color_delta_cells(val):
-            if val == 'None' or pd.isna(val):
-                return 'color: #000000'
-            if '↑' in str(val):
-                pct = float(str(val).replace('↑', '').replace('%', ''))
-                if pct >= 40:  # Changed from 50 to 40
-                    return 'color: #00A86B; font-weight: bold'
-                else:
-                    return 'color: #000000'
-            elif '↓' in str(val):
-                pct = float(str(val).replace('↓', '').replace('%', ''))
-                if pct >= 40:  # Changed from 50 to 40
-                    return 'color: #D85252; font-weight: bold'
-                else:
-                    return 'color: #000000'
-            return 'color: #000000'
-        
-        # Function to format dollar values
-        def format_dollar_value(val):
-            try:
-                rounded_val = round(float(val), 1)
-                return f"${rounded_val:.1f}B"
-            except:
-                return str(val)
-        
-        # Function to highlight 2025 rows with light grey background
-        def highlight_2025_rows(row):
-            if '2025' in str(row['Quarter']):
-                return ['background-color: #f0f0f0'] * len(row)
-            return [''] * len(row)
-        
-        # Create combined M&A dataframe
-        ma_comparison_data = {
-            'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025'],
-            'Value (USD $B)': [18.0, 40.3, 47.0, 63.1, 9.2, 2.1, 21.7],
-            'QoQ Change': ['None', '↑124%', '↑16.6%', '↑34.3%', '↓85.4%', '↓77.2%', '↑933%'],
-            'YoY Change': ['None', 'None', 'None', '↑34%', '↓49%', '↓94.8%', '↓53.8%']
-        }
-        ma_comparison_df = pd.DataFrame(ma_comparison_data)
-        
-        # Apply styling to M&A dataframe
-        styled_ma_df = ma_comparison_df.style.applymap(
-            color_delta_cells,
-            subset=['QoQ Change', 'YoY Change']
-        ).format(
-            format_dollar_value,
-            subset=['Value (USD $B)']
-        ).apply(
-            highlight_2025_rows, 
-            axis=1
-        ).set_properties(**{
-            'text-align': 'center'
-        }).set_properties(**{
-            'font-size': '18px'
-        }).set_table_styles([
-            {'selector': 'th', 'props': [('background-color', '#e8f1f8'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '10px'), ('font-size', '18px')]},
-            {'selector': 'td', 'props': [('padding', '10px'), ('border', '1px solid #e0e0e0'), ('font-size', '18px'), ('text-align', 'center')]},
-            {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
-        ])
-        
-        st.dataframe(styled_ma_df, hide_index=True, use_container_width=True)
-    
-    with ma_text_col:
-        st.markdown("""
-        <div style="font-size: 20px; color: #000; line-height: 1.5; padding: 20px;">
-        <b style="font-size: 22px;">2025 YTD Summary</b><br><br>
-        M&A volumes have rebounded sharply in 2025, with fewer but larger transactions, underscoring renewed strategic consolidation after two years of muted activity, and highlighting strategic expansion by industry leaders despite lingering macro headwinds.
-        </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Venture Section with table on left, text on right
-    st.markdown("#### Venture Investment")
-    venture_table_col, venture_text_col = st.columns([1.5, 2])
-    
-    with venture_table_col:
-        # Function to color-code cells (now 40% threshold)
-        def color_delta_cells(val):
-            if val == 'None' or pd.isna(val):
-                return 'color: #000000'
-            if '↑' in str(val):
-                pct = float(str(val).replace('↑', '').replace('%', ''))
-                if pct >= 40:  # Changed from 50 to 40
-                    return 'color: #00A86B; font-weight: bold'
-                else:
-                    return 'color: #000000'
-            elif '↓' in str(val):
-                pct = float(str(val).replace('↓', '').replace('%', ''))
-                if pct >= 40:  # Changed from 50 to 40
-                    return 'color: #D85252; font-weight: bold'
-                else:
-                    return 'color: #000000'
-            return 'color: #000000'
-        
-        # Function to format dollar values
-        def format_dollar_value(val):
-            try:
-                rounded_val = round(float(val), 1)
-                return f"${rounded_val:.1f}B"
-            except:
-                return str(val)
-        
-        # Function to highlight 2025 rows with light grey background
-        def highlight_2025_rows(row):
-            if '2025' in str(row['Quarter']):
-                return ['background-color: #f0f0f0'] * len(row)
-            return [''] * len(row)
-        
-        # Create combined Venture dataframe
-        venture_comparison_data = {
-            'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025'],
-            'Value (USD $B)': [5.5, 4.3, 5.1, 3.0, 3.7, 2.6, 2.9],
-            'QoQ Change': ['None', '↓21.8%', '↑18.6%', '↓41.2%', '↑23.3%', '↓29.7%', '↑11.5%'],
-            'YoY Change': ['None', 'None', '↑27%', '↑12%', '↓32.7%', '↓39.5%', '↓43.1%']
-        }
-        venture_comparison_df = pd.DataFrame(venture_comparison_data)
-        
-        # Apply styling to Venture dataframe
-        styled_venture_df = venture_comparison_df.style.applymap(
-            color_delta_cells,
-            subset=['QoQ Change', 'YoY Change']
-        ).format(
-            format_dollar_value,
-            subset=['Value (USD $B)']
-        ).apply(
-            highlight_2025_rows, 
-            axis=1
-        ).set_properties(**{
-            'text-align': 'center'
-        }).set_properties(**{
-            'font-size': '18px'
-        }).set_table_styles([
-            {'selector': 'th', 'props': [('background-color', '#faf6f0'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '10px'), ('font-size', '18px')]},
-            {'selector': 'td', 'props': [('padding', '10px'), ('border', '1px solid #e0e0e0'), ('font-size', '18px'), ('text-align', 'center')]},
-            {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
-        ])
-        
-        st.dataframe(styled_venture_df, hide_index=True, use_container_width=True)
-    
-    with venture_text_col:
-        st.markdown("""
-        <div style="font-size: 20px; color: #000; line-height: 1.5; padding: 20px;">
-        <b style="font-size: 22px;">2025 YTD Summary</b><br><br>
-        Venture financing remained resilient but increasingly selective, totaling $9.5 B across 259 rounds YTD (through Q3 2025), concentrated in fewer, later-stage deals ($100 M+) as investors show a sustained appetite for clinically validated medtech platforms.
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # ====== KEY MARKET TRENDS - NOW 2 COLUMNS (NO TABLE IN MIDDLE) ======
-    st.markdown("---")
-    st.subheader("Key Market Trends")
-    
-    # Create TWO columns instead of three: M&A text | Venture text
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown(create_metric_card("M&A Activity", "Key Theme of 2025: Strategic Consolidation", 'ma'), unsafe_allow_html=True)
-        st.markdown("""
-        <div style="border: 2px solid #5B9BD5; border-radius: 12px; padding: 16px; background-color: #f8fafb; margin-top: 10px;">
-            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
-                <b>Q1 2024</b><br>
-                47 deals worth ~$18 B, a rebound driven by renewed strategic activity among large buyers. Continued strength in digital health and diagnostics acquisitions pointed to normalization of post-COVID valuations.
-            </div>
-            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
-                <b>Q2 2024</b><br>
-                114 deals totaling $40.3 B, nearly matching all of 2023 within six months. Headline transactions included J&J / Shockwave ($13 B) and Boston Scientific / Silk Road ($1.2 B), solidifying H1 as the strongest since 2021.
-            </div>
-            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
-                <b>Q3 2024</b><br>
-                195 deals worth $47 B through Q3, exceeding 2023 totals and positioning 2024 to rival 2021. Major transactions included J&J / V-Wave ($1.7 B) and Edwards Lifesciences / JenaValve ($1.6 B), marking a return to large-cap strategic acquisitions.
-            </div>
-            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
-                <b>Q4 2024</b><br>
-                305 transactions valued at $63.1 B for 2024 (up from 134 / $47 B in 2023), making it the second-highest year on record after 2021. Biggest deals included Novo Holdings / Catalent ($16.5 B) and J&J / Shockwave ($13.1 B) alongside Cardinal's acquisitions of GI Alliance and Advanced Diabetes Supply.
-            </div>
-            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
-                <b>Q1 2025</b><br>
-                57 deals totaling $9.2 B, fewer transactions but significantly higher value than Q4 2024, led by Stryker's $4.9 B acquisition of Inari Medical and Zimmer Biomet's $1.2 B purchase of Paragon 28. Median upfronts rose to $250 M, signaling confidence in scaling revenue-stage assets.
-            </div>
-            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
-                <b>Q2 2025</b><br>
-                43 deals worth $2.1 B, down from Q1's $9.2 B as elevated interest rates and valuation gaps slowed new bids. Notable activity included Merit Medical's purchase of Biolife Delaware, reflecting steady appetite for niche device integrations despite market caution.
-            </div>
-            <div style="font-size: 13px; color: #000; line-height: 1.5;">
-                <b>Q3 2025</b><br>
-                65 transactions totaling $21.7 B, the most active quarter since 2022 and second-highest value in three years. The surge was led by Waters Corp's $17.5 B merger with BD's Biosciences & Diagnostics Solutions unit, alongside Terumo/OrganOx ($1.5 B) and ArchiMed/ZimVie ($730 M), underscoring renewed large-cap consolidation momentum.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown(create_metric_card("Venture Capital", "Key Theme of 2025: Selective Investment", 'venture'), unsafe_allow_html=True)
-        st.markdown("""
-        <div style="border: 2px solid #D4A574; border-radius: 12px; padding: 16px; background-color: #fdfbf8; margin-top: 10px;">
-            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
-                <b>Q1 2024</b><br>
-                ~$5.5 B invested across 182 rounds as early signs of recovery emerged after a weak 2023. Most checks were under $50 M, but multiple $100 M+ raises (e.g., Element Biosciences and Lila Sciences) signaled returning investor confidence in AI-driven diagnostics and platform plays.
-            </div>
-            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
-                <b>Q2 2024</b><br>
-                $4.3 B raised across 167 rounds (H1 total $9.7 B / 341 rounds). The quarter saw a modest expansion led by Amber Therapeutics' $100 M Series A and early-stage capital revival ($2.4 B in Seed and Series A funding). Momentum reflected growing appetite for device and neuro-stimulation platforms.
-            </div>
-            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
-                <b>Q3 2024</b><br>
-                $5.1 B across 154 rounds (YTD $16.1 B / 554). Most rounds remained below $50 M (383 of 486 disclosed), though a cluster of large deals including Element Biosciences ($277 M) and Flo Health ($200 M) helped drive a 27% YoY growth trajectory.
-            </div>
-            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
-                <b>Q4 2024</b><br>
-                $3.0 B across 125 rounds (2024 total $19.1 B / 691 rounds). While the number of rounds fell 5% YoY, the dollar total rose 12%. Selective confidence in high-value plays continued, highlighted by Impress ($117 M) and Nusano ($115 M) later-stage raises amid tight funding conditions.
-            </div>
-            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
-                <b>Q1 2025</b><br>
-                $3.7 B invested across 117 rounds (+9% YoY), driven by fewer but larger financings. Mega-rounds like Lila Sciences ($200 M) and OganOx ($142 M) marked investor preference for AI-enabled diagnostics and advanced therapeutic devices amid slower seed formation and consolidation around later-stage bets.
-            </div>
-            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
-                <b>Q2 2025</b><br>
-                $2.6 B across 90 rounds (H1 total $6.8 B/194 rounds), sustaining a "flight to quality." Large financings like Neuralink ($650 M Series E) and Biolinq ($100 M Series C) dominated, while early-stage participation fell as investors favored proven clinical and regulatory traction.
-            </div>
-            <div style="font-size: 13px; color: #000; line-height: 1.5;">
-                <b>Q3 2025</b><br>
-                $2.9 B across 67 rounds (YTD $9.5 B/259 rounds), a sequential uptick from Q2 but still below 2024 levels. Late-stage deals like Lila Sciences ($235 M Series A), Supira Medical ($120 M Series E), and SetPoint Medical ($115 M Series D) drove totals while early-stage rounds lagged amid macro pressure.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
     # Add comparison section
     st.markdown("---")
     st.markdown("### JPMorgan vs BeaconOne Data - Quarterly Comparison")
