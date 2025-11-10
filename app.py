@@ -998,42 +998,50 @@ def show_home():
     section.main > div.block-container > div:first-child > div:first-child {
         border: 2px solid #4a5f7f !important;
         border-radius: 10px !important;
-        padding: 15px 25px 20px 25px !important;
+        padding: 10px 20px 10px 20px !important;
         background-color: #e8eef5 !important;
         margin: 0 !important;
     }
     
     /* Increase line spacing for home page */
     section.main > div.block-container > div:first-child > div:first-child p {
-        margin-bottom: 3px !important;
-        line-height: 1.4 !important;
+        margin-bottom: 1px !important;
+        line-height: 1.2 !important;
+        margin-top: 0 !important;
     }
     
     /* Dark navy blue header with different font */
     section.main > div.block-container > div:first-child > div:first-child h1 {
         margin-top: 0 !important;
         padding-top: 0 !important;
-        margin-bottom: 8px !important;
+        margin-bottom: 4px !important;
         color: #5B7FA8 !important;
         font-family: 'Georgia', serif !important;
+        font-size: 26px !important;
     }
     
     /* Section headers */
     section.main > div.block-container > div:first-child > div:first-child h3 {
-        margin-top: 12px !important;
-        margin-bottom: 6px !important;
+        margin-top: 6px !important;
+        margin-bottom: 3px !important;
+        font-size: 17px !important;
     }
     
     /* Indent bullets more */
     .indent-bullet {
-        margin-left: 30px !important;
+        margin-left: 25px !important;
     }
     
     /* Section divider */
     .section-divider {
         border-top: 2px solid #4a5f7f;
-        margin: 12px 0 8px 0;
-        padding-top: 8px;
+        margin: 6px 0 3px 0;
+        padding-top: 3px;
+    }
+    
+    /* Small spacing for sources */
+    section.main > div.block-container > div:first-child > div:first-child p:last-child {
+        margin-top: 6px !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -1052,7 +1060,6 @@ def show_home():
     st.write("• Filter by date range, deal type, acquirer, target, and therapeutic area")
     st.write("• View deal values, and technology descriptions")
     st.write("• Interactive charts showing quarterly trends and deal volume")
-    st.write("")
     st.write("**Investment Activity:** Monitor venture capital and private equity financing")
     st.write("• Filter by investment type, company, date")
     st.write("• Track amounts raised and investor participation")
@@ -1088,8 +1095,6 @@ def show_home():
     st.markdown("### How to Use This Dashboard")
     st.write("1. Refer to the JP Morgan Report Tab to get a high-level market overview and understand current trends")
     st.write("2. Dive into Deal Activity to explore specific transactions, filter by areas of interest, and analyze detailed deal metrics")
-    
-    st.markdown("")
     st.markdown("**Sources:** Desk Research and [JP Morgan Biopharma & MedTech Deal Reports](https://www.jpmorgan.com/insights/markets-and-economy/outlook/biopharma-medtech-deal-reports)", unsafe_allow_html=True)
 
 def show_deal_activity(ma_df, inv_df):
