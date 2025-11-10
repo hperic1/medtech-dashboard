@@ -1401,7 +1401,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
         # Function to add bold separator line between 2024 and 2025 (no bold text)
         def highlight_year_separator(row):
             if row.name == 3:  # Q4 2024
-                return ['border-bottom: 6px solid #000000 !important;'] * len(row)  # Thicker and !important
+                return ['border-bottom: 6px solid #000000 !important;'] * len(row)
             return [''] * len(row)
         
         # Apply styling to M&A dataframe
@@ -1419,9 +1419,11 @@ def show_jp_morgan_summary(ma_df, inv_df):
         }).set_properties(**{
             'font-size': '18px'  # Increased from 16px to 18px
         }).set_table_styles([
-            {'selector': 'th', 'props': [('background-color', '#e8f1f8'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '10px'), ('font-size', '18px')]},  # Increased to 18px
-            {'selector': 'td', 'props': [('padding', '10px'), ('border', '1px solid #e0e0e0'), ('font-size', '18px'), ('text-align', 'center')]},  # Increased to 18px and explicitly centered
+            {'selector': 'th', 'props': [('background-color', '#e8f1f8'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '10px'), ('font-size', '18px')]},
+            {'selector': 'td', 'props': [('padding', '10px'), ('border', '1px solid #e0e0e0'), ('font-size', '18px'), ('text-align', 'center')]},
             {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
+            {'selector': 'tbody tr:nth-child(4)', 'props': [('border-bottom', '6px solid #000000 !important')]},  # Target Q4 2024 row directly
+            {'selector': 'tbody tr:nth-child(4) td', 'props': [('border-bottom', '6px solid #000000 !important')]},  # Also target the cells
         ])
         
         st.dataframe(styled_ma_df, hide_index=True)
@@ -1465,9 +1467,11 @@ def show_jp_morgan_summary(ma_df, inv_df):
         }).set_properties(**{
             'font-size': '18px'  # Increased from 16px to 18px
         }).set_table_styles([
-            {'selector': 'th', 'props': [('background-color', '#faf6f0'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '10px'), ('font-size', '18px')]},  # Increased to 18px
-            {'selector': 'td', 'props': [('padding', '10px'), ('border', '1px solid #e0e0e0'), ('font-size', '18px'), ('text-align', 'center')]},  # Increased to 18px and explicitly centered
+            {'selector': 'th', 'props': [('background-color', '#faf6f0'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '10px'), ('font-size', '18px')]},
+            {'selector': 'td', 'props': [('padding', '10px'), ('border', '1px solid #e0e0e0'), ('font-size', '18px'), ('text-align', 'center')]},
             {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
+            {'selector': 'tbody tr:nth-child(4)', 'props': [('border-bottom', '6px solid #000000 !important')]},  # Target Q4 2024 row directly
+            {'selector': 'tbody tr:nth-child(4) td', 'props': [('border-bottom', '6px solid #000000 !important')]},  # Also target the cells
         ])
         
         st.dataframe(styled_venture_df, hide_index=True)
