@@ -981,78 +981,38 @@ def main():
 def show_home():
     """Display the Home: Start Here page with user guide"""
     
-    # Custom CSS for the blue box
+    # Use container with inline styling
     st.markdown("""
-    <style>
-    .home-box {
-        border: 2px solid #4a5f7f;
-        border-radius: 10px;
-        padding: 25px;
-        background-color: #e8eef5;
-        margin: 20px 0;
-    }
-    .home-box h2, .home-box h3, .home-box p {
-        color: #000;
-    }
-    .home-box h2 {
-        color: #2c3e50;
-        margin-top: 0;
-    }
-    .home-box h3 {
-        color: #2c3e50;
-        margin-top: 20px;
-        margin-bottom: 12px;
-    }
-    </style>
+    <div style="border: 2px solid #4a5f7f; border-radius: 10px; padding: 20px; background-color: #e8eef5; margin: 10px 0;">
     """, unsafe_allow_html=True)
     
-    # Content in a container with custom class
-    st.markdown('<div class="home-box">', unsafe_allow_html=True)
-    
     st.markdown("## Welcome to the MedTech M&A & Venture Dashboard")
-    st.markdown("This interactive dashboard provides comprehensive tracking and analysis of MedTech deal activity, including mergers & acquisitions, venture capital investments, and IPO activity.")
+    st.write("Comprehensive MedTech deal tracking: M&A, venture investments, and IPOs.")
     
     st.markdown("### Dashboard Overview")
     
     st.markdown("**📊 Deal Activity Tab**")
-    st.markdown("**M&A Activity:** Track mergers, acquisitions, and strategic transactions")
-    st.markdown("• Filter by date range, deal type, acquirer, target, and therapeutic area")
-    st.markdown("• View deal values, transaction structures, and key deal metrics")
-    st.markdown("• Interactive charts showing quarterly trends and deal volume")
-    st.markdown("")
-    st.markdown("**Investment Activity:** Monitor venture capital, private equity, and growth financing")
-    st.markdown("• Filter by investment type, company, investors, and funding stage")
-    st.markdown("• Track amounts raised and investor participation")
-    st.markdown("• Visualize funding trends across quarters and years")
+    st.write("**M&A Activity:** Track mergers, acquisitions, and strategic transactions • Filter by date, deal type, acquirer, target, therapeutic area • View deal values and metrics • Interactive quarterly charts")
+    st.write("**Investment Activity:** Monitor VC, PE, and growth financing • Filter by type, company, investors, stage • Track amounts raised and participation • Visualize quarterly trends")
     
-    st.markdown("")
     st.markdown("**📈 JP Morgan Industry Report Tab**")
-    st.markdown("**Market Intelligence:** Access comprehensive quarterly analysis from JP Morgan's MedTech Industry Reports")
-    st.markdown("• Compare M&A and Venture activity across quarters (Q1 2024 - Q3 2025)")
-    st.markdown("• View quarter-over-quarter (QoQ) and year-over-year (YoY) trend analysis")
-    st.markdown("• Review detailed quarterly summaries highlighting key deals and market themes")
-    st.markdown("• Data Comparison: See how deal tracking compares to JP Morgan's industry-wide reporting")
+    st.write("**Market Intelligence:** Quarterly analysis from JP Morgan MedTech Industry Reports • Compare M&A and Venture activity (Q1 2024 - Q3 2025) • QoQ and YoY trend analysis • Quarterly summaries with key deals • Data comparison with industry reporting")
     
-    st.markdown("")
     st.markdown("**🏢 IPO Activity Tab**")
-    st.markdown("• Track initial public offerings and public market entries")
-    st.markdown("• Monitor IPO valuations and timing")
+    st.write("Track public offerings • Monitor valuations and timing")
     
-    st.markdown("")
     st.markdown("**🎤 Conferences Tab**")
-    st.markdown("• Download an excel summary that shows companies that will be in attendance at conferences")
+    st.write("Download company attendance summaries")
     
-    st.markdown("### How to Use This Dashboard")
-    st.markdown("1. Refer to the JP Morgan Report Tab to get a high-level market overview and understand current trends")
-    st.markdown("2. Dive into Deal Activity to explore specific transactions, filter by areas of interest, and analyze detailed deal metrics")
-    st.markdown("3. Export Data for your own analysis (where applicable in tables)")
+    st.markdown("### How to Use")
+    st.write("1. Check JP Morgan Report for market overview  \n2. Explore Deal Activity for detailed transactions  \n3. Export data for analysis")
     
     st.markdown("### Data Updates")
-    st.markdown("The dashboard is regularly updated with new deal data as transactions are announced and closed. For data upload and management, authorized users can access the **📤 Upload New Dataset** tab (password protected).")
+    st.write("Regularly updated with new deals. Authorized users: access **📤 Upload New Dataset** tab (password protected).")
     
-    st.caption("Source Attribution: Data sourced from Desk Research and JP Morgan Biopharma & MedTech Deal Reports")
+    st.caption("Source: Desk Research and JP Morgan Biopharma & MedTech Deal Reports")
     
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 def show_deal_activity(ma_df, inv_df):
     """Display deal activity dashboard"""
