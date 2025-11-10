@@ -1992,7 +1992,7 @@ def show_conferences(ma_df, inv_df):
                 ma_display.append(f"+{len(ma_sorted)-2} more")
             ma_text = " | ".join(ma_display)
         else:
-            ma_text = "—"
+            ma_text = ""
         
         # Format Venture summary (show top 2)
         if venture_sorted:
@@ -2003,10 +2003,10 @@ def show_conferences(ma_df, inv_df):
                 venture_display.append(f"+{len(venture_sorted)-2} more")
             venture_text = " | ".join(venture_display)
         else:
-            venture_text = "—"
+            venture_text = ""
         
         # Format categories
-        categories_text = " | ".join(sorted(data['categories'])) if data['categories'] else "—"
+        categories_text = " | ".join(sorted(data['categories'])) if data['categories'] else ""
         
         # Calculate max value for sorting
         max_value = max(
@@ -2039,174 +2039,44 @@ def show_conferences(ma_df, inv_df):
     
     st.markdown("---")
     
-    # === DISPLAY TABLE WITH EXPANDERS ===
+    # === DISPLAY TABLE ===
     st.markdown("### Companies with Recent Deal Activity")
     
+    # Create display dataframe
+    display_data = []
     for row in company_rows:
-        with st.expander(f"**{row['Company']}** — {row['Category']}"):
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.markdown("##### M&A Activity")
-                if row['_ma_deals']:
-                    for deal in row['_ma_deals']:
-                        st.markdown(f"**{deal['quarter']}** — {deal['text']}")
-                        if deal['tech'] != 'N/A':
-                            st.caption(f"Technology: {deal['tech']}")
-                else:
-                    st.markdown("*No M&A activity*")
-            
-            with col2:
-                st.markdown("##### Venture Activity")
-                if row['_venture_deals']:
-                    for deal in row['_venture_deals']:
-                        st.markdown(f"**{deal['quarter']}** — {deal['text']}")
-                        if deal['tech'] != 'N/A':
-                            st.caption(f"Technology: {deal['tech']}")
-                else:
-                    st.markdown("*No venture activity*")
-            
-            # Copy summary button
-            summary_text = f"{row['Company']}\n"
-            summary_text += f"M&A: {row['Recent M&A']}\n"
-            summary_text += f"Venture: {row['Recent Venture']}\n"
-            summary_text += f"Category: {row['Category']}"
-            
-            if st.button("📋 Copy Summary", key=f"copy_{row['Company']}", help="Copy to clipboard"):
-                st.code(summary_text, language=None)
+        display_data.append({
+            'Company': row['Company'],
+            'Recent M&A': row['Recent M&A'],
+            'Recent Venture': row['Recent Venture'],
+            'Category': row['Category']
+        })
+    
+    display_df = pd.DataFrame(display_data)
+    
+    # Display table
+    st.dataframe(
+        display_df,
+        use_container_width=True,
+        hide_index=True,
+        height=600
+    )
     
     st.markdown("---")
     
-    # === EXPORT BUTTONS ===
-    st.markdown("### Export Options")
+    # === CSV EXPORT ===
+    st.markdown("### Export to CSV")
     
-    col1, col2 = st.columns(2)
+    csv = display_df.to_csv(index=False)
     
-    with col1:
-        # CSV Export
-        if st.button("📥 Export to CSV", type="primary", use_container_width=True):
-            # Create main summary CSV
-            summary_data = []
-            for row in company_rows:
-                summary_data.append({
-                    'Company': row['Company'],
-                    'Recent M&A': row['Recent M&A'],
-                    'Recent Venture': row['Recent Venture'],
-                    'Category': row['Category']
-                })
-            
-            summary_df = pd.DataFrame(summary_data)
-            csv = summary_df.to_csv(index=False)
-            
-            st.download_button(
-                label="Download CSV",
-                data=csv,
-                file_name=f"conference_deals_{'-'.join(selected_conferences[:2])}_{time_window.replace(' ', '_')}.csv",
-                mime="text/csv"
-            )
-    
-    with col2:
-        # PDF Export
-        if st.button("📄 Export to PDF", type="secondary", use_container_width=True):
-            st.info("PDF export functionality ready! Click 'Generate PDF' below to download.")
-            
-            # Generate PDF using reportlab
-            try:
-                from io import BytesIO
-                from reportlab.lib.pagesizes import letter
-                from reportlab.lib import colors
-                from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-                from reportlab.lib.units import inch
-                from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
-                from reportlab.lib.enums import TA_LEFT, TA_CENTER
-                from datetime import datetime
-                
-                buffer = BytesIO()
-                doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
-                story = []
-                styles = getSampleStyleSheet()
-                
-                # Custom styles
-                title_style = ParagraphStyle(
-                    'CustomTitle',
-                    parent=styles['Heading1'],
-                    fontSize=18,
-                    textColor=colors.HexColor('#2E5C8A'),
-                    spaceAfter=12,
-                    alignment=TA_CENTER
-                )
-                
-                subtitle_style = ParagraphStyle(
-                    'CustomSubtitle',
-                    parent=styles['Normal'],
-                    fontSize=10,
-                    textColor=colors.grey,
-                    spaceAfter=20,
-                    alignment=TA_CENTER
-                )
-                
-                # Title
-                conf_names = ', '.join(selected_conferences[:3])
-                if len(selected_conferences) > 3:
-                    conf_names += f" (+{len(selected_conferences)-3} more)"
-                
-                story.append(Paragraph(f"Conference Deal Brief — {conf_names}", title_style))
-                
-                # Metadata
-                meta_text = f"Generated: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}<br/>"
-                meta_text += f"Time Window: {time_window}<br/>"
-                meta_text += f"Total Companies: {len(companies)}"
-                story.append(Paragraph(meta_text, subtitle_style))
-                story.append(Spacer(1, 0.2*inch))
-                
-                # Company cards
-                for row in company_rows:
-                    # Company name
-                    company_style = ParagraphStyle(
-                        'Company',
-                        parent=styles['Heading2'],
-                        fontSize=12,
-                        textColor=colors.HexColor('#333333'),
-                        spaceAfter=6
-                    )
-                    story.append(Paragraph(row['Company'], company_style))
-                    
-                    # Details table
-                    data = [
-                        ['M&A:', Paragraph(row['Recent M&A'], styles['Normal'])],
-                        ['Venture:', Paragraph(row['Recent Venture'], styles['Normal'])],
-                        ['Category:', Paragraph(row['Category'], styles['Normal'])]
-                    ]
-                    
-                    t = Table(data, colWidths=[1*inch, 5.5*inch])
-                    t.setStyle(TableStyle([
-                        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-                        ('FONTSIZE', (0, 0), (-1, -1), 9),
-                        ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#666666')),
-                        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-                        ('LEFTPADDING', (0, 0), (-1, -1), 0),
-                        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
-                        ('TOPPADDING', (0, 0), (-1, -1), 2),
-                        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
-                    ]))
-                    story.append(t)
-                    story.append(Spacer(1, 0.15*inch))
-                
-                # Build PDF
-                doc.build(story)
-                pdf_bytes = buffer.getvalue()
-                buffer.close()
-                
-                st.download_button(
-                    label="Download PDF",
-                    data=pdf_bytes,
-                    file_name=f"conference_deals_{'-'.join(selected_conferences[:2])}_{time_window.replace(' ', '_')}.pdf",
-                    mime="application/pdf"
-                )
-            except ImportError:
-                st.error("PDF export requires the reportlab library. The functionality is ready but the library needs to be installed.")
-            except Exception as e:
-                st.error(f"Error generating PDF: {str(e)}")
+    st.download_button(
+        label="📥 Download CSV",
+        data=csv,
+        file_name=f"conference_deals_{'-'.join(selected_conferences[:2]).replace(' ', '_')}_{time_window.replace(' ', '_')}.csv",
+        mime="text/csv",
+        type="primary",
+        use_container_width=True
+    )
 
 def show_upload_dataset(ma_df, inv_df, ipo_df):
     """Password-protected data upload page"""
