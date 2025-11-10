@@ -987,20 +987,27 @@ def show_home():
     div[data-testid="stVerticalBlock"] > div:has(div.home-content) {
         border: 2px solid #4a5f7f;
         border-radius: 10px;
-        padding: 25px;
+        padding: 20px 25px 25px 25px;
         background-color: #e8eef5;
-        margin: 20px 0;
+        margin: 0 0 20px 0;
     }
     div[data-testid="stVerticalBlock"] > div:has(div.home-content) p {
         margin-bottom: 2px !important;
         line-height: 1.3 !important;
+    }
+    div[data-testid="stVerticalBlock"] > div:has(div.home-content) h1 {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
     }
     div[data-testid="stVerticalBlock"] > div:has(div.home-content) h3 {
         margin-top: 15px !important;
         margin-bottom: 8px !important;
     }
     .home-content {
-        display: none;
+        display: none !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     </style>
     """, unsafe_allow_html=True)
