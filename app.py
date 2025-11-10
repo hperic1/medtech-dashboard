@@ -983,35 +983,35 @@ def show_home():
     
     st.markdown("""
     <div style="border: 2px solid #4a5f7f; border-radius: 10px; padding: 25px; background-color: #e8eef5; margin: 20px 0;">
-        <h2 style="color: #2c3e50; margin-top: 0; margin-bottom: 15px;">Welcome to the MedTech M&A & Venture Dashboard</h2>
-        <p style="color: #000; margin-bottom: 20px; line-height: 1.5;">This interactive dashboard provides comprehensive tracking and analysis of MedTech deal activity, including mergers & acquisitions, venture capital investments, and IPO activity.</p>
+        <h2 style="color: #2c3e50; margin-top: 0; margin-bottom: 15px;">Welcome to the MedTech M&amp;A &amp; Venture Dashboard</h2>
+        <p style="color: #000; margin-bottom: 20px; line-height: 1.5;">This interactive dashboard provides comprehensive tracking and analysis of MedTech deal activity, including mergers &amp; acquisitions, venture capital investments, and IPO activity.</p>
         
         <h3 style="color: #2c3e50; margin-bottom: 12px; margin-top: 20px;">Dashboard Overview</h3>
         
-        <p style="color: #000; margin: 10px 0 5px 0; line-height: 1.4;"><strong>📊 Deal Activity Tab</strong></p>
-        <p style="color: #000; margin: 5px 0; line-height: 1.4;"><strong>M&A Activity:</strong> Track mergers, acquisitions, and strategic transactions</p>
-        <p style="color: #000; margin: 3px 0; line-height: 1.4;">• Filter by date range, deal type, acquirer, target, and therapeutic area</p>
-        <p style="color: #000; margin: 3px 0; line-height: 1.4;">• View deal values, transaction structures, and key deal metrics</p>
-        <p style="color: #000; margin: 3px 0 8px 0; line-height: 1.4;">• Interactive charts showing quarterly trends and deal volume</p>
+        <p style="color: #000; margin: 10px 0 5px 0; line-height: 1.4;"><strong>Deal Activity Tab</strong></p>
+        <p style="color: #000; margin: 5px 0; line-height: 1.4;"><strong>M&amp;A Activity:</strong> Track mergers, acquisitions, and strategic transactions</p>
+        <p style="color: #000; margin: 3px 0; line-height: 1.4;">&bull; Filter by date range, deal type, acquirer, target, and therapeutic area</p>
+        <p style="color: #000; margin: 3px 0; line-height: 1.4;">&bull; View deal values, transaction structures, and key deal metrics</p>
+        <p style="color: #000; margin: 3px 0 8px 0; line-height: 1.4;">&bull; Interactive charts showing quarterly trends and deal volume</p>
         
         <p style="color: #000; margin: 5px 0; line-height: 1.4;"><strong>Investment Activity:</strong> Monitor venture capital, private equity, and growth financing</p>
-        <p style="color: #000; margin: 3px 0; line-height: 1.4;">• Filter by investment type, company, investors, and funding stage</p>
-        <p style="color: #000; margin: 3px 0; line-height: 1.4;">• Track amounts raised and investor participation</p>
-        <p style="color: #000; margin: 3px 0 12px 0; line-height: 1.4;">• Visualize funding trends across quarters and years</p>
+        <p style="color: #000; margin: 3px 0; line-height: 1.4;">&bull; Filter by investment type, company, investors, and funding stage</p>
+        <p style="color: #000; margin: 3px 0; line-height: 1.4;">&bull; Track amounts raised and investor participation</p>
+        <p style="color: #000; margin: 3px 0 12px 0; line-height: 1.4;">&bull; Visualize funding trends across quarters and years</p>
         
-        <p style="color: #000; margin: 10px 0 5px 0; line-height: 1.4;"><strong>📈 JP Morgan Industry Report Tab</strong></p>
+        <p style="color: #000; margin: 10px 0 5px 0; line-height: 1.4;"><strong>JP Morgan Industry Report Tab</strong></p>
         <p style="color: #000; margin: 5px 0; line-height: 1.4;"><strong>Market Intelligence:</strong> Access comprehensive quarterly analysis from JP Morgan's MedTech Industry Reports</p>
-        <p style="color: #000; margin: 3px 0; line-height: 1.4;">• Compare M&A and Venture activity across quarters (Q1 2024 - Q3 2025)</p>
-        <p style="color: #000; margin: 3px 0; line-height: 1.4;">• View quarter-over-quarter (QoQ) and year-over-year (YoY) trend analysis</p>
-        <p style="color: #000; margin: 3px 0; line-height: 1.4;">• Review detailed quarterly summaries highlighting key deals and market themes</p>
-        <p style="color: #000; margin: 3px 0 12px 0; line-height: 1.4;">• Data Comparison: See how deal tracking compares to JP Morgan's industry-wide reporting</p>
+        <p style="color: #000; margin: 3px 0; line-height: 1.4;">&bull; Compare M&amp;A and Venture activity across quarters (Q1 2024 - Q3 2025)</p>
+        <p style="color: #000; margin: 3px 0; line-height: 1.4;">&bull; View quarter-over-quarter (QoQ) and year-over-year (YoY) trend analysis</p>
+        <p style="color: #000; margin: 3px 0; line-height: 1.4;">&bull; Review detailed quarterly summaries highlighting key deals and market themes</p>
+        <p style="color: #000; margin: 3px 0 12px 0; line-height: 1.4;">&bull; Data Comparison: See how deal tracking compares to JP Morgan's industry-wide reporting</p>
         
-        <p style="color: #000; margin: 10px 0 5px 0; line-height: 1.4;"><strong>🏢 IPO Activity Tab</strong></p>
-        <p style="color: #000; margin: 3px 0; line-height: 1.4;">• Track initial public offerings and public market entries</p>
-        <p style="color: #000; margin: 3px 0 12px 0; line-height: 1.4;">• Monitor IPO valuations and timing</p>
+        <p style="color: #000; margin: 10px 0 5px 0; line-height: 1.4;"><strong>IPO Activity Tab</strong></p>
+        <p style="color: #000; margin: 3px 0; line-height: 1.4;">&bull; Track initial public offerings and public market entries</p>
+        <p style="color: #000; margin: 3px 0 12px 0; line-height: 1.4;">&bull; Monitor IPO valuations and timing</p>
         
-        <p style="color: #000; margin: 10px 0 5px 0; line-height: 1.4;"><strong>🎤 Conferences Tab</strong></p>
-        <p style="color: #000; margin: 3px 0 15px 0; line-height: 1.4;">• Download an excel summary that shows companies that will be in attendance at conferences</p>
+        <p style="color: #000; margin: 10px 0 5px 0; line-height: 1.4;"><strong>Conferences Tab</strong></p>
+        <p style="color: #000; margin: 3px 0 15px 0; line-height: 1.4;">&bull; Download an excel summary that shows companies that will be in attendance at conferences</p>
         
         <h3 style="color: #2c3e50; margin-bottom: 12px; margin-top: 20px;">How to Use This Dashboard</h3>
         <p style="color: #000; margin: 5px 0; line-height: 1.4;">1. Refer to the JP Morgan Report Tab to get a high-level market overview and understand current trends</p>
@@ -1019,9 +1019,9 @@ def show_home():
         <p style="color: #000; margin: 5px 0 15px 0; line-height: 1.4;">3. Export Data for your own analysis (where applicable in tables)</p>
         
         <h3 style="color: #2c3e50; margin-bottom: 12px; margin-top: 20px;">Data Updates</h3>
-        <p style="color: #000; margin: 5px 0 10px 0; line-height: 1.4;">The dashboard is regularly updated with new deal data as transactions are announced and closed. For data upload and management, authorized users can access the <strong>📤 Upload New Dataset</strong> tab (password protected).</p>
+        <p style="color: #000; margin: 5px 0 10px 0; line-height: 1.4;">The dashboard is regularly updated with new deal data as transactions are announced and closed. For data upload and management, authorized users can access the <strong>Upload New Dataset</strong> tab (password protected).</p>
         
-        <p style="color: #666; margin: 15px 0 0 0; line-height: 1.4; font-size: 14px; font-style: italic;">Source Attribution: Data sourced from Desk Research and JP Morgan Biopharma & MedTech Deal Reports</p>
+        <p style="color: #666; margin: 15px 0 0 0; line-height: 1.4; font-size: 14px; font-style: italic;">Source Attribution: Data sourced from Desk Research and JP Morgan Biopharma &amp; MedTech Deal Reports</p>
     </div>
     """, unsafe_allow_html=True)
 
