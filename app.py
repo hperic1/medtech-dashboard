@@ -981,7 +981,7 @@ def main():
 def show_home():
     """Display the Home: Start Here page with user guide"""
     
-    # Add custom CSS to style the container
+    # Add custom CSS to style the container with tighter spacing
     st.markdown("""
     <style>
     div[data-testid="stVerticalBlock"] > div:has(div.home-content) {
@@ -990,6 +990,17 @@ def show_home():
         padding: 25px;
         background-color: #e8eef5;
         margin: 20px 0;
+    }
+    div[data-testid="stVerticalBlock"] > div:has(div.home-content) p {
+        margin-bottom: 2px !important;
+        line-height: 1.3 !important;
+    }
+    div[data-testid="stVerticalBlock"] > div:has(div.home-content) h3 {
+        margin-top: 15px !important;
+        margin-bottom: 8px !important;
+    }
+    .home-content {
+        display: none;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -1031,6 +1042,9 @@ def show_home():
         st.markdown("### How to Use This Dashboard")
         st.write("1. Refer to the JP Morgan Report Tab to get a high-level market overview and understand current trends")
         st.write("2. Dive into Deal Activity to explore specific transactions, filter by areas of interest, and analyze detailed deal metrics")
+        
+        st.markdown("")
+        st.markdown("**Sources:** Desk Research and [JP Morgan Biopharma & MedTech Deal Reports](https://www.jpmorgan.com/insights/markets-and-economy/outlook/biopharma-medtech-deal-reports)", unsafe_allow_html=True)
 
 def show_deal_activity(ma_df, inv_df):
     """Display deal activity dashboard"""
