@@ -628,7 +628,6 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
                 overlaying='y',
                 side='right',
                 showgrid=False,
-                range=[0, max(quarterly_data['Deal_Count']) * 2.5] if len(quarterly_data) > 0 else [0, 10],  # Increased to 2.5 for more space above line
                 tickfont=dict(size=13)  # Larger tick labels
             ),
             hovermode='x unified',
@@ -744,7 +743,6 @@ def create_jp_morgan_chart_by_category(category, color):
                 overlaying='y',
                 side='right',
                 showgrid=False,
-                range=[0, max(counts) * 2.5] if max(counts) > 0 else [0, 100],  # Increased to 2.5 for more space above line
                 tickfont=dict(size=13)
             ),
             hovermode='x unified',
