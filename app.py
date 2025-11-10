@@ -998,14 +998,14 @@ def show_home():
     section.main > div.block-container > div:first-child > div:first-child {
         border: 2px solid #4a5f7f !important;
         border-radius: 10px !important;
-        padding: 10px 20px 10px 20px !important;
+        padding: 8px 18px 8px 18px !important;
         background-color: #e8eef5 !important;
         margin: 0 !important;
     }
     
     /* Increase line spacing for home page */
     section.main > div.block-container > div:first-child > div:first-child p {
-        margin-bottom: 1px !important;
+        margin-bottom: 0px !important;
         line-height: 1.2 !important;
         margin-top: 0 !important;
     }
@@ -1014,41 +1014,41 @@ def show_home():
     section.main > div.block-container > div:first-child > div:first-child h1 {
         margin-top: 0 !important;
         padding-top: 0 !important;
-        margin-bottom: 4px !important;
+        margin-bottom: 3px !important;
         color: #5B7FA8 !important;
         font-family: 'Georgia', serif !important;
-        font-size: 26px !important;
+        font-size: 24px !important;
     }
     
     /* Section headers */
     section.main > div.block-container > div:first-child > div:first-child h3 {
-        margin-top: 6px !important;
-        margin-bottom: 3px !important;
-        font-size: 17px !important;
+        margin-top: 5px !important;
+        margin-bottom: 2px !important;
+        font-size: 16px !important;
     }
     
     /* Indent bullets more */
     .indent-bullet {
-        margin-left: 25px !important;
+        margin-left: 20px !important;
     }
     
     /* Section divider */
     .section-divider {
         border-top: 2px solid #4a5f7f;
-        margin: 6px 0 3px 0;
-        padding-top: 3px;
+        margin: 4px 0 2px 0;
+        padding-top: 2px;
     }
     
     /* Small spacing for sources */
     section.main > div.block-container > div:first-child > div:first-child p:last-child {
-        margin-top: 6px !important;
+        margin-top: 4px !important;
     }
     </style>
     """, unsafe_allow_html=True)
     
     # Content without any marker div
     st.markdown("# Welcome to the MedTech M&A & Venture Dashboard")
-    st.write("This interactive dashboard provides tracking and analysis of MedTech deal activity, including mergers & acquisitions, venture capital investments, and IPO activity.")
+    st.write("Track MedTech deal activity with BeaconOne desk research and JP Morgan industry benchmarks.")
     
     st.markdown("### Dashboard Overview")
     
@@ -1056,45 +1056,33 @@ def show_home():
     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     st.markdown("**📊 Deal Activity Tab**")
     st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
-    st.write("**M&A Activity:** Track mergers, acquisitions, and strategic transactions")
-    st.write("• Filter by date range, deal type, acquirer, target, and therapeutic area")
-    st.write("• View deal values, and technology descriptions")
-    st.write("• Interactive charts showing quarterly trends and deal volume")
-    st.write("**Investment Activity:** Monitor venture capital and private equity financing")
-    st.write("• Filter by investment type, company, date")
-    st.write("• Track amounts raised and investor participation")
-    st.write("• Visualize funding trends across quarters and years")
+    st.write("**M&A Activity:** Filter by quarter and category. View deal values and quarterly charts.")
+    st.write("**Investment Activity:** Filter by quarter, category, and investment type. View funding amounts and trends.")
     st.markdown('</div>', unsafe_allow_html=True)
     
     # JP Morgan Tab
     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     st.markdown("**📈 JP Morgan Industry Report Tab**")
     st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
-    st.write("**Market Intelligence:** Access quarterly analysis from JP Morgan's MedTech Industry Reports")
-    st.write("• Compare M&A and Venture activity across quarters (Q1 2024 - Q3 2025)")
-    st.write("• View quarter-over-quarter (QoQ) and year-over-year (YoY) trend analysis")
-    st.write("• Review detailed quarterly summaries highlighting key deals and market themes")
-    st.write("• Data Comparison: See how deal tracking compares to JP Morgan's industry-wide reporting")
+    st.write("View quarterly M&A and Venture activity from Q1 2024 - Q3 2025. Compare JP Morgan data with BeaconOne tracking. Read quarterly summaries and key market trends.")
     st.markdown('</div>', unsafe_allow_html=True)
     
     # IPO Activity Tab
     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     st.markdown("**🏢 IPO Activity Tab**")
     st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
-    st.write("• Track initial public offerings and public market entries")
-    st.write("• Monitor IPO valuations and timing")
+    st.write("Track IPO values and deal counts by quarter.")
     st.markdown('</div>', unsafe_allow_html=True)
     
     # Conferences Tab
     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     st.markdown("**🎤 Conferences Tab**")
     st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
-    st.write("• Download an excel summary that shows companies that will be in attendance at conferences")
+    st.write("Filter by conference and time period to see companies with recent deal activity. Export to CSV.")
     st.markdown('</div>', unsafe_allow_html=True)
     
-    st.markdown("### How to Use This Dashboard")
-    st.write("1. Refer to the JP Morgan Report Tab to get a high-level market overview and understand current trends")
-    st.write("2. Dive into Deal Activity to explore specific transactions, filter by areas of interest, and analyze detailed deal metrics")
+    st.markdown("### How to Use")
+    st.write("Start with JP Morgan tab for market overview, then explore Deal Activity for detailed transactions.")
     st.markdown("**Sources:** Desk Research and [JP Morgan Biopharma & MedTech Deal Reports](https://www.jpmorgan.com/insights/markets-and-economy/outlook/biopharma-medtech-deal-reports)", unsafe_allow_html=True)
 
 def show_deal_activity(ma_df, inv_df):
