@@ -706,6 +706,24 @@ def create_jp_morgan_chart_by_category(category, color, selected_quarters, selec
             st.info(f"No data available for selected quarters and years")
             return None
         
+        # Create color list based on year (muted for 2024, bright for 2025)
+        def hex_to_rgba(hex_color, opacity=0.6):
+            """Convert hex color to rgba with specified opacity"""
+            hex_color = hex_color.lstrip('#')
+            if len(hex_color) == 6:
+                r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
+                return f'rgba({r},{g},{b},{opacity})'
+            return hex_color
+        
+        bar_colors = []
+        for quarter_label in quarters:
+            if '2024' in quarter_label:
+                # Muted version for 2024
+                bar_colors.append(hex_to_rgba(color, 0.5))
+            else:
+                # Bright version for 2025
+                bar_colors.append(color)
+        
         fig = go.Figure()
         
         # Add bars for deal values - convert to billions for display
@@ -713,7 +731,7 @@ def create_jp_morgan_chart_by_category(category, color, selected_quarters, selec
             x=quarters,
             y=[v/1000 for v in values],  # Convert millions to billions for Y-axis
             name='Deal Value',
-            marker_color=color,
+            marker_color=bar_colors,  # Use dynamic colors based on year
             text=[f"<b>{format_currency_from_millions(v)}</b>" for v in values],  # Values are in millions
             textposition='outside',
             textfont=dict(size=14),  # Larger text
@@ -1379,7 +1397,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
         selected_quarters = st.multiselect(
             "Select Quarters",
             ["Q1", "Q2", "Q3", "Q4"],
-            default=["Q1", "Q2", "Q3"],
+            default=["Q1", "Q2", "Q3", "Q4"],  # All quarters by default
             key='jp_quarter_filter'
         )
     
@@ -1387,7 +1405,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
         selected_years = st.multiselect(
             "Select Years",
             ["2024", "2025"],
-            default=["2025"],
+            default=["2024", "2025"],  # Both years by default
             key='jp_year_filter'
         )
     
