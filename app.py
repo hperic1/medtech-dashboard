@@ -2480,8 +2480,8 @@ def show_conferences(ma_df, inv_df):
             else:
                 deal_amount = "Undisclosed"
             
-            # Add quarter to amount
-            deal_amount += f" ({deal['quarter']})"
+            # Keep quarter separate
+            deal_quarter = deal['quarter']
             
             # Technology description
             tech_desc = deal['tech'] if deal['tech'] and deal['tech'] != 'N/A' and deal['tech'] != 'Undisclosed' else ""
@@ -2490,6 +2490,7 @@ def show_conferences(ma_df, inv_df):
                 'Company': company,
                 'Deal Type': deal_type,
                 'Deal Amount': deal_amount,
+                'Quarter': deal_quarter,
                 'Technology / Company Description': tech_desc,
                 'Category': categories_text,
                 '_sort_value': deal['value']
@@ -2507,8 +2508,8 @@ def show_conferences(ma_df, inv_df):
             else:
                 deal_amount = "Undisclosed"
             
-            # Add quarter to amount
-            deal_amount += f" ({deal['quarter']})"
+            # Keep quarter separate
+            deal_quarter = deal['quarter']
             
             # Technology description
             tech_desc = deal['tech'] if deal['tech'] and deal['tech'] != 'N/A' and deal['tech'] != 'Undisclosed' else ""
@@ -2517,6 +2518,7 @@ def show_conferences(ma_df, inv_df):
                 'Company': company,
                 'Deal Type': deal_type,
                 'Deal Amount': deal_amount,
+                'Quarter': deal_quarter,
                 'Technology / Company Description': tech_desc,
                 'Category': categories_text,
                 '_sort_value': deal['value']
@@ -2549,6 +2551,7 @@ def show_conferences(ma_df, inv_df):
             'Company': row['Company'],
             'Deal Type': row['Deal Type'],
             'Deal Amount': row['Deal Amount'],
+            'Quarter': row['Quarter'],
             'Technology / Company Description': row['Technology / Company Description'],
             'Category': row['Category']
         })
@@ -2569,6 +2572,7 @@ def show_conferences(ma_df, inv_df):
             "Company": st.column_config.TextColumn("Company", width="medium"),
             "Deal Type": st.column_config.TextColumn("Deal Type", width="large"),
             "Deal Amount": st.column_config.TextColumn("Deal Amount (USD)", width="medium"),
+            "Quarter": st.column_config.TextColumn("Quarter", width="small"),
             "Technology / Company Description": st.column_config.TextColumn("Technology / Company Description", width="large"),
             "Category": st.column_config.TextColumn("Category", width="medium")
         }
