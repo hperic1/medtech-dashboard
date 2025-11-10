@@ -1050,11 +1050,11 @@ def show_home():
     st.markdown('<div class="indent-bullet">', unsafe_allow_html=True)
     st.write("**M&A Activity:** Track mergers, acquisitions, and strategic transactions")
     st.write("• Filter by date range, deal type, acquirer, target, and therapeutic area")
-    st.write("• View deal values, transaction structures, and key deal metrics")
+    st.write("• View deal values, and technology descriptions")
     st.write("• Interactive charts showing quarterly trends and deal volume")
     st.write("")
-    st.write("**Investment Activity:** Monitor venture capital, private equity, and growth financing")
-    st.write("• Filter by investment type, company, investors, and funding stage")
+    st.write("**Investment Activity:** Monitor venture capital and private equity financing")
+    st.write("• Filter by investment type, company, date")
     st.write("• Track amounts raised and investor participation")
     st.write("• Visualize funding trends across quarters and years")
     st.markdown('</div>', unsafe_allow_html=True)
@@ -1174,19 +1174,14 @@ def show_deal_activity(ma_df, inv_df):
     with col2:
         st.markdown("### Venture Investment")
         
-        # Filters at the top - compact
-        filter_col1, filter_col2, filter_col3 = st.columns(3)
+        # Filters at the top - compact (2 filters only, matching M&A)
+        filter_col1, filter_col2 = st.columns(2)
         
         with filter_col1:
             quarters_inv = ['All'] + sorted([q for q in inv_df['Quarter'].unique() if q != 'Undisclosed'])
             selected_quarter_inv = st.selectbox("Quarter", quarters_inv, key='inv_quarter_filter', label_visibility="visible")
         
         with filter_col2:
-            # Extract months if available
-            months_inv = ['All']
-            selected_month_inv = st.selectbox("Month", months_inv, key='inv_month_filter', label_visibility="visible")
-        
-        with filter_col3:
             categories_inv = ['All'] + sorted([c for c in inv_df['Category'].unique() if c != 'Undisclosed'])
             selected_category_inv = st.selectbox("Category", categories_inv, key='inv_category_filter', label_visibility="visible")
         
