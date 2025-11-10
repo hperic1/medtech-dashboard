@@ -941,19 +941,14 @@ def show_deal_activity(ma_df, inv_df):
     with col1:
         st.markdown("### M&A Activity")
         
-        # Filters at the top - compact
-        filter_col1, filter_col2, filter_col3 = st.columns(3)
+        # Filters at the top - compact (2 filters only)
+        filter_col1, filter_col2 = st.columns(2)
         
         with filter_col1:
             quarters_ma = ['All'] + sorted([q for q in ma_df['Quarter'].unique() if q != 'Undisclosed'])
             selected_quarter_ma = st.selectbox("Quarter", quarters_ma, key='ma_quarter_filter', label_visibility="visible")
         
         with filter_col2:
-            # Extract months if available (assuming date field exists)
-            months_ma = ['All']
-            selected_month_ma = st.selectbox("Month", months_ma, key='ma_month_filter', label_visibility="visible")
-        
-        with filter_col3:
             categories_ma = ['All'] + sorted([c for c in ma_df['Category'].unique() if c != 'Undisclosed'])
             selected_category_ma = st.selectbox("Category", categories_ma, key='ma_category_filter', label_visibility="visible")
         
@@ -1363,101 +1358,133 @@ def show_jp_morgan_summary(ma_df, inv_df):
     st.markdown("---")
     st.markdown("### Quarterly Comparison")
     
-    # Create comparison dataframe with M&A first, Venture second
-    comparison_data = {
-        'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025'],
-        'M&A ($B)': [18.0, 40.3, 47.0, 63.1, 9.2, 2.1, 21.7],
-        'M&A QoQ Change': ['None', '↑124%', '↑16.6%', '↑34.3%', '↓85.4%', '↓77.2%', '↑933%'],
-        'M&A YoY Change': ['None', 'None', 'None', '↑34%', '↓49%', '↓94.8%', '↓53.8%'],
-        'Venture ($B)': [5.5, 4.3, 5.1, 3.0, 3.7, 2.6, 2.9],
-        'Venture QoQ Change': ['None', '↓21.8%', '↑18.6%', '↓41.2%', '↑23.3%', '↓29.7%', '↑11.5%'],
-        'Venture YoY Change': ['None', 'None', '↑27%', '↑12%', '↓32.7%', '↓39.5%', '↓43.1%']
-    }
-    
-    comparison_df = pd.DataFrame(comparison_data)
-    
-    # Function to color-code cells based on their values
-    def color_delta_cells(val):
-        """Color code ONLY significant changes (≥50%), leave others black"""
-        if val == 'None' or pd.isna(val):
-            return 'color: #000000'  # Black for None
-        
-        if '↑' in str(val):
-            # Extract percentage
-            pct = float(str(val).replace('↑', '').replace('%', ''))
-            if pct >= 50:
-                return 'color: #00A86B; font-weight: bold'  # Dark green ONLY for ≥50% increase
-            else:
-                return 'color: #000000'  # Black for <50% increase
-        elif '↓' in str(val):
-            # Extract percentage
-            pct = float(str(val).replace('↓', '').replace('%', ''))
-            if pct >= 50:
-                return 'color: #D85252; font-weight: bold'  # Dark red ONLY for ≥50% decrease
-            else:
-                return 'color: #000000'  # Black for <50% decrease
-        
-        return 'color: #000000'  # Default black
-    
-    # Function to format dollar values
-    def format_dollar_value(val):
-        """Format numeric values as $X.XB"""
-        try:
-            # Round to 1 decimal to avoid floating point errors
-            rounded_val = round(float(val), 1)
-            return f"${rounded_val:.1f}B"
-        except:
-            return str(val)
-    
-    # Function to add separator line between 2024 and 2025
-    def highlight_year_separator(row):
-        """Add bottom border after Q4 2024 to separate years"""
-        if row.name == 3:  # Index 3 is Q4 2024 (0-indexed)
-            return ['border-bottom: 3px solid #2c3e50;'] * len(row)
-        return [''] * len(row)
-    
-    # Apply styling to the dataframe
-    styled_df = comparison_df.style.applymap(
-        color_delta_cells,
-        subset=['M&A QoQ Change', 'M&A YoY Change', 'Venture QoQ Change', 'Venture YoY Change']
-    ).format(
-        format_dollar_value,
-        subset=['M&A ($B)', 'Venture ($B)']
-    ).apply(
-        highlight_year_separator, 
-        axis=1
-    ).set_properties(**{
-        'text-align': 'center'
-    }, subset=['M&A QoQ Change', 'M&A YoY Change', 'Venture QoQ Change', 'Venture YoY Change']
-    ).set_properties(**{
-        'text-align': 'right'
-    }, subset=['M&A ($B)', 'Venture ($B)']
-    ).set_properties(**{
-        'text-align': 'left'
-    }, subset=['Quarter']
-    ).set_properties(**{
-        'font-size': '13px'  # Make table more condensed
-    }).set_table_styles([
-        {'selector': 'th', 'props': [('background-color', '#f0f2f5'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '8px'), ('font-size', '13px')]},  # Reduced padding
-        {'selector': 'td', 'props': [('padding', '6px'), ('border', '1px solid #e0e0e0'), ('font-size', '13px')]},  # Reduced padding
-        {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
-        {'selector': 'tr:hover', 'props': [('background-color', '#f5f5f5')]},
-    ])
-    
-    # Create layout with table on left and key trends on right
-    table_col, trends_col = st.columns([3, 2])
+    # Create layout with table on left and key trends on right (adjusted widths)
+    table_col, trends_col = st.columns([2.5, 2])
     
     with table_col:
-        # Display the styled dataframe without fixed height to prevent empty rows
-        st.dataframe(styled_df, use_container_width=True, hide_index=True)
+        # M&A Section
+        st.markdown("**M&A Activity**")
+        
+        # Create M&A dataframe
+        ma_comparison_data = {
+            'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025'],
+            'Value ($B)': [18.0, 40.3, 47.0, 63.1, 9.2, 2.1, 21.7],
+            'QoQ Change': ['None', '↑124%', '↑16.6%', '↑34.3%', '↓85.4%', '↓77.2%', '↑933%'],
+            'YoY Change': ['None', 'None', 'None', '↑34%', '↓49%', '↓94.8%', '↓53.8%']
+        }
+        ma_comparison_df = pd.DataFrame(ma_comparison_data)
+        
+        # Function to color-code cells
+        def color_delta_cells(val):
+            if val == 'None' or pd.isna(val):
+                return 'color: #000000'
+            if '↑' in str(val):
+                pct = float(str(val).replace('↑', '').replace('%', ''))
+                if pct >= 50:
+                    return 'color: #00A86B; font-weight: bold'
+                else:
+                    return 'color: #000000'
+            elif '↓' in str(val):
+                pct = float(str(val).replace('↓', '').replace('%', ''))
+                if pct >= 50:
+                    return 'color: #D85252; font-weight: bold'
+                else:
+                    return 'color: #000000'
+            return 'color: #000000'
+        
+        # Function to format dollar values
+        def format_dollar_value(val):
+            try:
+                rounded_val = round(float(val), 1)
+                return f"${rounded_val:.1f}B"
+            except:
+                return str(val)
+        
+        # Function to add bold separator line between 2024 and 2025
+        def highlight_year_separator(row):
+            if row.name == 3:  # Q4 2024
+                return ['border-bottom: 4px solid #000000; font-weight: bold;'] * len(row)
+            return [''] * len(row)
+        
+        # Apply styling to M&A dataframe
+        styled_ma_df = ma_comparison_df.style.applymap(
+            color_delta_cells,
+            subset=['QoQ Change', 'YoY Change']
+        ).format(
+            format_dollar_value,
+            subset=['Value ($B)']
+        ).apply(
+            highlight_year_separator, 
+            axis=1
+        ).set_properties(**{
+            'text-align': 'center'
+        }, subset=['QoQ Change', 'YoY Change']
+        ).set_properties(**{
+            'text-align': 'right'
+        }, subset=['Value ($B)']
+        ).set_properties(**{
+            'text-align': 'left'
+        }, subset=['Quarter']
+        ).set_properties(**{
+            'font-size': '12px'
+        }).set_table_styles([
+            {'selector': 'th', 'props': [('background-color', '#e8f1f8'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '6px'), ('font-size', '12px')]},
+            {'selector': 'td', 'props': [('padding', '5px'), ('border', '1px solid #e0e0e0'), ('font-size', '12px')]},
+            {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
+        ])
+        
+        st.dataframe(styled_ma_df, use_container_width=True, hide_index=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Venture Section
+        st.markdown("**Venture Investment**")
+        
+        # Create Venture dataframe
+        venture_comparison_data = {
+            'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025'],
+            'Value ($B)': [5.5, 4.3, 5.1, 3.0, 3.7, 2.6, 2.9],
+            'QoQ Change': ['None', '↓21.8%', '↑18.6%', '↓41.2%', '↑23.3%', '↓29.7%', '↑11.5%'],
+            'YoY Change': ['None', 'None', '↑27%', '↑12%', '↓32.7%', '↓39.5%', '↓43.1%']
+        }
+        venture_comparison_df = pd.DataFrame(venture_comparison_data)
+        
+        # Apply styling to Venture dataframe
+        styled_venture_df = venture_comparison_df.style.applymap(
+            color_delta_cells,
+            subset=['QoQ Change', 'YoY Change']
+        ).format(
+            format_dollar_value,
+            subset=['Value ($B)']
+        ).apply(
+            highlight_year_separator, 
+            axis=1
+        ).set_properties(**{
+            'text-align': 'center'
+        }, subset=['QoQ Change', 'YoY Change']
+        ).set_properties(**{
+            'text-align': 'right'
+        }, subset=['Value ($B)']
+        ).set_properties(**{
+            'text-align': 'left'
+        }, subset=['Quarter']
+        ).set_properties(**{
+            'font-size': '12px'
+        }).set_table_styles([
+            {'selector': 'th', 'props': [('background-color', '#faf6f0'), ('color', '#2c3e50'), ('font-weight', 'bold'), ('text-align', 'center'), ('padding', '6px'), ('font-size', '12px')]},
+            {'selector': 'td', 'props': [('padding', '5px'), ('border', '1px solid #e0e0e0'), ('font-size', '12px')]},
+            {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
+        ])
+        
+        st.dataframe(styled_venture_df, use_container_width=True, hide_index=True)
     
     with trends_col:
         st.markdown("#### Key Overall Trends")
         st.markdown("""
-        <div style="font-size: 13px; color: #000; line-height: 1.6;">
-        <b>2025 YTD Summary</b><br>
-        <b>M&A:</b> Volumes remained historically strong at 165+ deals totaling ~$33B, highlighting strategic expansion by industry leaders into adjacent diagnostic and therapeutic markets despite lingering macro headwinds.<br><br>
-        <b>Venture:</b> Capital reached $9.5B across 259 rounds (through Q3), with capital increasingly concentrated in AI-driven platform and neuro-tech devices.
+        <div style="font-size: 12px; color: #000; line-height: 1.7;">
+        <b>2025 YTD Summary</b><br><br>
+        <b>M&A:</b> M&A volumes have rebounded sharply in 2025, with fewer but larger transactions, underscoring renewed strategic consolidation after two years of muted activity, and highlighting strategic expansion by industry leaders despite lingering macro headwinds.<br><br>
+        <b>Venture:</b> Venture financing remained resilient but increasingly selective, totaling $9.5 B across 259 rounds YTD (through Q3 2025), concentrated in fewer, later-stage deals ($100 M+) as investors show a sustained appetite for clinically validated medtech platforms.
         </div>
         """, unsafe_allow_html=True)
     
