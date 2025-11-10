@@ -2040,49 +2040,74 @@ def show_conferences(ma_df, inv_df):
         return
     
     # === PREPARE DISPLAY TABLE ===
-    company_rows = []
+    display_rows = []
+    
     for company, data in companies.items():
         # Sort deals by value descending
         ma_sorted = sorted(data['ma_deals'], key=lambda x: x['value'], reverse=True)
         venture_sorted = sorted(data['venture_deals'], key=lambda x: x['value'], reverse=True)
         
-        # Combine all deals with prefixes
-        combined_deals = []
-        
-        # Add M&A deals with "M&A:" prefix (show top 2)
-        for i, deal in enumerate(ma_sorted[:2]):
-            combined_deals.append(f"M&A: {deal['text']}")
-        if len(ma_sorted) > 2:
-            combined_deals.append(f"M&A: +{len(ma_sorted)-2} more")
-        
-        # Add Venture deals with "Venture:" prefix (show top 2)
-        for i, deal in enumerate(venture_sorted[:2]):
-            combined_deals.append(f"Venture: {deal['text']}")
-        if len(venture_sorted) > 2:
-            combined_deals.append(f"Venture: +{len(venture_sorted)-2} more")
-        
-        # Join all deals with separator
-        deals_text = " | ".join(combined_deals) if combined_deals else ""
-        
-        # Format categories
+        # Get company categories
         categories_text = " | ".join(sorted(data['categories'])) if data['categories'] else ""
         
-        # Calculate max value for sorting
-        max_value = max(
-            [d['value'] for d in ma_sorted] + [d['value'] for d in venture_sorted] + [0]
-        )
+        # Add each M&A deal as a separate row
+        for deal in ma_sorted:
+            deal_type = "M&A: " + ("Merger" if deal['deal_type'] == "Merger" else "Acquisition")
+            if deal['deal_type'] == "Merger":
+                deal_type += f" with {deal['acquirer']}"
+            else:
+                deal_type += f" by {deal['acquirer']}"
+            
+            # Format amount
+            if deal['raw_value'] != 'Undisclosed':
+                deal_amount = f"${deal['value']:,.0f}"
+            else:
+                deal_amount = "Undisclosed"
+            
+            # Add quarter to amount
+            deal_amount += f" ({deal['quarter']})"
+            
+            # Technology description
+            tech_desc = deal['tech'] if deal['tech'] and deal['tech'] != 'N/A' and deal['tech'] != 'Undisclosed' else ""
+            
+            display_rows.append({
+                'Company': company,
+                'Deal Type': deal_type,
+                'Deal Amount': deal_amount,
+                'Technology / Company Description': tech_desc,
+                'Category': categories_text,
+                '_sort_value': deal['value']
+            })
         
-        company_rows.append({
-            'Company': company,
-            'Recent Deals': deals_text,
-            'Category': categories_text,
-            '_max_value': max_value,
-            '_ma_deals': ma_sorted,
-            '_venture_deals': venture_sorted
-        })
+        # Add each Venture deal as a separate row
+        for deal in venture_sorted:
+            deal_type = f"Venture: {deal['funding_type']}"
+            if deal['lead_investors'] != 'N/A' and deal['lead_investors'] != 'Undisclosed':
+                deal_type += f", Lead: {deal['lead_investors']}"
+            
+            # Format amount
+            if deal['raw_value'] != 'Undisclosed':
+                deal_amount = f"${deal['value']:,.0f}"
+            else:
+                deal_amount = "Undisclosed"
+            
+            # Add quarter to amount
+            deal_amount += f" ({deal['quarter']})"
+            
+            # Technology description
+            tech_desc = deal['tech'] if deal['tech'] and deal['tech'] != 'N/A' and deal['tech'] != 'Undisclosed' else ""
+            
+            display_rows.append({
+                'Company': company,
+                'Deal Type': deal_type,
+                'Deal Amount': deal_amount,
+                'Technology / Company Description': tech_desc,
+                'Category': categories_text,
+                '_sort_value': deal['value']
+            })
     
-    # Sort by max value descending
-    company_rows = sorted(company_rows, key=lambda x: x['_max_value'], reverse=True)
+    # Sort all rows by deal value descending
+    display_rows = sorted(display_rows, key=lambda x: x['_sort_value'], reverse=True)
     
     # === DISPLAY METRICS ===
     col1, col2, col3 = st.columns(3)
@@ -2102,10 +2127,12 @@ def show_conferences(ma_df, inv_df):
     
     # Create display dataframe
     display_data = []
-    for row in company_rows:
+    for row in display_rows:
         display_data.append({
             'Company': row['Company'],
-            'Recent Deals': row['Recent Deals'],
+            'Deal Type': row['Deal Type'],
+            'Deal Amount': row['Deal Amount'],
+            'Technology / Company Description': row['Technology / Company Description'],
             'Category': row['Category']
         })
     
