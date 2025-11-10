@@ -1524,6 +1524,13 @@ def show_jp_morgan_summary(ma_df, inv_df):
         .q1-header { color: #7FA8C9; }
         .q2-header { color: #C9A77F; }
         .q3-header { color: #9B8BA8; }
+        .section-separator td {
+            border-bottom: 3px solid #2c3e50 !important;
+            padding-bottom: 16px !important;
+        }
+        .section-start td {
+            padding-top: 16px !important;
+        }
     </style>
     
     <table class="comparison-table">
@@ -1547,7 +1554,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
     table_html += '</tr>'
     
     # Add M&A Deal Value row
-    table_html += '<tr><td class="metric-label">M&A Deal Value</td>'
+    table_html += '<tr class="section-separator"><td class="metric-label">M&A Deal Value</td>'
     for q in ['Q1', 'Q2', 'Q3']:
         jp_val = jp_data[q]['ma_value']
         beacon_val = beacon_stats[q]['ma_value']
@@ -1555,7 +1562,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
     table_html += '</tr>'
     
     # Add Investment Count row
-    table_html += '<tr><td class="metric-label">Investment Count</td>'
+    table_html += '<tr class="section-start"><td class="metric-label">Investment Count</td>'
     for q in ['Q1', 'Q2', 'Q3']:
         jp_val = jp_data[q]['inv_count']
         beacon_val = beacon_stats[q]['inv_count']
