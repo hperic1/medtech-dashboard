@@ -981,33 +981,46 @@ def main():
 def show_home():
     """Display the Home: Start Here page with user guide"""
     
-    # Add custom CSS to style the container with tighter spacing
+    # Add custom CSS to style the container with better spacing
     st.markdown("""
     <style>
+    /* Hide the marker completely */
+    .home-content {
+        display: none !important;
+    }
+    
+    /* Style the container */
     div[data-testid="stVerticalBlock"] > div:has(div.home-content) {
-        border: 2px solid #4a5f7f;
-        border-radius: 10px;
-        padding: 20px 25px 25px 25px;
-        background-color: #e8eef5;
-        margin: 0 0 20px 0;
+        border: 2px solid #4a5f7f !important;
+        border-radius: 10px !important;
+        padding: 15px 25px 25px 25px !important;
+        background-color: #e8eef5 !important;
+        margin: 0 !important;
     }
+    
+    /* Increase line spacing */
     div[data-testid="stVerticalBlock"] > div:has(div.home-content) p {
-        margin-bottom: 2px !important;
-        line-height: 1.3 !important;
+        margin-bottom: 6px !important;
+        line-height: 1.6 !important;
     }
+    
+    /* Remove top margin/padding from header */
     div[data-testid="stVerticalBlock"] > div:has(div.home-content) h1 {
         margin-top: 0 !important;
         padding-top: 0 !important;
+        margin-bottom: 12px !important;
     }
+    
+    /* Section headers */
     div[data-testid="stVerticalBlock"] > div:has(div.home-content) h3 {
-        margin-top: 15px !important;
-        margin-bottom: 8px !important;
+        margin-top: 18px !important;
+        margin-bottom: 10px !important;
     }
-    .home-content {
-        display: none !important;
-        height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
+    
+    /* Remove any default Streamlit container spacing */
+    div[data-testid="stVerticalBlock"]:has(div.home-content) {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
     }
     </style>
     """, unsafe_allow_html=True)
