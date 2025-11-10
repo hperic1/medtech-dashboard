@@ -1389,22 +1389,31 @@ def show_jp_morgan_summary(ma_df, inv_df):
             except:
                 return str(val)
         
-        # === 2024 TABLE ===
-        ma_comparison_2024_data = {
-            'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024'],
-            'Value (USD $B)': [18.0, 40.3, 47.0, 63.1],
-            'QoQ Change': ['None', '↑124%', '↑16.6%', '↑34.3%'],
-            'YoY Change': ['None', 'None', 'None', '↑34%']
-        }
-        ma_comparison_2024_df = pd.DataFrame(ma_comparison_2024_data)
+        # Function to highlight 2025 rows with light grey background
+        def highlight_2025_rows(row):
+            if '2025' in str(row['Quarter']):
+                return ['background-color: #f0f0f0'] * len(row)
+            return [''] * len(row)
         
-        # Apply styling to 2024 M&A dataframe
-        styled_ma_2024_df = ma_comparison_2024_df.style.applymap(
+        # Create combined M&A dataframe
+        ma_comparison_data = {
+            'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025'],
+            'Value (USD $B)': [18.0, 40.3, 47.0, 63.1, 9.2, 2.1, 21.7],
+            'QoQ Change': ['None', '↑124%', '↑16.6%', '↑34.3%', '↓85.4%', '↓77.2%', '↑933%'],
+            'YoY Change': ['None', 'None', 'None', '↑34%', '↓49%', '↓94.8%', '↓53.8%']
+        }
+        ma_comparison_df = pd.DataFrame(ma_comparison_data)
+        
+        # Apply styling to M&A dataframe
+        styled_ma_df = ma_comparison_df.style.applymap(
             color_delta_cells,
             subset=['QoQ Change', 'YoY Change']
         ).format(
             format_dollar_value,
             subset=['Value (USD $B)']
+        ).apply(
+            highlight_2025_rows, 
+            axis=1
         ).set_properties(**{
             'text-align': 'center'
         }).set_properties(**{
@@ -1415,40 +1424,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
             {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
         ])
         
-        st.dataframe(styled_ma_2024_df, hide_index=True, use_container_width=True)
-        
-        # === VISUAL SEPARATOR ===
-        st.markdown("""
-        <div style='border-top: 6px solid #000000; margin: 0; padding: 0;'></div>
-        """, unsafe_allow_html=True)
-        
-        # === 2025 TABLE with 4pt larger font (22px) - NO HEADER ===
-        ma_comparison_2025_data = {
-            'Quarter': ['Q1 2025', 'Q2 2025', 'Q3 2025'],
-            'Value (USD $B)': [9.2, 2.1, 21.7],
-            'QoQ Change': ['↓85.4%', '↓77.2%', '↑933%'],
-            'YoY Change': ['↓49%', '↓94.8%', '↓53.8%']
-        }
-        ma_comparison_2025_df = pd.DataFrame(ma_comparison_2025_data)
-        
-        # Apply styling to 2025 M&A dataframe with larger font - hide header
-        styled_ma_2025_df = ma_comparison_2025_df.style.applymap(
-            color_delta_cells,
-            subset=['QoQ Change', 'YoY Change']
-        ).format(
-            format_dollar_value,
-            subset=['Value (USD $B)']
-        ).set_properties(**{
-            'text-align': 'center'
-        }).set_properties(**{
-            'font-size': '22px'  # 4pt larger than 18px
-        }).set_table_styles([
-            {'selector': 'thead', 'props': [('display', 'none')]},  # Hide header row
-            {'selector': 'td', 'props': [('padding', '10px'), ('border', '1px solid #e0e0e0'), ('font-size', '22px'), ('text-align', 'center')]},
-            {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
-        ])
-        
-        st.dataframe(styled_ma_2025_df, hide_index=True, use_container_width=True)
+        st.dataframe(styled_ma_df, hide_index=True, use_container_width=True)
     
     with ma_text_col:
         st.markdown("""
@@ -1491,22 +1467,31 @@ def show_jp_morgan_summary(ma_df, inv_df):
             except:
                 return str(val)
         
-        # === 2024 TABLE ===
-        venture_comparison_2024_data = {
-            'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024'],
-            'Value (USD $B)': [5.5, 4.3, 5.1, 3.0],
-            'QoQ Change': ['None', '↓21.8%', '↑18.6%', '↓41.2%'],
-            'YoY Change': ['None', 'None', '↑27%', '↑12%']
-        }
-        venture_comparison_2024_df = pd.DataFrame(venture_comparison_2024_data)
+        # Function to highlight 2025 rows with light grey background
+        def highlight_2025_rows(row):
+            if '2025' in str(row['Quarter']):
+                return ['background-color: #f0f0f0'] * len(row)
+            return [''] * len(row)
         
-        # Apply styling to 2024 Venture dataframe
-        styled_venture_2024_df = venture_comparison_2024_df.style.applymap(
+        # Create combined Venture dataframe
+        venture_comparison_data = {
+            'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025'],
+            'Value (USD $B)': [5.5, 4.3, 5.1, 3.0, 3.7, 2.6, 2.9],
+            'QoQ Change': ['None', '↓21.8%', '↑18.6%', '↓41.2%', '↑23.3%', '↓29.7%', '↑11.5%'],
+            'YoY Change': ['None', 'None', '↑27%', '↑12%', '↓32.7%', '↓39.5%', '↓43.1%']
+        }
+        venture_comparison_df = pd.DataFrame(venture_comparison_data)
+        
+        # Apply styling to Venture dataframe
+        styled_venture_df = venture_comparison_df.style.applymap(
             color_delta_cells,
             subset=['QoQ Change', 'YoY Change']
         ).format(
             format_dollar_value,
             subset=['Value (USD $B)']
+        ).apply(
+            highlight_2025_rows, 
+            axis=1
         ).set_properties(**{
             'text-align': 'center'
         }).set_properties(**{
@@ -1517,40 +1502,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
             {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
         ])
         
-        st.dataframe(styled_venture_2024_df, hide_index=True, use_container_width=True)
-        
-        # === VISUAL SEPARATOR ===
-        st.markdown("""
-        <div style='border-top: 6px solid #000000; margin: 0; padding: 0;'></div>
-        """, unsafe_allow_html=True)
-        
-        # === 2025 TABLE with 4pt larger font (22px) - NO HEADER ===
-        venture_comparison_2025_data = {
-            'Quarter': ['Q1 2025', 'Q2 2025', 'Q3 2025'],
-            'Value (USD $B)': [3.7, 2.6, 2.9],
-            'QoQ Change': ['↑23.3%', '↓29.7%', '↑11.5%'],
-            'YoY Change': ['↓32.7%', '↓39.5%', '↓43.1%']
-        }
-        venture_comparison_2025_df = pd.DataFrame(venture_comparison_2025_data)
-        
-        # Apply styling to 2025 Venture dataframe with larger font - hide header
-        styled_venture_2025_df = venture_comparison_2025_df.style.applymap(
-            color_delta_cells,
-            subset=['QoQ Change', 'YoY Change']
-        ).format(
-            format_dollar_value,
-            subset=['Value (USD $B)']
-        ).set_properties(**{
-            'text-align': 'center'
-        }).set_properties(**{
-            'font-size': '22px'  # 4pt larger than 18px
-        }).set_table_styles([
-            {'selector': 'thead', 'props': [('display', 'none')]},  # Hide header row
-            {'selector': 'td', 'props': [('padding', '10px'), ('border', '1px solid #e0e0e0'), ('font-size', '22px'), ('text-align', 'center')]},
-            {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#fafbfc')]},
-        ])
-        
-        st.dataframe(styled_venture_2025_df, hide_index=True, use_container_width=True)
+        st.dataframe(styled_venture_df, hide_index=True, use_container_width=True)
     
     with venture_text_col:
         st.markdown("""
