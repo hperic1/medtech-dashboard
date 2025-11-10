@@ -655,26 +655,47 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
         st.error(f"Details: {traceback.format_exc()}")
         return None
 
-def create_jp_morgan_chart_by_category(category, color):
+def create_jp_morgan_chart_by_category(category, color, year_filter='2025'):
     """Create JP Morgan chart for a specific category with deal count overlay"""
     try:
-        quarters = ['Q1 2025', 'Q2 2025', 'Q3 2025']
-        
-        # Actual data from JP Morgan 2025 reports
-        data_map = {
+        # Complete data from JP Morgan reports (2024 and 2025)
+        all_data = {
             'M&A': {
-                'values': [9200, 2100, 21700],
-                'counts': [57, 43, 65]
+                '2024': {
+                    'quarters': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024'],
+                    'values': [18000, 40300, 47000, 63100],  # In millions
+                    'counts': [47, 114, 195, 305]
+                },
+                '2025': {
+                    'quarters': ['Q1 2025', 'Q2 2025', 'Q3 2025'],
+                    'values': [9200, 2100, 21700],  # In millions
+                    'counts': [57, 43, 65]
+                }
             },
             'Venture': {
-                'values': [3700, 2600, 2900],
-                'counts': [117, 90, 67]
+                '2024': {
+                    'quarters': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024'],
+                    'values': [5500, 4300, 5100, 3000],  # In millions
+                    'counts': [182, 167, 154, 125]
+                },
+                '2025': {
+                    'quarters': ['Q1 2025', 'Q2 2025', 'Q3 2025'],
+                    'values': [3700, 2600, 2900],  # In millions
+                    'counts': [117, 90, 67]
+                }
             }
         }
         
-        category_data = data_map.get(category, {'values': [0, 0, 0], 'counts': [0, 0, 0]})
-        values = category_data['values']
-        counts = category_data['counts']
+        # Get data based on year filter
+        if year_filter == 'All':
+            # Combine 2024 and 2025 data
+            quarters = all_data[category]['2024']['quarters'] + all_data[category]['2025']['quarters']
+            values = all_data[category]['2024']['values'] + all_data[category]['2025']['values']
+            counts = all_data[category]['2024']['counts'] + all_data[category]['2025']['counts']
+        else:
+            quarters = all_data[category][year_filter]['quarters']
+            values = all_data[category][year_filter]['values']
+            counts = all_data[category][year_filter]['counts']
         
         fig = go.Figure()
         
@@ -735,7 +756,7 @@ def create_jp_morgan_chart_by_category(category, color):
                 title=dict(text='Deal Value (Billions USD)', font=dict(size=16)),  # Changed to Billions
                 side='left',
                 showgrid=False,
-                range=[0, max([v/1000 for v in values]) * 1.45],  # Increased for more label space
+                range=[0, max([v/1000 for v in values]) * 1.45] if values else [0, 10],  # Increased for more label space
                 tickfont=dict(size=13)
             ),
             yaxis2=dict(
@@ -1339,18 +1360,27 @@ def show_jp_morgan_summary(ma_df, inv_df):
             'inv_value': inv_value
         }
     
-    st.markdown("### 2025 Q1-Q3 Activity by Category")
+    
+    # Year filter for JP Morgan charts
+    st.markdown("### Activity by Category")
+    year_filter = st.radio(
+        "Select Year",
+        ["2024", "2025", "All"],
+        index=1,  # Default to 2025
+        horizontal=True,
+        key='jp_year_filter'
+    )
     
     # Create 1x2 grid for charts
     col1, col2 = st.columns(2)
     
     with col1:
-        fig_ma = create_jp_morgan_chart_by_category('M&A', COLORS['ma_primary'])
+        fig_ma = create_jp_morgan_chart_by_category('M&A', COLORS['ma_primary'], year_filter)
         if fig_ma:
             st.plotly_chart(fig_ma, use_container_width=True)
     
     with col2:
-        fig_venture = create_jp_morgan_chart_by_category('Venture', COLORS['venture_primary'])
+        fig_venture = create_jp_morgan_chart_by_category('Venture', COLORS['venture_primary'], year_filter)
         if fig_venture:
             st.plotly_chart(fig_venture, use_container_width=True)
     # Key trends
