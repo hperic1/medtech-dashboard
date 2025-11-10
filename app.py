@@ -1402,7 +1402,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
         with quarter_header_col1:
             st.markdown("Select Quarters")
         with quarter_header_col2:
-            select_all_quarters = st.checkbox("All", value=True, key='select_all_quarters')
+            select_all_quarters = st.checkbox("All", value=False, key='select_all_quarters')
         
         if select_all_quarters:
             selected_quarters = ["Q1", "Q2", "Q3", "Q4"]
@@ -1429,7 +1429,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
         with year_header_col1:
             st.markdown("Select Years")
         with year_header_col2:
-            select_all_years = st.checkbox("All", value=True, key='select_all_years')
+            select_all_years = st.checkbox("All", value=False, key='select_all_years')
         
         if select_all_years:
             selected_years = ["2024", "2025"]
