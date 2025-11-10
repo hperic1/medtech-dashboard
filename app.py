@@ -602,7 +602,7 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
                     showarrow=False,
                     yref='y2',
                     font=dict(size=13, color='#000000'),
-                    bgcolor='white',
+                    bgcolor='#CCCCCC',
                     borderpad=4,
                     yshift=10
                 )
@@ -717,7 +717,7 @@ def create_jp_morgan_chart_by_category(category, color):
                         showarrow=False,
                         yref='y2',
                         font=dict(size=13, color='#000000'),
-                        bgcolor='white',
+                        bgcolor='#CCCCCC',
                         borderpad=4,
                         yshift=10
                     )
