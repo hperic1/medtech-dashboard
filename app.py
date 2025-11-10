@@ -1976,6 +1976,10 @@ def show_conferences(ma_df, inv_df):
         else:
             deal_text += f" (Undisclosed, {quarter})"
         
+        # Add technology description if available
+        if tech and tech != 'N/A' and tech != 'Undisclosed' and str(tech).strip():
+            deal_text += f" - {tech}"
+        
         companies[company]['ma_deals'].append({
             'text': deal_text,
             'value': parse_value_for_sorting(value),
@@ -2016,6 +2020,10 @@ def show_conferences(ma_df, inv_df):
             deal_text += f", Lead: {lead_investors}"
         
         deal_text += f" ({quarter})"
+        
+        # Add technology description if available
+        if tech and tech != 'N/A' and tech != 'Undisclosed' and str(tech).strip():
+            deal_text += f" - {tech}"
         
         companies[company]['venture_deals'].append({
             'text': deal_text,
