@@ -614,7 +614,7 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
                     font=dict(size=13, color='#000000'),
                     bgcolor='#CCCCCC',
                     borderpad=4,
-                    yshift=10
+                    yshift=25
                 )
             )
         
@@ -630,7 +630,7 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
                 title=dict(text='Total Deal Value (USD)', font=dict(size=16)),  # Modern syntax
                 side='left',
                 showgrid=False,
-                range=[0, max(quarterly_data['Total_Value']) * 1.45] if len(quarterly_data) > 0 else [0, 1000],  # Increased for more label space
+                range=[0, max(quarterly_data['Total_Value']) * 1.55] if len(quarterly_data) > 0 else [0, 1000],  # Increased for more label space
                 tickfont=dict(size=13)  # Larger tick labels
             ),
             yaxis2=dict(
@@ -777,7 +777,7 @@ def create_jp_morgan_chart_by_category(category, color, selected_quarters, selec
                         font=dict(size=13, color='#000000'),
                         bgcolor='#CCCCCC',
                         borderpad=4,
-                        yshift=10
+                        yshift=25
                     )
                 )
         
@@ -793,7 +793,7 @@ def create_jp_morgan_chart_by_category(category, color, selected_quarters, selec
                 title=dict(text='Deal Value (Billions USD)', font=dict(size=16)),  # Changed to Billions
                 side='left',
                 showgrid=False,
-                range=[0, max([v/1000 for v in values]) * 1.45] if values else [0, 10],  # Increased for more label space
+                range=[0, max([v/1000 for v in values]) * 1.55] if values else [0, 10],  # Increased for more label space
                 tickfont=dict(size=13)
             ),
             yaxis2=dict(
@@ -2205,7 +2205,7 @@ def create_ipo_chart(df):
                 title=dict(text='Total IPO Value (USD)', font=dict(size=16)),  # Modern syntax
                 side='left',
                 showgrid=False,
-                range=[0, max(quarterly_data['Total_Amount']) * 1.45] if len(quarterly_data) > 0 else [0, 1000],  # Increased for more label space
+                range=[0, max(quarterly_data['Total_Amount']) * 1.55] if len(quarterly_data) > 0 else [0, 1000],  # Increased for more label space
                 tickfont=dict(size=13)
             ),
             yaxis2=dict(
