@@ -614,7 +614,7 @@ def create_quarterly_chart(df, value_col, title, chart_type='ma', height=500):
                 overlaying='y',
                 side='right',
                 showgrid=False,
-                range=[0, max(quarterly_data['Deal_Count']) * 1.6] if len(quarterly_data) > 0 else [0, 10],  # Increased for more label space
+                range=[0, max(quarterly_data['Deal_Count']) * 2.5] if len(quarterly_data) > 0 else [0, 10],  # Increased to 2.5 for more space above line
                 tickfont=dict(size=13)  # Larger tick labels
             ),
             hovermode='x unified',
@@ -714,7 +714,7 @@ def create_jp_morgan_chart_by_category(category, color):
                 overlaying='y',
                 side='right',
                 showgrid=False,
-                range=[0, max(counts) * 1.6] if max(counts) > 0 else [0, 100],  # Increased for more label space
+                range=[0, max(counts) * 2.5] if max(counts) > 0 else [0, 100],  # Increased to 2.5 for more space above line
                 tickfont=dict(size=13)
             ),
             hovermode='x unified',
@@ -1031,7 +1031,6 @@ def show_deal_activity(ma_df, inv_df):
         st.dataframe(
             ma_display[display_cols], 
             use_container_width=True,
-            height=500,
             column_config={
                 "Deal Value": st.column_config.TextColumn("Deal Value", help="Deal value in USD"),
             },
@@ -1127,7 +1126,6 @@ def show_deal_activity(ma_df, inv_df):
         st.dataframe(
             inv_display[display_cols],
             use_container_width=True,
-            height=500,
             column_config={
                 "Amount Raised": st.column_config.TextColumn("Amount Raised", help="Investment amount in USD"),
             },
@@ -1666,7 +1664,6 @@ def show_ipo_activity(ipo_df):
     st.dataframe(
         ipo_display[display_cols], 
         use_container_width=True, 
-        height=500, 
         hide_index=True,
         column_config={
             "Amount": st.column_config.TextColumn("Amount", help="IPO amount in USD"),
@@ -2087,8 +2084,7 @@ def show_conferences(ma_df, inv_df):
     st.dataframe(
         display_df,
         use_container_width=True,
-        hide_index=True,
-        height=600
+        hide_index=True
     )
     
     st.markdown("---")
