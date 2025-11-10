@@ -873,7 +873,7 @@ def main():
     # Horizontal navigation with emojis
     page = st.radio(
         "Navigation",
-        ["📊 Deal Activity", "📈 JP Morgan Summary", "🏢 IPO Activity", "🎤 Conferences", "📤 Upload New Dataset"],
+        ["📊 Deal Activity", "📈 JP Morgan Industry Report", "🏢 IPO Activity", "🎤 Conferences", "📤 Upload New Dataset"],
         horizontal=True,
         label_visibility="collapsed"
     )
@@ -885,7 +885,7 @@ def main():
     
     if page == "📊 Deal Activity":
         show_deal_activity(ma_df, inv_df)
-    elif page == "📈 JP Morgan Summary":
+    elif page == "📈 JP Morgan Industry Report":
         show_jp_morgan_summary(ma_df, inv_df)
     elif page == "🏢 IPO Activity":
         show_ipo_activity(ipo_df)
