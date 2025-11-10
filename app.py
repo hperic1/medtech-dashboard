@@ -1126,7 +1126,7 @@ def show_deal_activity(ma_df, inv_df):
             ma_display[display_cols], 
             use_container_width=True,
             column_config={
-                "Deal Value": st.column_config.TextColumn("Deal Value", help="Deal value in USD"),
+                "Deal Value": st.column_config.TextColumn("Deal Value (USD)", help="Deal value in USD"),
             },
             hide_index=True
         )
@@ -1221,7 +1221,7 @@ def show_deal_activity(ma_df, inv_df):
             inv_display[display_cols],
             use_container_width=True,
             column_config={
-                "Amount Raised": st.column_config.TextColumn("Amount Raised", help="Investment amount in USD"),
+                "Amount Raised": st.column_config.TextColumn("Amount Raised (USD)", help="Investment amount in USD"),
             },
             hide_index=True
         )
@@ -1390,10 +1390,9 @@ def show_jp_morgan_summary(ma_df, inv_df):
                 return str(val)
         
         # === 2024 TABLE ===
-        st.markdown("<div style='font-size: 18px; font-weight: bold; margin-bottom: 8px;'>2024</div>", unsafe_allow_html=True)
         ma_comparison_2024_data = {
             'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024'],
-            'Value ($B)': [18.0, 40.3, 47.0, 63.1],
+            'Value (USD $B)': [18.0, 40.3, 47.0, 63.1],
             'QoQ Change': ['None', '↑124%', '↑16.6%', '↑34.3%'],
             'YoY Change': ['None', 'None', 'None', '↑34%']
         }
@@ -1405,7 +1404,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
             subset=['QoQ Change', 'YoY Change']
         ).format(
             format_dollar_value,
-            subset=['Value ($B)']
+            subset=['Value (USD $B)']
         ).set_properties(**{
             'text-align': 'center'
         }).set_properties(**{
@@ -1420,14 +1419,13 @@ def show_jp_morgan_summary(ma_df, inv_df):
         
         # === VISUAL SEPARATOR ===
         st.markdown("""
-        <div style='border-top: 6px solid #000000; margin: 20px 0; box-shadow: 0 3px 6px rgba(0,0,0,0.15);'></div>
+        <div style='border-top: 6px solid #000000; margin: 0;'></div>
         """, unsafe_allow_html=True)
         
         # === 2025 TABLE with 4pt larger font (22px) ===
-        st.markdown("<div style='font-size: 22px; font-weight: bold; margin-bottom: 8px;'>2025</div>", unsafe_allow_html=True)
         ma_comparison_2025_data = {
             'Quarter': ['Q1 2025', 'Q2 2025', 'Q3 2025'],
-            'Value ($B)': [9.2, 2.1, 21.7],
+            'Value (USD $B)': [9.2, 2.1, 21.7],
             'QoQ Change': ['↓85.4%', '↓77.2%', '↑933%'],
             'YoY Change': ['↓49%', '↓94.8%', '↓53.8%']
         }
@@ -1439,7 +1437,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
             subset=['QoQ Change', 'YoY Change']
         ).format(
             format_dollar_value,
-            subset=['Value ($B)']
+            subset=['Value (USD $B)']
         ).set_properties(**{
             'text-align': 'center'
         }).set_properties(**{
@@ -1494,10 +1492,9 @@ def show_jp_morgan_summary(ma_df, inv_df):
                 return str(val)
         
         # === 2024 TABLE ===
-        st.markdown("<div style='font-size: 18px; font-weight: bold; margin-bottom: 8px;'>2024</div>", unsafe_allow_html=True)
         venture_comparison_2024_data = {
             'Quarter': ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024'],
-            'Value ($B)': [5.5, 4.3, 5.1, 3.0],
+            'Value (USD $B)': [5.5, 4.3, 5.1, 3.0],
             'QoQ Change': ['None', '↓21.8%', '↑18.6%', '↓41.2%'],
             'YoY Change': ['None', 'None', '↑27%', '↑12%']
         }
@@ -1509,7 +1506,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
             subset=['QoQ Change', 'YoY Change']
         ).format(
             format_dollar_value,
-            subset=['Value ($B)']
+            subset=['Value (USD $B)']
         ).set_properties(**{
             'text-align': 'center'
         }).set_properties(**{
@@ -1524,14 +1521,13 @@ def show_jp_morgan_summary(ma_df, inv_df):
         
         # === VISUAL SEPARATOR ===
         st.markdown("""
-        <div style='border-top: 6px solid #000000; margin: 20px 0; box-shadow: 0 3px 6px rgba(0,0,0,0.15);'></div>
+        <div style='border-top: 6px solid #000000; margin: 0;'></div>
         """, unsafe_allow_html=True)
         
         # === 2025 TABLE with 4pt larger font (22px) ===
-        st.markdown("<div style='font-size: 22px; font-weight: bold; margin-bottom: 8px;'>2025</div>", unsafe_allow_html=True)
         venture_comparison_2025_data = {
             'Quarter': ['Q1 2025', 'Q2 2025', 'Q3 2025'],
-            'Value ($B)': [3.7, 2.6, 2.9],
+            'Value (USD $B)': [3.7, 2.6, 2.9],
             'QoQ Change': ['↑23.3%', '↓29.7%', '↑11.5%'],
             'YoY Change': ['↓32.7%', '↓39.5%', '↓43.1%']
         }
@@ -1543,7 +1539,7 @@ def show_jp_morgan_summary(ma_df, inv_df):
             subset=['QoQ Change', 'YoY Change']
         ).format(
             format_dollar_value,
-            subset=['Value ($B)']
+            subset=['Value (USD $B)']
         ).set_properties(**{
             'text-align': 'center'
         }).set_properties(**{
@@ -1868,7 +1864,7 @@ def show_ipo_activity(ipo_df):
         use_container_width=True, 
         hide_index=True,
         column_config={
-            "Amount": st.column_config.TextColumn("Amount", help="IPO amount in USD"),
+            "Amount": st.column_config.TextColumn("Amount (USD)", help="IPO amount in USD"),
         }
     )
 
@@ -2325,7 +2321,7 @@ def show_conferences(ma_df, inv_df):
         column_config={
             "Company": st.column_config.TextColumn("Company", width="medium"),
             "Deal Type": st.column_config.TextColumn("Deal Type", width="large"),
-            "Deal Amount": st.column_config.TextColumn("Deal Amount", width="medium"),
+            "Deal Amount": st.column_config.TextColumn("Deal Amount (USD)", width="medium"),
             "Technology / Company Description": st.column_config.TextColumn("Technology / Company Description", width="large"),
             "Category": st.column_config.TextColumn("Category", width="medium")
         }
