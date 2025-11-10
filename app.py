@@ -958,24 +958,44 @@ def show_deal_activity(ma_df, inv_df):
         total_ma_value = sum(ma_df['Deal Value'].apply(parse_to_numeric))
         ma_value_display = format_currency_abbreviated(total_ma_value)
         
-        # Display metric cards
-        st.markdown(create_metric_card("Total M&A Deal Value", ma_value_display, 'ma'), unsafe_allow_html=True)
-        st.markdown(create_metric_card("Total M&A Deal Count", total_ma_deals, 'ma'), unsafe_allow_html=True)
-        
-        # M&A Sunburst Chart
+        # M&A Sunburst Chart with metrics on left
         st.markdown("#### M&A Deals by Category")
         
-        # Independent quarter filter for M&A sunburst
-        quarters_ma_sun = ['All'] + sorted([q for q in ma_df['Quarter'].unique() if q != 'Undisclosed'])
-        selected_quarter_ma_sun = st.selectbox("Filter by Quarter", quarters_ma_sun, key='ma_sunburst_quarter')
+        # Create 2-column layout: metrics on left, chart on right
+        metrics_col, chart_col = st.columns([1, 2])
         
-        filtered_ma_sun = ma_df.copy()
-        if selected_quarter_ma_sun != 'All':
-            filtered_ma_sun = filtered_ma_sun[filtered_ma_sun['Quarter'] == selected_quarter_ma_sun]
+        with metrics_col:
+            # Compact metric cards styled to match chart height
+            st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #e8f1f8 0%, #b8d4e8 100%); 
+                            padding: 20px; border-radius: 10px; border-left: 4px solid #7FA8C9; 
+                            margin-bottom: 15px; height: 180px; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="font-size: 13px; color: #555; font-weight: 500; margin-bottom: 8px;">Total M&A Deal Value</div>
+                    <div style="font-size: 32px; font-weight: bold; color: #2c3e50;">{ma_value_display}</div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #e8f1f8 0%, #b8d4e8 100%); 
+                            padding: 20px; border-radius: 10px; border-left: 4px solid #7FA8C9; 
+                            height: 180px; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="font-size: 13px; color: #555; font-weight: 500; margin-bottom: 8px;">Total M&A Deal Count</div>
+                    <div style="font-size: 32px; font-weight: bold; color: #2c3e50;">{total_ma_deals}</div>
+                </div>
+            """, unsafe_allow_html=True)
         
-        fig_ma_sunburst = create_sunburst_chart(filtered_ma_sun, 'Deal Value', 'M&A', 'Category')
-        if fig_ma_sunburst:
-            st.plotly_chart(fig_ma_sunburst, use_container_width=True)
+        with chart_col:
+            # Independent quarter filter for M&A sunburst
+            quarters_ma_sun = ['All'] + sorted([q for q in ma_df['Quarter'].unique() if q != 'Undisclosed'])
+            selected_quarter_ma_sun = st.selectbox("Filter by Quarter", quarters_ma_sun, key='ma_sunburst_quarter')
+            
+            filtered_ma_sun = ma_df.copy()
+            if selected_quarter_ma_sun != 'All':
+                filtered_ma_sun = filtered_ma_sun[filtered_ma_sun['Quarter'] == selected_quarter_ma_sun]
+            
+            fig_ma_sunburst = create_sunburst_chart(filtered_ma_sun, 'Deal Value', 'M&A', 'Category')
+            if fig_ma_sunburst:
+                st.plotly_chart(fig_ma_sunburst, use_container_width=True)
     
     with col2:
         # Venture Overview Chart (smaller)
@@ -990,24 +1010,44 @@ def show_deal_activity(ma_df, inv_df):
         ))
         inv_value_display = format_currency_abbreviated(total_inv_value)
         
-        # Display metric cards
-        st.markdown(create_metric_card("Total Investment Value", inv_value_display, 'venture'), unsafe_allow_html=True)
-        st.markdown(create_metric_card("Total Investment Deal Count", total_inv_deals, 'venture'), unsafe_allow_html=True)
-        
-        # Venture Sunburst Chart
+        # Venture Sunburst Chart with metrics on left
         st.markdown("#### Venture Deals by Category")
         
-        # Independent quarter filter for Venture sunburst
-        quarters_inv_sun = ['All'] + sorted([q for q in inv_df['Quarter'].unique() if q != 'Undisclosed'])
-        selected_quarter_inv_sun = st.selectbox("Filter by Quarter", quarters_inv_sun, key='inv_sunburst_quarter')
+        # Create 2-column layout: metrics on left, chart on right
+        metrics_col, chart_col = st.columns([1, 2])
         
-        filtered_inv_sun = inv_df.copy()
-        if selected_quarter_inv_sun != 'All':
-            filtered_inv_sun = filtered_inv_sun[filtered_inv_sun['Quarter'] == selected_quarter_inv_sun]
+        with metrics_col:
+            # Compact metric cards styled to match chart height
+            st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #faf6f0 0%, #e8dcc8 100%); 
+                            padding: 20px; border-radius: 10px; border-left: 4px solid #C9A77F; 
+                            margin-bottom: 15px; height: 180px; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="font-size: 13px; color: #555; font-weight: 500; margin-bottom: 8px;">Total Investment Value</div>
+                    <div style="font-size: 32px; font-weight: bold; color: #2c3e50;">{inv_value_display}</div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #faf6f0 0%, #e8dcc8 100%); 
+                            padding: 20px; border-radius: 10px; border-left: 4px solid #C9A77F; 
+                            height: 180px; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="font-size: 13px; color: #555; font-weight: 500; margin-bottom: 8px;">Total Investment Deal Count</div>
+                    <div style="font-size: 32px; font-weight: bold; color: #2c3e50;">{total_inv_deals}</div>
+                </div>
+            """, unsafe_allow_html=True)
         
-        fig_inv_sunburst = create_sunburst_chart(filtered_inv_sun, 'Amount Raised', 'Venture', 'Category')
-        if fig_inv_sunburst:
-            st.plotly_chart(fig_inv_sunburst, use_container_width=True)
+        with chart_col:
+            # Independent quarter filter for Venture sunburst
+            quarters_inv_sun = ['All'] + sorted([q for q in inv_df['Quarter'].unique() if q != 'Undisclosed'])
+            selected_quarter_inv_sun = st.selectbox("Filter by Quarter", quarters_inv_sun, key='inv_sunburst_quarter')
+            
+            filtered_inv_sun = inv_df.copy()
+            if selected_quarter_inv_sun != 'All':
+                filtered_inv_sun = filtered_inv_sun[filtered_inv_sun['Quarter'] == selected_quarter_inv_sun]
+            
+            fig_inv_sunburst = create_sunburst_chart(filtered_inv_sun, 'Amount Raised', 'Venture', 'Category')
+            if fig_inv_sunburst:
+                st.plotly_chart(fig_inv_sunburst, use_container_width=True)
     
     st.markdown("---")
     
