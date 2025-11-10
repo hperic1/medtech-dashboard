@@ -19,7 +19,7 @@ COLORS = {
     'ma_secondary': '#A8C9D1',    # Lighter muted blue
     'venture_primary': '#C9A77F',  # Muted orange/tan for Venture
     'venture_secondary': '#D9C9A8', # Lighter muted tan
-    'count_line': '#90A9B0',       # Muted teal for count lines
+    'count_line': '#999999',       # Light gray for count lines
     'accent': '#B8A690'            # Neutral accent
 }
 
@@ -2135,8 +2135,13 @@ def show_upload_dataset(ma_df, inv_df, ipo_df):
                     success, message = undo_last_upload()
                     if success:
                         st.success(f"✅ {message}")
-                        st.success("🔄 Please refresh the page to see the restored data")
+                        # Clear the cache to force reload of restored data
+                        st.cache_data.clear()
+                        st.success("🔄 Data restored! The dashboard will refresh automatically.")
                         st.balloons()
+                        import time
+                        time.sleep(2)
+                        st.rerun()
                     else:
                         st.error(f"❌ {message}")
         
@@ -2266,10 +2271,15 @@ def show_upload_dataset(ma_df, inv_df, ipo_df):
                         # Save to file
                         if save_data(final_ma, final_inv, new_ipo):
                             st.success("✅ Data uploaded successfully!")
+                            # Clear the cache to force reload of new data
+                            st.cache_data.clear()
                             st.balloons()
                             st.markdown("---")
-                            st.markdown("### ⚠️ Important: Please refresh the page to see updated data")
-                            st.markdown("Press **R** or click the refresh button in your browser")
+                            st.markdown("### ✅ Data Updated! The dashboard will refresh automatically.")
+                            st.markdown("Reloading in 2 seconds...")
+                            import time
+                            time.sleep(2)
+                            st.rerun()
                         
                     except Exception as e:
                         st.error(f"❌ Error processing upload: {str(e)}")
