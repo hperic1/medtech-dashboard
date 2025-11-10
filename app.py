@@ -2006,11 +2006,11 @@ def create_ipo_chart(df):
             y=quarterly_data['IPO_Count'],
             name='IPO Count',
             mode='lines+markers+text',
-            line=dict(color=COLORS['count_line'], width=3),
-            marker=dict(size=10, color=COLORS['count_line']),
+            line=dict(color='#1e3a5f', width=3),  # Dark navy for IPO
+            marker=dict(size=10, color='#1e3a5f'),  # Dark navy for IPO
             text=[f"<b>{c}</b>" for c in quarterly_data['IPO_Count']],
             textposition='top center',
-            textfont=dict(size=13, color=COLORS['count_line']),  # Slightly smaller and colored
+            textfont=dict(size=13, color='#1e3a5f'),  # Dark navy for IPO labels
             yaxis='y2',
             hovertemplate='<b>%{x}</b><br>IPO Count: %{y}<br><extra></extra>',
             connectgaps=True,
