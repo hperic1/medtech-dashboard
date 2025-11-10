@@ -1391,23 +1391,64 @@ def show_jp_morgan_summary(ma_df, inv_df):
     # Quarter and Year filters for JP Morgan charts
     st.markdown("### Activity by Category")
     
+    # Create a clean filter section with select all options
+    st.markdown("**Filters**")
+    
     filter_col1, filter_col2 = st.columns(2)
     
     with filter_col1:
-        selected_quarters = st.multiselect(
-            "Select Quarters",
-            ["Q1", "Q2", "Q3", "Q4"],
-            default=["Q1", "Q2", "Q3", "Q4"],  # All quarters by default
-            key='jp_quarter_filter'
-        )
+        # Quarters section with select all
+        quarter_header_col1, quarter_header_col2 = st.columns([3, 1])
+        with quarter_header_col1:
+            st.markdown("Select Quarters")
+        with quarter_header_col2:
+            select_all_quarters = st.checkbox("All", value=True, key='select_all_quarters')
+        
+        if select_all_quarters:
+            selected_quarters = ["Q1", "Q2", "Q3", "Q4"]
+            st.multiselect(
+                "Quarters",
+                ["Q1", "Q2", "Q3", "Q4"],
+                default=["Q1", "Q2", "Q3", "Q4"],
+                key='jp_quarter_filter',
+                label_visibility="collapsed",
+                disabled=True
+            )
+        else:
+            selected_quarters = st.multiselect(
+                "Quarters",
+                ["Q1", "Q2", "Q3", "Q4"],
+                default=["Q1", "Q2", "Q3", "Q4"],
+                key='jp_quarter_filter',
+                label_visibility="collapsed"
+            )
     
     with filter_col2:
-        selected_years = st.multiselect(
-            "Select Years",
-            ["2024", "2025"],
-            default=["2024", "2025"],  # Both years by default
-            key='jp_year_filter'
-        )
+        # Years section with select all
+        year_header_col1, year_header_col2 = st.columns([3, 1])
+        with year_header_col1:
+            st.markdown("Select Years")
+        with year_header_col2:
+            select_all_years = st.checkbox("All", value=True, key='select_all_years')
+        
+        if select_all_years:
+            selected_years = ["2024", "2025"]
+            st.multiselect(
+                "Years",
+                ["2024", "2025"],
+                default=["2024", "2025"],
+                key='jp_year_filter',
+                label_visibility="collapsed",
+                disabled=True
+            )
+        else:
+            selected_years = st.multiselect(
+                "Years",
+                ["2024", "2025"],
+                default=["2024", "2025"],
+                key='jp_year_filter',
+                label_visibility="collapsed"
+            )
     
     if not selected_quarters or not selected_years:
         st.warning("Please select at least one quarter and one year to display data.")
