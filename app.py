@@ -955,7 +955,7 @@ def main():
     # Horizontal navigation with emojis
     page = st.radio(
         "Navigation",
-        ["📊 Deal Activity", "📈 JP Morgan Industry Report", "🏢 IPO Activity", "🎤 Conferences", "📤 Upload New Dataset"],
+        ["🏠 Home: Start Here", "📊 Deal Activity", "📈 JP Morgan Industry Report", "🏢 IPO Activity", "🎤 Conferences", "📤 Upload New Dataset"],
         horizontal=True,
         label_visibility="collapsed"
     )
@@ -965,7 +965,9 @@ def main():
     # Load data
     ma_df, inv_df, ipo_df = load_data()
     
-    if page == "📊 Deal Activity":
+    if page == "🏠 Home: Start Here":
+        show_home()
+    elif page == "📊 Deal Activity":
         show_deal_activity(ma_df, inv_df)
     elif page == "📈 JP Morgan Industry Report":
         show_jp_morgan_summary(ma_df, inv_df)
@@ -975,6 +977,154 @@ def main():
         show_conferences(ma_df, inv_df)
     elif page == "📤 Upload New Dataset":
         show_upload_dataset(ma_df, inv_df, ipo_df)
+
+def show_home():
+    """Display the Home: Start Here page with user guide"""
+    
+    # Welcome header with gradient background
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #7FA8C9 0%, #C9A77F 100%); padding: 30px; border-radius: 15px; margin-bottom: 30px;">
+        <h1 style="color: white; margin: 0; font-size: 36px;">Welcome to the MedTech M&A & Venture Dashboard</h1>
+        <p style="color: white; margin-top: 10px; font-size: 18px; opacity: 0.95;">
+        This interactive dashboard provides comprehensive tracking and analysis of MedTech deal activity, including mergers & acquisitions, venture capital investments, and IPO activity.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Dashboard Overview Section
+    st.markdown("## Dashboard Overview")
+    st.markdown("This dashboard is organized into several key sections, each designed to provide specific insights:")
+    
+    # Create two columns for the tab descriptions
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        <div style="border: 2px solid #7FA8C9; border-radius: 12px; padding: 20px; background-color: #f8fafb; margin-bottom: 20px; min-height: 280px;">
+            <h3 style="color: #2c3e50; margin-top: 0;">📊 Deal Activity Tab</h3>
+            <p style="color: #000; line-height: 1.6;">
+            <b>M&A Activity:</b> Track mergers, acquisitions, and strategic transactions<br>
+            • Filter by date range, deal type, acquirer, target, and therapeutic area<br>
+            • View deal values, transaction structures, and key deal metrics<br>
+            • Interactive charts showing quarterly trends and deal volume
+            </p>
+            <p style="color: #000; line-height: 1.6; margin-top: 15px;">
+            <b>Investment Activity:</b> Monitor venture capital, private equity, and growth financing<br>
+            • Filter by investment type, company, investors, and funding stage<br>
+            • Track amounts raised and investor participation<br>
+            • Visualize funding trends across quarters and years
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div style="border: 2px solid #C9A77F; border-radius: 12px; padding: 20px; background-color: #fdfbf8; margin-bottom: 20px; min-height: 200px;">
+            <h3 style="color: #2c3e50; margin-top: 0;">🏢 IPO Activity Tab</h3>
+            <p style="color: #000; line-height: 1.6;">
+            • Track initial public offerings and public market entries<br>
+            • Monitor IPO valuations and timing
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div style="border: 2px solid #7FA8C9; border-radius: 12px; padding: 20px; background-color: #f8fafb; margin-bottom: 20px; min-height: 280px;">
+            <h3 style="color: #2c3e50; margin-top: 0;">📈 JP Morgan Industry Report Tab</h3>
+            <p style="color: #000; line-height: 1.6;">
+            <b>Market Intelligence:</b> Access comprehensive quarterly analysis from JP Morgan's MedTech Industry Reports<br>
+            • Compare M&A and Venture activity across quarters (Q1 2024 - Q3 2025)<br>
+            • View quarter-over-quarter (QoQ) and year-over-year (YoY) trend analysis<br>
+            • Review detailed quarterly summaries highlighting key deals and market themes<br>
+            • <b>Data Comparison:</b> See how BeaconOne's deal tracking compares to JP Morgan's industry-wide reporting
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div style="border: 2px solid #C9A77F; border-radius: 12px; padding: 20px; background-color: #fdfbf8; margin-bottom: 20px; min-height: 200px;">
+            <h3 style="color: #2c3e50; margin-top: 0;">🎤 Conferences Tab</h3>
+            <p style="color: #000; line-height: 1.6;">
+            • Download an excel summary that shows companies that will be in attendance at conferences
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Key Features
+    st.markdown("---")
+    st.markdown("## Key Features")
+    st.markdown("""
+    <div style="background-color: #f0f7fa; padding: 20px; border-radius: 10px; border-left: 5px solid #7FA8C9;">
+        <p style="color: #000; font-size: 18px; margin: 0;">
+        ✅ <b>Interactive Filtering:</b> Customize views by date, company, deal type, therapeutic area, and more
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # How to Use This Dashboard
+    st.markdown("---")
+    st.markdown("## How to Use This Dashboard")
+    st.markdown("""
+    <div style="padding: 20px; background-color: #fafafa; border-radius: 10px;">
+        <ol style="color: #000; font-size: 16px; line-height: 2;">
+            <li><b>Start with the JP Morgan Report Tab</b> to get a high-level market overview and understand current trends</li>
+            <li><b>Dive into Deal Activity</b> to explore specific transactions, filter by areas of interest, and analyze detailed deal metrics</li>
+            <li><b>Export Data</b> for your own analysis (where applicable in tables)</li>
+        </ol>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Data Sources and Key Metrics
+    st.markdown("---")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("## Data Sources")
+        st.markdown("""
+        <div style="border: 2px solid #7FA8C9; border-radius: 10px; padding: 20px; background-color: #f8fafb;">
+            <p style="color: #000; line-height: 1.8; margin: 0;">
+            <b>BeaconOne Desk Research:</b> Primary source for individual deal tracking and detailed transaction data<br><br>
+            <b>JP Morgan Industry Reports:</b> Quarterly market analysis and industry-wide deal statistics
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("## Key Metrics Explained")
+        st.markdown("""
+        <div style="border: 2px solid #C9A77F; border-radius: 10px; padding: 20px; background-color: #fdfbf8;">
+            <p style="color: #000; line-height: 1.8; margin: 0;">
+            <b>Deal Value:</b> Total transaction value in USD (displayed as $M or $B)<br>
+            <b>QoQ Change:</b> Quarter-over-quarter percentage change<br>
+            <b>YoY Change:</b> Year-over-year percentage change<br>
+            <b>Deal Count:</b> Number of transactions in a given period<br>
+            <b>Color Coding:</b> <span style="color: #00A86B; font-weight: bold;">Green (↑)</span> for increases ≥40%, <span style="color: #D85252; font-weight: bold;">Red (↓)</span> for decreases ≥40%, black for changes <40%
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Data Updates
+    st.markdown("---")
+    st.markdown("## Data Updates")
+    st.markdown("""
+    <div style="background-color: #fff9f0; padding: 20px; border-radius: 10px; border-left: 5px solid #C9A77F;">
+        <p style="color: #000; font-size: 16px; line-height: 1.8; margin: 0;">
+        The dashboard is regularly updated with new deal data as transactions are announced and closed. For data upload and management, authorized users can access the <b>📤 Upload New Dataset</b> tab (password protected).
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Source Attribution Footer
+    st.markdown("---")
+    st.markdown("""
+    <div style="text-align: center; padding: 20px; color: #666;">
+        <p style="margin: 0;">
+        <b>Source Attribution:</b> Data sourced from 
+        <a href="https://www.beacononemed.com" target="_blank" style="color: #7FA8C9;">BeaconOne Desk Research</a> and 
+        <a href="https://www.jpmorgan.com/insights/markets-and-economy/outlook/biopharma-medtech-deal-reports" target="_blank" style="color: #C9A77F;">JP Morgan Biopharma & MedTech Deal Reports</a>
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
 def show_deal_activity(ma_df, inv_df):
     """Display deal activity dashboard"""
