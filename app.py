@@ -642,6 +642,7 @@ def create_jp_morgan_chart_by_category(category, color, selected_quarters, selec
             "Venture": {
                 "2024": {"Q1": {"value": 5500, "count": 182}, "Q2": {"value": 4300, "count": 167}, "Q3": {"value": 5100, "count": 154}, "Q4": {"value": 3000, "count": 125}},
                 "2025": {"Q1": {"value": 3700, "count": 117}, "Q2": {"value": 2600, "count": 90}, "Q3": {"value": 2900, "count": 67}},
+                "2026": {"Q1": {"value": 2500, "count": 79}},
             },
         }
 
@@ -704,7 +705,7 @@ def show_jp_morgan_summary(ma_df: pd.DataFrame, inv_df: pd.DataFrame):
     with filter_col1:
         selected_quarters = st.multiselect("Quarters", ["Q1", "Q2", "Q3", "Q4"], default=["Q1", "Q2", "Q3", "Q4"])
     with filter_col2:
-        selected_years = st.multiselect("Years", ["2024", "2025", "2026"], default=["2025", "2026"])
+        selected_years = st.multiselect("Years", ["2024", "2025", "2026"], default=["2024", "2025", "2026"])
 
     if not selected_quarters or not selected_years:
         st.warning("Please select at least one quarter and one year.")
@@ -722,8 +723,73 @@ def show_jp_morgan_summary(ma_df: pd.DataFrame, inv_df: pd.DataFrame):
         if fig:
             st.plotly_chart(fig, use_container_width=True)
 
+    # ── M&A Quarterly Comparison ──────────────────────────────────────────────
     st.markdown("---")
-    st.caption("Source: JP Morgan Biopharma & MedTech Deal Reports")
+    st.markdown("### M&A Quarterly Comparison")
+    ma_table_col, ma_narrative_col = st.columns([1.3, 1.2])
+
+    with ma_table_col:
+        ma_2025 = pd.DataFrame({
+            "Quarter":        ["Q1 2025", "Q2 2025", "Q3 2025", "Q4 2025"],
+            "Deal Value":     ["$8.3B",   "$2.2B",   "$6.8B",   "$43.5B"],
+            "Deal Count":     [51,        48,        62,        35],
+            "Median Upfront": ["$250M",   "$54M",    "$90M",    "$207M"],
+        })
+        ma_2026 = pd.DataFrame({
+            "Quarter":        ["Q1 2026"],
+            "Deal Value":     ["$26.6B"],
+            "Deal Count":     [38],
+            "Median Upfront": ["$171M"],
+        })
+        st.markdown("**2025**")
+        st.dataframe(ma_2025, hide_index=True, use_container_width=True)
+        st.markdown(
+            '<div style="height:5px;background:#000;border-radius:2px;margin:6px 0 10px 0;"></div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown("**2026**")
+        st.dataframe(ma_2026, hide_index=True, use_container_width=True)
+
+    with ma_narrative_col:
+        st.markdown("""
+        <div style="border: 2px solid #7FA8C9; border-radius: 12px; padding: 16px;
+                    background-color: #f5f8fb; margin-top: 28px;">
+            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                <b>Q1 2025</b><br>
+                51 deals totaling $8.3B, led by Stryker's acquisition of Inari Medical and Zimmer Biomet's
+                purchase of Paragon 28. Median upfronts rose to $250M, signaling renewed confidence in
+                revenue-stage assets despite a selective deal environment.
+            </div>
+            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                <b>Q2 2025</b><br>
+                48 deals worth $2.2B, as elevated interest rates and valuation gaps slowed new bids.
+                Activity reflected steady appetite for niche device integrations despite broader macro caution.
+                Median upfront fell sharply to $54M.
+            </div>
+            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                <b>Q3 2025</b><br>
+                62 deals totaling $6.8B, with deal count reaching its highest quarterly level of 2025.
+                Median upfront recovered to $90M, with continued strategic activity across diagnostics
+                and surgical devices.
+            </div>
+            <div style="font-size: 13px; color: #000; line-height: 1.5; margin-bottom: 10px;">
+                <b>Q4 2025</b><br>
+                35 deals totaling $43.5B — a highly concentrated quarter driven by two mega-transactions:
+                Abbott's acquisition of EXACT Sciences for $23B and the Blackstone/TPG acquisition of
+                Hologic for $18B. Median upfront of $207M reflects the outsized deal premiums paid.
+            </div>
+            <div style="font-size: 13px; color: #000; line-height: 1.5;">
+                <b>Q1 2026</b><br>
+                38 deals totaling $26.6B, sustaining the large-deal momentum from Q4 2025. Boston
+                Scientific acquired Penumbra for $15B and Danaher acquired Masimo for $10B, anchoring
+                activity. Median upfront of $171M remained elevated, underscoring continued strategic
+                conviction among large-cap acquirers.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.caption("Source: JP Morgan Q1 2026 Medtech Licensing and Venture Report (April 2026) · DealForma")
 
 
 def show_upload_dataset(ma_df: pd.DataFrame, inv_df: pd.DataFrame):
