@@ -636,7 +636,8 @@ def create_jp_morgan_chart_by_category(category, color, selected_quarters, selec
         all_data = {
             "M&A": {
                 "2024": {"Q1": {"value": 18000, "count": 47}, "Q2": {"value": 40300, "count": 114}, "Q3": {"value": 47000, "count": 195}, "Q4": {"value": 63100, "count": 305}},
-                "2025": {"Q1": {"value": 9200, "count": 57}, "Q2": {"value": 2100, "count": 43}, "Q3": {"value": 21700, "count": 65}},
+                "2025": {"Q1": {"value": 9200, "count": 57}, "Q2": {"value": 2100, "count": 43}, "Q3": {"value": 21700, "count": 65}, "Q4": {"value": 43500, "count": 35}},
+                "2026": {"Q1": {"value": 26600, "count": 38}},
             },
             "Venture": {
                 "2024": {"Q1": {"value": 5500, "count": 182}, "Q2": {"value": 4300, "count": 167}, "Q3": {"value": 5100, "count": 154}, "Q4": {"value": 3000, "count": 125}},
@@ -703,7 +704,7 @@ def show_jp_morgan_summary(ma_df: pd.DataFrame, inv_df: pd.DataFrame):
     with filter_col1:
         selected_quarters = st.multiselect("Quarters", ["Q1", "Q2", "Q3", "Q4"], default=["Q1", "Q2", "Q3", "Q4"])
     with filter_col2:
-        selected_years = st.multiselect("Years", ["2024", "2025"], default=["2024", "2025"])
+        selected_years = st.multiselect("Years", ["2024", "2025", "2026"], default=["2025", "2026"])
 
     if not selected_quarters or not selected_years:
         st.warning("Please select at least one quarter and one year.")
